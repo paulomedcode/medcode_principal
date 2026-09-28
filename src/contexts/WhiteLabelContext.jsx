@@ -9,7 +9,7 @@ export const WhiteLabelProvider = ({ children }) => {
     const [theme, setTheme] = useState({
         nomeInstituicao: 'Sistema de Gestão',
         corPrincipal: '#2563eb', 
-        logoUrl: null, // Sem logo por padrão até carregar
+        logoUrl: '/logo.png', // logo da MedCode até o banco trazer outra
         faviconUrl: '',
         hubAssistant1Name: 'Assistente 1', hubAssistant1Whatsapp: '', hubAssistant1Photo: '',
         hubAssistant2Name: 'Assistente 2', hubAssistant2Whatsapp: '', hubAssistant2Photo: '',
@@ -27,7 +27,7 @@ export const WhiteLabelProvider = ({ children }) => {
                 const fetchedTheme = {
                     nomeInstituicao: data.data.nomeInstituicao || 'Sistema de Gestão',
                     corPrincipal: data.data.corPrincipal || '#2563eb',
-                    logoUrl: data.data.logoUrl || null,
+                    logoUrl: data.data.logoUrl || '/logo.png',
                     faviconUrl: data.data.faviconUrl || '',
                     executanteNome: data.data.executanteNome || '',
                     executanteCnes: data.data.executanteCnes || '',
