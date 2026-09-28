@@ -1,0 +1,157 @@
+/* Apple Calendar Overrides for React Big Calendar */
+
+.apple-calendar .rbc-calendar {
+    font-family: inherit;
+    border: none;
+    background: white;
+}
+
+/* Headers (Days of week) */
+.apple-calendar .rbc-header {
+    border-bottom: 1px solid #e2e8f0;
+    border-left: none;
+    padding: 8px 8px;
+    text-transform: lowercase;
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    text-align: right;
+}
+
+.apple-calendar .rbc-header + .rbc-header {
+    border-left: none; /* No vertical borders in headers */
+}
+
+/* Month View */
+.apple-calendar .rbc-month-view {
+    border: none;
+}
+
+.apple-calendar .rbc-month-row {
+    border-top: none;
+}
+
+.apple-calendar .rbc-month-row + .rbc-month-row {
+    border-top: 1px solid #e2e8f0;
+}
+
+.apple-calendar .rbc-day-bg {
+    border-left: 1px solid #e2e8f0;
+}
+
+.apple-calendar .rbc-day-bg:first-child {
+    border-left: none;
+}
+
+/* Date Numbers */
+.apple-calendar .rbc-date-cell {
+    padding-right: 4px;
+    padding-top: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    text-align: right;
+}
+
+.apple-calendar .rbc-off-range-bg {
+    background-color: transparent;
+}
+
+.apple-calendar .rbc-off-range .rbc-button-link {
+    color: #94a3b8;
+}
+
+.apple-calendar .rbc-today {
+    background-color: #fef2f2; /* levemente vermelho claro */
+}
+
+.apple-calendar .rbc-today .rbc-button-link {
+    background-color: #ef4444;
+    color: white;
+    border-radius: 9999px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Events in Month View */
+.apple-calendar .rbc-event {
+    background-color: transparent !important;
+    padding: 2px 4px !important;
+    border-radius: 0 !important;
+    border: none !important;
+    color: #1e293b !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+}
+
+.apple-calendar .rbc-event.rbc-selected {
+    background-color: #f1f5f9 !important;
+}
+
+.apple-calendar .rbc-row-segment .rbc-event-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Time Grid (Week/Day Views) */
+.apple-calendar .rbc-time-view {
+    border: none;
+}
+
+.apple-calendar .rbc-time-header {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.apple-calendar .rbc-time-header-content {
+    border-left: 1px solid #e2e8f0;
+}
+
+.apple-calendar .rbc-time-content {
+    border-top: none;
+}
+
+.apple-calendar .rbc-timeslot-group {
+    border-bottom: 1px solid #e2e8f0;
+    min-height: 50px;
+}
+
+.apple-calendar .rbc-time-column {
+    border-left: 1px solid #e2e8f0;
+}
+
+.apple-calendar .rbc-time-column:first-child {
+    border-left: none; /* Time gutter has no left border */
+}
+
+.apple-calendar .rbc-time-gutter .rbc-timeslot-group {
+    border-bottom: none;
+}
+
+.apple-calendar .rbc-label {
+    font-size: 10px;
+    color: #94a3b8;
+    padding: 0 8px;
+}
+
+.apple-calendar .rbc-day-slot .rbc-event {
+    background-color: #e0e7ff !important; /* light indigo */
+    border-left: 3px solid #6366f1 !important; /* solid indigo border */
+    color: #3730a3 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    padding: 4px !important;
+}
+
+.apple-calendar .rbc-day-slot .rbc-event-label {
+    font-size: 9px;
+    margin-bottom: 2px;
+    opacity: 0.8;
+}
+
+.apple-calendar .rbc-current-time-indicator {
+    background-color: #ef4444;
+}

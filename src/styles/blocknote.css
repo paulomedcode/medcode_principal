@@ -1,0 +1,49 @@
+/* Ajustes do editor BlockNote para combinar com o app (Tailwind/slate). */
+
+.ws-editor {
+  background: transparent;
+}
+
+/* Remove a margem lateral padrão do BlockNote; o container da página já cuida. */
+.ws-editor .bn-editor {
+  padding-inline: 0;
+  background: transparent;
+}
+
+/* Tipografia mais próxima do restante do sistema. */
+.ws-editor .bn-block-content {
+  font-size: 15px;
+}
+
+/* Tabela/calendário embutidos não ganham moldura azul de "bloco selecionado".
+   O BlockNote contorna o bloco selecionado com um outline de 4px — faz sentido
+   para uma imagem, mas aqui o bloco é uma visão inteira: clicar em qualquer
+   célula circundava a tabela (ou o calendário) de azul, como se o conteúdo
+   estivesse em edição. Os demais tipos de bloco mantêm o realce padrão. */
+.ws-editor .bn-block-content[data-content-type='linked_database'].ProseMirror-selectednode > *,
+.ws-editor .ProseMirror-selectednode > .bn-block-content[data-content-type='linked_database'] > * {
+  outline: none;
+}
+
+/* Menção a uma pessoa (@fulano). Chip discreto: destaca o nome no meio da
+   frase sem virar botão — a leitura do parágrafo continua natural. */
+.ws-mention {
+  display: inline;
+  padding: 1px 5px;
+  margin: 0 1px;
+  border-radius: 6px;
+  background: #eff6ff; /* blue-50 */
+  color: #1d4ed8;      /* blue-700 */
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dark .ws-mention {
+  background: rgba(37, 99, 235, 0.18);
+  color: #93c5fd; /* blue-300 */
+}
+
+/* Placeholder do primeiro bloco vazio. */
+.ws-editor .bn-inline-content:has(> .ProseMirror-trailingBreak):before {
+  color: #94a3b8; /* slate-400 */
+}

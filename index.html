@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR" translate="no">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- Idioma correto (pt-BR) + bloqueio de tradução automática do navegador.
+       O Google Tradutor reescreve os nós de texto da página e corrompe o DOM do
+       React, gerando crash "Failed to execute 'insertBefore' on 'Node'" ao
+       re-renderizar (ex.: ao editar um paciente). notranslate impede isso. -->
+  <meta name="google" content="notranslate" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MedCode" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedCode</title>
+  <meta name="description" content="Gestão Agendamento Cirúrgico" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

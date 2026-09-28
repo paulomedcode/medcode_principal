@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/* Tema escuro por CLASSE (.dark no <html>), não por preferência do sistema.
+   Quem liga/desliga é o hook useTema. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+@media print {
+
+    @page {
+        size: A4 portrait;
+        margin: 10mm !important;
+        /* Isso garante margem no topo de TODAS as páginas */
+    }
+
+    body > #root {
+        display: none !important;
+    }
+
+    html, body {
+        background-color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+
+    .print-master-container {
+        display: block !important;
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+}
+
+@media screen {
+    .print-master-container {
+        display: none !important;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Toque: nenhuma ação fica escondida atrás do hover.
+
+   Em iPad e celular não existe "passar o mouse por cima". Botões escritos como
+   `opacity-0 group-hover:opacity-100` — usados em listas de pacientes, AIH,
+   quadros e configurações — simplesmente nunca apareciam nesses aparelhos, e o
+   usuário concluía que o botão não existe.
+
+   Aqui eles nascem visíveis quando o aparelho não tem hover. Elementos
+   puramente decorativos (brilhos e gradientes) marcam `pointer-events-none` e
+   ficam de fora, para o cartão não parecer permanentemente "em foco".
+   --------------------------------------------------------------------------- */
+@media (hover: none) {
+
+    .opacity-0.group-hover\:opacity-100:not(.pointer-events-none),
+    .opacity-0.hover\:opacity-100:not(.pointer-events-none),
+    .invisible.group-hover\:visible:not(.pointer-events-none),
+    .invisible.hover\:visible:not(.pointer-events-none) {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .hidden.group-hover\:block:not(.pointer-events-none) { display: block !important; }
+    .hidden.group-hover\:flex:not(.pointer-events-none) { display: flex !important; }
+    .hidden.group-hover\:inline:not(.pointer-events-none) { display: inline !important; }
+    .hidden.group-hover\:inline-flex:not(.pointer-events-none) { display: inline-flex !important; }
+}
+
+html.tema-escuro {
+    filter: invert(0.92) hue-rotate(180deg);
+    background-color: #111;
+}
+html.tema-escuro img,
+html.tema-escuro video,
+html.tema-escuro iframe,
+html.tema-escuro .preserve-color {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+/* Utilitário para esconder barras de rolagem mantendo a funcionalidade de scroll */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}

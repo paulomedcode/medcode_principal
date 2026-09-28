@@ -1,0 +1,68 @@
+/* ===========================================================================
+ * ESCALA — VISÃO OTIMIZADA ("Ver otimizado")
+ *
+ * A grade normal reserva 160px por dia mais 304px de Unidade/Tipo: 1.424px de
+ * largura mínima. Num iPad isso obriga a arrastar para o lado só para chegar no
+ * domingo — e a semana só faz sentido lida inteira.
+ *
+ * Aqui a tabela solta a largura mínima e os sete dias dividem o que houver de
+ * tela. É uma EXCEÇÃO, ligada por botão: a visão normal continua sendo o padrão,
+ * porque ela é a que cabe nome de médico e observação sem apertar.
+ *
+ * Por que CSS e não classes condicionais no JSX: a grade decide quase tudo por
+ * breakpoint (`md:`), e a visão otimizada precisa do layout "de desktop" em
+ * telas pequenas — o contrário do que os breakpoints fazem. Um punhado de
+ * regras com !important sobrepõe isso sem espalhar ternários por 200 linhas.
+ * =========================================================================== */
+
+/* A tabela passa a caber na tela em vez de rolar. O piso de 620px é o ponto em
+ * que o nome do médico ainda se lê: num celular de 390px, sete colunas de 32px
+ * cortam "Dr. Fulano de Tal" no meio — aí não adianta caber. Do iPad para cima
+ * (768px) o piso não encosta e a semana inteira cabe sem arrastar nada. */
+.esc-compacta .esc-grade { min-width: 620px !important; width: 100% !important; }
+
+/* As duas colunas fixas encolhem, e o `left` da segunda acompanha a primeira. */
+.esc-compacta .esc-col-hosp {
+  width: 74px !important; min-width: 74px !important; max-width: 74px !important;
+  left: 0 !important; padding: 2px !important;
+}
+.esc-compacta .esc-col-tipo {
+  width: 72px !important; min-width: 72px !important; max-width: 72px !important;
+  left: 74px !important; padding: 2px !important;
+}
+/* Os dias dividem o resto em partes iguais (a tabela é table-fixed). */
+.esc-compacta .esc-col-dia {
+  width: auto !important; min-width: 0 !important;
+  padding-left: 1px !important; padding-right: 1px !important;
+  padding-top: 1px !important; padding-bottom: 1px !important;
+}
+
+/* Nome do hospital e do setor: a versão horizontal, miúda — o texto vertical do
+   celular ocuparia altura, que é justamente o que se quer economizar. */
+.esc-compacta .esc-hosp-full { display: block !important; font-size: 9px !important; line-height: 1.15 !important; letter-spacing: 0 !important; }
+.esc-compacta .esc-hosp-vert { display: none !important; }
+.esc-compacta .esc-setor-full { display: block !important; font-size: 8.5px !important; line-height: 1.15 !important; letter-spacing: 0 !important; }
+.esc-compacta .esc-setor-curto { display: none !important; }
+.esc-compacta .esc-col-tipo > div { min-height: 0 !important; padding: 1px !important; }
+
+/* Cabeçalho do dia: "SEG / 08/09" no lugar da data por extenso. */
+.esc-compacta .esc-dia-longo { display: none !important; }
+.esc-compacta .esc-dia-curto { display: flex !important; }
+.esc-compacta thead th { padding-top: 3px !important; padding-bottom: 3px !important; }
+
+/* Card do plantão: mesma informação, menos folga. */
+.esc-compacta .esc-card { min-height: 20px !important; border-radius: 6px !important; }
+.esc-compacta .esc-card-linha { padding-right: 12px !important; padding-left: 2px !important; gap: 2px !important; }
+.esc-compacta .esc-card-nome { font-size: 9px !important; line-height: 1.1 !important; }
+.esc-compacta .esc-card-hora { font-size: 8px !important; line-height: 1.1 !important; }
+/* A observação vira uma linha só: ela é o que mais estica a altura da grade.
+   O texto inteiro continua no title (passe o mouse) e dentro do plantão. */
+.esc-compacta .esc-card-obs {
+  font-size: 8px !important; line-height: 1.1 !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+}
+
+/* Altura: menos ar entre as semanas e no cabeçalho de cada uma. */
+.esc-compacta.esc-semanas > * + * { margin-top: 0.75rem !important; }
+.esc-compacta .esc-semana-head { padding: 6px 12px !important; }
+.esc-compacta .esc-semana-titulo { font-size: 12px !important; }
