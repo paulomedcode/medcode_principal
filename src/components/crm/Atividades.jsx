@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Loader2, Send, Trash2, CalendarClock } from 'lucide-react';
+import { Loader2, Send, Trash2, CalendarClock, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { listarAtividades, registrarAtividade, excluirAtividade } from '../../services/crm';
+import { listarAtividades, registrarAtividade, excluirAtividade, concluirProximoPasso } from '../../services/crm';
 import { TIPOS_ATIVIDADE, tipoAtividade, fmtData } from '../../config/servicos';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermission } from '../../contexts/PermissionContext';
@@ -66,6 +66,13 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
         catch (e) { console.error(e); toast.error('Não foi possível apagar.'); }
     };
 
+    const concluir = async (a) => {
+        try {
+            await concluirProximoPasso(a.id);
+            setItens((l) => l.map((x) => (x.id === a.id ? { ...x, proximo_passo_concluido_em: new Date().toISOString() } : x)));
+        } catch (e) { console.error(e); toast.error('Não foi possível concluir.'); }
+    };
+
     const podeApagar = (a) => a.tipo !== 'SISTEMA' && (a.autor_id === currentUser?.id || hasPermission('Editar Clientes'));
 
     return (
@@ -119,11 +126,16 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                                     <div className="min-w-0 flex-1">
                                         <p className="text-[12px] font-bold text-slate-800 leading-snug">{a.titulo}</p>
                                         {a.descricao && <p className="text-[11.5px] text-slate-600 whitespace-pre-wrap mt-0.5">{a.descricao}</p>}
-                                        {a.proximo_passo_em && (
-                                            <p className="text-[11px] font-semibold text-amber-700 mt-1 flex items-center gap-1">
-                                                <CalendarClock size={12} /> {a.proximo_passo || 'Próximo passo'} · {fmtData(a.proximo_passo_em)}
+                                        {a.proximo_passo_em && (a.proximo_passo_concluido_em ? (
+                                            <p className="text-[11px] font-semibold text-emerald-700 mt-1 flex items-center gap-1 line-through decoration-emerald-400/60">
+                                                <Check size={12} /> {a.proximo_passo || 'Próximo passo'} · {fmtData(a.proximo_passo_em)}
                                             </p>
-                                        )}
+                                        ) : (
+                                            <p className="text-[11px] font-semibold text-amber-700 mt-1 flex items-center gap-1.5">
+                                                <CalendarClock size={12} /> {a.proximo_passo || 'Próximo passo'} · {fmtData(a.proximo_passo_em)}
+                                                <button onClick={() => concluir(a)} className="ml-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[9.5px] font-bold uppercase hover:bg-emerald-100">Feito</button>
+                                            </p>
+                                        ))}
                                         <p className="text-[10px] font-medium text-slate-400 mt-1">
                                             {t.label} · {dataHora(a.data)}{a.autor?.name ? ` · ${a.autor.name}` : ''}
                                             {!filtro?.oportunidadeId && a.oportunidade?.titulo ? ` · ${a.oportunidade.titulo}` : ''}

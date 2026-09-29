@@ -106,14 +106,20 @@ export async function excluirAtividade(id) {
     ok(await supabase.from('crm_atividades').delete().eq('id', id));
 }
 
-/** Próximos passos combinados e ainda por vir (ou atrasados), para a home e o funil. */
-export async function proximosPassos({ ate = null } = {}) {
+/** Próximos passos combinados e não concluídos (os atrasados inclusive), para o painel e a home. */
+export async function proximosPassos({ ate = null, autorId = null } = {}) {
     let q = supabase.from('crm_atividades')
-        .select('id, titulo, proximo_passo, proximo_passo_em, party_id, oportunidade_id, projeto_id, empresa:finance_parties(name)')
+        .select('id, titulo, proximo_passo, proximo_passo_em, party_id, oportunidade_id, projeto_id, autor_id, empresa:finance_parties(name)')
         .not('proximo_passo_em', 'is', null)
+        .is('proximo_passo_concluido_em', null)
         .order('proximo_passo_em');
     if (ate) q = q.lte('proximo_passo_em', ate);
+    if (autorId) q = q.eq('autor_id', autorId);
     return ok(await q);
+}
+
+export async function concluirProximoPasso(id) {
+    ok(await supabase.from('crm_atividades').update({ proximo_passo_concluido_em: new Date().toISOString() }).eq('id', id));
 }
 
 // ---------------------------------------------------------------------------

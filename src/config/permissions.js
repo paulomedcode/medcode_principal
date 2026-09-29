@@ -38,6 +38,20 @@ export const ADMIN_KEY = 'Acesso Total (Admin)';
 // - `extra: false` numa permissão = não pode ser concedida individualmente
 export const PERMISSION_MODULES = [
     {
+        id: 'painel',
+        home: 'painel',
+        label: 'Painel',
+        desc: 'Indicadores da empresa numa tela',
+        route: '/painel',
+        icon: 'LayoutDashboard',
+        gradient: 'from-rose-400 to-pink-500',
+        accent: 'rose',
+        accessKey: 'Acessar Painel',
+        permissions: [
+            { id: 'Acessar Painel', label: 'Acessar o módulo', desc: 'Cada bloco só mostra dados dos módulos que a pessoa já acessa' },
+        ],
+    },
+    {
         id: 'clientes',
         home: 'clientes',
         label: 'Clientes',

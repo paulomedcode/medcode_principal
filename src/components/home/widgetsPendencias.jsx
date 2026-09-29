@@ -4,14 +4,16 @@ import toast from 'react-hot-toast';
 import { ShieldCheck, Loader2, ClipboardList, AlertTriangle, Check } from 'lucide-react';
 import { tarefasAtribuidas } from '../../services/notificacoes';
 import { concluirLembrete } from '../../services/concluirLembrete';
+import { proximosPassos, concluirProximoPasso } from '../../services/crm';
 import { CARD_SHELL, CardHeader } from './cardUI.jsx';
 
 /*
  * PENDÊNCIAS — card da tela inicial.
  *
- * Junta o que está esperando uma ação da pessoa logada: compromisso do
- * módulo Compromisso atribuído a ela E com data marcada (é a data que
- * transforma a tarefa em lembrete: "quinta que vem").
+ * Junta o que está esperando uma ação da pessoa logada:
+ *   • compromisso do módulo Compromisso atribuído a ela E com data marcada
+ *     (é a data que transforma a tarefa em lembrete: "quinta que vem");
+ *   • próximo passo que ela combinou com um cliente no CRM.
  */
 
 // Compromisso muito distante não é pendência, é agenda — encheria o card e
@@ -104,8 +106,12 @@ export const PendenciasWidget = ({ currentUser }) => {
         let active = true;
         (async () => {
             if (!currentUser) return;
-            const tarefas = await tarefasAtribuidas(currentUser.id)
-                .catch((e) => { console.error('Erro ao buscar compromissos', e); return []; });
+            // Origens independentes: uma falhando (sem acesso ao CRM, por
+            // exemplo) não derruba a outra.
+            const [tarefas, passos] = await Promise.all([
+                tarefasAtribuidas(currentUser.id).catch((e) => { console.error('Erro ao buscar compromissos', e); return []; }),
+                proximosPassos({ autorId: currentUser.id }).catch(() => []),
+            ]);
 
             const limite = new Date(hojeZerado().getTime() + HORIZONTE_DIAS * 86400000);
 
@@ -120,15 +126,32 @@ export const PendenciasWidget = ({ currentUser }) => {
                     titulo: t.titulo,
                     legenda: dataCurta(data, t.hora),
                     prazo: prazoLabel(data),
+                    data,
                     rowId: t.rowId,
                 }));
 
-            if (active) { setItens(deTarefas); setLoading(false); }
+            const dePassos = passos
+                .map((a) => ({ a, data: parseISO(a.proximo_passo_em) }))
+                .filter(({ data }) => data && data <= limite)
+                .map(({ a, data }) => ({
+                    id: `crm:${a.id}`,
+                    tipo: 'crm',
+                    titulo: a.proximo_passo || a.titulo,
+                    legenda: `${a.empresa?.name || 'Cliente'} · ${dataCurta(data)}`,
+                    prazo: prazoLabel(data),
+                    data,
+                    atividadeId: a.id,
+                    destino: a.projeto_id ? `/projetos/${a.projeto_id}` : a.oportunidade_id ? `/vendas?abrir=${a.oportunidade_id}` : `/clientes/${a.party_id}`,
+                }));
+
+            const todos = [...deTarefas, ...dePassos].sort((x, y) => x.data - y.data);
+            if (active) { setItens(todos); setLoading(false); }
         })();
         return () => { active = false; };
     }, [currentUser]);
 
     const abrir = (item) => {
+        if (item.tipo === 'crm') return navigate(item.destino);
         navigate(item.rowId ? `/compromissos?abrir=${item.rowId}` : '/compromissos');
     };
 
@@ -138,8 +161,12 @@ export const PendenciasWidget = ({ currentUser }) => {
         if (!confirmar) return;
         setConcluindo(true);
         try {
-            const r = await concluirLembrete(confirmar.rowId, currentUser);
-            if (!r.ok) { toast.error(r.motivo); return; }
+            if (confirmar.tipo === 'crm') {
+                await concluirProximoPasso(confirmar.atividadeId);
+            } else {
+                const r = await concluirLembrete(confirmar.rowId, currentUser);
+                if (!r.ok) { toast.error(r.motivo); return; }
+            }
             setItens((prev) => prev.filter((i) => i.id !== confirmar.id));
             toast.success('Lembrete concluído.');
             setConfirmar(null);
@@ -179,7 +206,7 @@ export const PendenciasWidget = ({ currentUser }) => {
                                 key={item.id}
                                 item={item}
                                 onClick={() => abrir(item)}
-                                onConcluir={item.tipo === 'compromisso' && item.rowId ? () => setConfirmar(item) : null}
+                                onConcluir={(item.tipo === 'compromisso' && item.rowId) || item.tipo === 'crm' ? () => setConfirmar(item) : null}
                             />
                         ))
                     )}
@@ -191,7 +218,7 @@ export const PendenciasWidget = ({ currentUser }) => {
                     <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5" onClick={(e) => e.stopPropagation()}>
                         <p className="text-[15px] font-bold text-slate-800">Você já resolveu essa pendência?</p>
                         <p className="text-[12.5px] font-medium text-slate-500 mt-1.5 leading-snug">
-                            <span className="font-bold text-slate-700">{confirmar.titulo}</span> sai daqui e fica registrado no Compromisso, com a data e o seu nome.
+                            <span className="font-bold text-slate-700">{confirmar.titulo}</span> sai daqui e fica registrado {confirmar.tipo === 'crm' ? 'no histórico do cliente' : 'no Compromisso, com a data e o seu nome'}.
                         </p>
                         <div className="flex justify-end gap-2 mt-4">
                             <button onClick={() => setConfirmar(null)} disabled={concluindo}
