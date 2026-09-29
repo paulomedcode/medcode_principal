@@ -22,6 +22,7 @@ import ConfiguracoesHub from './pages/ConfiguracoesHub';
 import AtendimentoHub from './pages/AtendimentoHub';
 import ImportData from './pages/ImportData';
 import Login from './pages/Login';
+import RedefinirSenha, { DesvioDeRecuperacao } from './pages/RedefinirSenha';
 import WeeklyView from './pages/WeeklyView';
 import Aih from './pages/Aih';
 import Apa from './pages/Apa';
@@ -58,6 +59,9 @@ const AppLayout = ({ children }) => {
   const { isThemeLoading, theme } = useWhiteLabel();
   const location = useLocation();
   const isHome = location.pathname === '/home';
+  // A tela de redefinir senha já tem sessão (o link do e-mail loga), mas não é
+  // o sistema ainda: sem Topbar até a senha nova ser gravada.
+  const mostraTopbar = currentUser && location.pathname !== '/redefinir-senha';
 
   if (isThemeLoading) {
     return (
@@ -86,12 +90,12 @@ const AppLayout = ({ children }) => {
           Topbar fixa (z-[999]), que ficava sobrepondo o topo dos modais. */}
       <div className="absolute inset-0 -z-[1] pointer-events-none bg-white/50 backdrop-blur-[3px]"></div>
       
-      {currentUser && (
+      {mostraTopbar && (
         <div className="fixed top-0 left-0 w-full z-[999]">
           <Topbar />
         </div>
       )}
-      <main className={`flex-1 overflow-y-auto ${currentUser && !isHome ? 'pt-[64px]' : ''}`}>
+      <main className={`flex-1 overflow-y-auto ${mostraTopbar && !isHome ? 'pt-[64px]' : ''}`}>
         {children}
       </main>
     </div>
@@ -105,11 +109,13 @@ const App = () => {
         <UnitProvider>
           <WhiteLabelProvider>
             <BrowserRouter>
+              <DesvioDeRecuperacao />
               <UnitGatekeeper>
                 <AppLayout>
                   <Routes>
                     {/* --- ROTAS PÚBLICAS (Qualquer um acessa) --- */}
                     <Route path="/login" element={<Login />} />
+                    <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
                     {/* Redirecionamento da Raiz */}
                     <Route path="/" element={<Navigate to="/home" />} />

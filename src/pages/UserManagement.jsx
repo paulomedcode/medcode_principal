@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { supabase } from '../services/supabase';
+import { supabase, urlRedefinirSenha } from '../services/supabase';
 import { createClient } from '@supabase/supabase-js';
 import {
     Edit2, Trash2, Loader2, X, KeyRound, UserPlus,
@@ -664,7 +664,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
 
     const handleResetPassword = async () => {
         try {
-            const { error } = await supabase.auth.resetPasswordForEmail(user.email);
+            const { error } = await supabase.auth.resetPasswordForEmail(user.email, { redirectTo: urlRedefinirSenha() });
             if (error) throw error;
             toast.success(`Email de redefinição enviado para ${user.email}`);
         } catch (error) {

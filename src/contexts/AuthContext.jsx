@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../services/supabase';
+import { supabase, urlRedefinirSenha } from '../services/supabase';
 
 const AuthContext = createContext();
 
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const resetPassword = async (email) => {
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: urlRedefinirSenha() });
         if (error) throw error;
     };
 
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN') {
+            if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
                 sessionStorage.setItem('login_timestamp', Date.now().toString());
                 fetchProfile(session?.user ?? null);
             } else if (event === 'SIGNED_OUT') {
