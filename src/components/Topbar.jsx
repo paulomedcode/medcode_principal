@@ -8,8 +8,10 @@ import {
     Activity, User, FileText, TrendingUp, ShoppingCart,
     Lock, X, Save, ChevronDown, Menu,
     ArrowRightLeft, ArrowUpCircle, ArrowDownCircle, Bell, FileSignature,
-    Volume2, VolumeX, CalendarClock, UserPlus, Sun, Moon, AtSign, CheckCheck
+    Volume2, VolumeX, CalendarClock, UserPlus, Sun, Moon, AtSign, CheckCheck,
+    Home, Building2, Target, FolderKanban, DollarSign, ClipboardList, Search
 } from 'lucide-react';
+import { PERMISSION_MODULES } from '../config/permissions';
 import { supabase } from '../services/supabase';
 import toast from 'react-hot-toast';
 import { formatNameStandard } from '../utils/nameFormatter';
@@ -87,6 +89,22 @@ export const Topbar = () => {
 
     const isFinance = location.pathname.startsWith('/finance');
 
+    // Navegação entre módulos, visível em todas as telas (antes só se trocava
+    // de módulo voltando à tela inicial). Sai do catálogo de permissões: quem
+    // não abre o módulo não vê o item.
+    const ICONES_MODULO = { painel: LayoutDashboard, clientes: Building2, vendas: Target, projetos: FolderKanban, financeiro: DollarSign, compromissos: ClipboardList };
+    const modulosNav = [
+        { id: 'inicio', label: 'Início', path: '/home', icon: Home, prefixos: ['/home'] },
+        ...PERMISSION_MODULES
+            .filter(m => ICONES_MODULO[m.id] && hasPermission(m.accessKey))
+            .map(m => ({
+                id: m.id, label: m.label, path: m.route, icon: ICONES_MODULO[m.id],
+                prefixos: m.id === 'financeiro' ? ['/finance'] : m.id === 'vendas' ? ['/vendas'] : [m.route],
+            })),
+    ];
+    const moduloAtivo = (m) => m.prefixos.some(pf => location.pathname === pf || location.pathname.startsWith(`${pf}/`));
+    const abrirBusca = () => window.dispatchEvent(new CustomEvent('medcode:busca'));
+
     // Menu superior do módulo Financeiro (aparece somente dentro de /finance).
     const financeMenu = [
         {
@@ -101,18 +119,10 @@ export const Topbar = () => {
             ]
         },
         {
-            id: 'vendas', label: 'Vendas',
-            items: [
-                { path: '/finance/orcamentos', icon: FileText, label: 'Orçamentos' }
-            ]
-        },
-        {
             id: 'relatorios', label: 'Relatórios',
             items: [
                 { path: '/finance/relatorios/dre', icon: FileText, label: 'DRE' },
-                { path: '/finance/relatorios/fluxo', icon: TrendingUp, label: 'Fluxo de Caixa' },
                 { path: '/finance/relatorios/gerencial', icon: LayoutDashboard, label: 'Gerencial' },
-                { path: '/finance/relatorios/vendas', icon: ShoppingCart, label: 'Vendas' },
             ]
         },
         { id: 'config', label: 'Configurações', path: '/finance/configuracoes', icon: Settings, show: hasPermission('Acessar Configurações') }
@@ -130,15 +140,26 @@ export const Topbar = () => {
                 </div>
 
                 {/* MENU HAMBÚRGUER — telas estreitas (< lg), onde o menu horizontal some */}
-                {isFinance && (
+                {(
                     <div className="relative lg:hidden ml-2" ref={mobileNavRef}>
-                        <button onClick={() => setMobileNavOpen(o => !o)} title="Menu do financeiro"
+                        <button onClick={() => setMobileNavOpen(o => !o)} title="Menu"
                             className="p-2 rounded-xl text-slate-700 hover:bg-white/70 border border-transparent hover:border-white/30 transition-all">
                             <Menu size={20} />
                         </button>
                         {mobileNavOpen && (
                             <div className="absolute left-0 top-full mt-2 w-64 max-h-[75vh] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-2xl z-[1000] p-1.5 animate-in fade-in slide-in-from-top-1 custom-scrollbar">
-                                {financeMenu.map(m => {
+                                <div className="px-3 pt-2 pb-1 text-[9px] font-black text-slate-400 uppercase tracking-widest">Módulos</div>
+                                {modulosNav.map(m => {
+                                    const Icon = m.icon;
+                                    return (
+                                        <Link key={m.id} to={m.path} onClick={() => setMobileNavOpen(false)}
+                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-bold ${moduloAtivo(m) ? 'bg-indigo-600 text-white' : 'text-slate-700 hover:bg-slate-50'}`}>
+                                            <Icon size={15} /> {m.label}
+                                        </Link>
+                                    );
+                                })}
+                                {isFinance && <div className="my-1.5 border-t border-slate-100" />}
+                                {isFinance && financeMenu.map(m => {
                                     if (m.soon) return (
                                         <div key={m.id} className="flex items-center justify-between px-3 py-2 text-[11px] font-bold text-slate-300">
                                             {m.label}<span className="text-[8px] font-bold bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">em breve</span>
@@ -176,6 +197,23 @@ export const Topbar = () => {
 
                 {/* MENU DO MÓDULO FINANCEIRO (somente em /finance) */}
                 <div className="hidden lg:flex flex-1 items-center h-full mx-4 sm:mx-8 min-w-0" ref={dropdownRef}>
+                    {!isFinance && (
+                        <nav className="flex items-center gap-1">
+                            {modulosNav.map(m => {
+                                const Icon = m.icon;
+                                const ativo = moduloAtivo(m);
+                                return (
+                                    <Link key={m.id} to={m.path}
+                                        className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-[11px] font-black uppercase tracking-wide transition-colors ${ativo ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white/70'}`}>
+                                        <Icon size={14} /> {m.label}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+                    )}
+                    {isFinance && (
+                        <Link to="/home" title="Voltar ao início" className="flex items-center justify-center w-9 h-9 mr-2 rounded-lg text-slate-500 hover:bg-white/70 hover:text-indigo-600 shrink-0"><Home size={16} /></Link>
+                    )}
                     {isFinance && (
                         <nav className="flex items-center gap-1">
                             {financeMenu.map(m => {
@@ -238,7 +276,11 @@ export const Topbar = () => {
                 </div>
                 {/* DIREITA */}
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                    {/* COMPROMISSO / WORKSPACE (estilo Notion) */}
+                    {/* Busca global (Ctrl/⌘ + K) */}
+                    <button title="Buscar (Ctrl + K)" onClick={abrirBusca}
+                        className="p-1.5 sm:p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-600 hover:bg-white/70 hover:border-white/30 hover:text-blue-600">
+                        <Search size={18} />
+                    </button>
                     {/* Alternar tema claro/escuro */}
                     <button
                         title={temaEscuro ? 'Tema claro' : 'Tema escuro'}

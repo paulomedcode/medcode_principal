@@ -6,6 +6,7 @@ import { PermissionProvider } from './contexts/PermissionContext';
 import { WhiteLabelProvider, useWhiteLabel } from './contexts/WhiteLabelContext';
 import PermissionRoute from './components/PermissionRoute';
 import { Topbar } from './components/Topbar';
+import BuscaGlobal from './components/BuscaGlobal';
 import { Loader2 } from 'lucide-react';
 import defaultBgImage from './assets/capa-login.jpg';
 
@@ -36,7 +37,6 @@ import AccountsLedger from './pages/finance/AccountsLedger';
 import Quotes from './pages/finance/Quotes';
 import RelatorioDRE from './pages/finance/RelatorioDRE';
 import RelatorioGerencial from './pages/finance/RelatorioGerencial';
-import RelatorioVendas from './pages/finance/RelatorioVendas';
 
 const AppLayout = ({ children }) => {
   const { currentUser } = useAuth();
@@ -79,6 +79,7 @@ const AppLayout = ({ children }) => {
           <Topbar />
         </div>
       )}
+      {mostraTopbar && <BuscaGlobal />}
       <main className={`flex-1 overflow-y-auto ${mostraTopbar && !isHome ? 'pt-[64px]' : ''}`}>
         {children}
       </main>
@@ -243,11 +244,6 @@ const App = () => {
                       </PermissionRoute>
                     } />
 
-                    <Route path="/finance/relatorios/vendas" element={
-                      <PermissionRoute requiredPermission="Acessar Financeiro">
-                        <RelatorioVendas />
-                      </PermissionRoute>
-                    } />
 
                     <Route path="/finance/configuracoes" element={
                       <PermissionRoute requiredPermission="Editar Financeiro">

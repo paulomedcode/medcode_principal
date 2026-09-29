@@ -83,7 +83,9 @@ export async function tarefasAtribuidas(userId) {
         || doDb.find((p) => p.type === 'date')
         || null,
       hora: doDb.find((p) => p.type === 'time') || doDb.find((p) => /hora|hor[aá]rio/i.test(p.name)) || null,
-      status: doDb.find((p) => p.type === 'status' || p.type === 'select') || null,
+      // Coluna do tipo status primeiro: no quadro de entregas a 1ª coluna de
+      // opções é "Fase", que não diz se a tarefa acabou.
+      status: doDb.find((p) => p.type === 'status') || doDb.find((p) => p.type === 'select') || null,
     });
   });
 

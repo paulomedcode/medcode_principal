@@ -31,13 +31,6 @@ const ConfiguracoesHub = () => {
             show: hasPermission('Acesso Total (Admin)')
         },
         {
-            path: '/configuracoes-painel?tab=hub',
-            icon: LayoutDashboard,
-            title: 'Tela Inicial',
-            description: 'Mensagem e atalhos da tela inicial',
-            show: hasPermission('Acesso Total (Admin)')
-        },
-        {
             path: '/configuracoes-painel?tab=logs',
             icon: Activity,
             title: 'Logs do Sistema',

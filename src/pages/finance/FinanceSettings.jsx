@@ -1,6 +1,6 @@
+import { Link } from 'react-router-dom';
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
-import { supabase } from '../../services/supabase';
 import { financeService } from '../../services/financeService';
 import {
   FolderPlus, Plus, Edit2, Trash2, ShieldCheck, DollarSign,
@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { maskDocumento } from '../../utils/masks';
 import { todayISO } from '../../utils/date';
 import { printReport } from '../../utils/printReport';
 import { useWhiteLabel } from '../../contexts/WhiteLabelContext';
@@ -18,11 +17,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import CurrencyInput from '../../components/finance/CurrencyInput';
 
 const fmtBRL = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-
-// Monograma (inicial colorida) para cadastros sem foto.
-const MONO_COLORS = ['bg-indigo-100 text-indigo-700', 'bg-emerald-100 text-emerald-700', 'bg-rose-100 text-rose-700', 'bg-amber-100 text-amber-700', 'bg-sky-100 text-sky-700', 'bg-violet-100 text-violet-700', 'bg-teal-100 text-teal-700', 'bg-fuchsia-100 text-fuchsia-700'];
-const initialsOf = (name = '') => name.trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
-const monoColor = (name = '') => MONO_COLORS[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % MONO_COLORS.length];
 
 // Ícones disponíveis para categorias DRE (chave salva em finance_categories.icon).
 const CATEGORY_ICONS = [
@@ -83,11 +77,8 @@ export default function FinanceSettings() {
   const [editingAccId, setEditingAccId] = useState(null);
   const [accModalOpen, setAccModalOpen] = useState(false);
 
-  // States para Pagadores / Fornecedores (sempre AMBOS — sem distinção pagador/fornecedor)
+  // Clientes/fornecedores: só para a impressão da aba (o cadastro mora em Clientes).
   const [parties, setParties] = useState([]);
-  const [partyForm, setPartyForm] = useState({ name: '', document: '', notes: '' });
-  const [editingPartyId, setEditingPartyId] = useState(null);
-  const [partySearch, setPartySearch] = useState('');
 
   useEffect(() => {
     loadData();
@@ -582,51 +573,6 @@ export default function FinanceSettings() {
     }
   };
 
-  // --- LÓGICA DE PAGADORES / FORNECEDORES ---
-  const handleSaveParty = async (e) => {
-    e.preventDefault();
-    if (!partyForm.name.trim()) return toast.error('Nome do pagador/fornecedor é obrigatório');
-    try {
-      // Todo cadastro é AMBOS: aparece tanto em contas a pagar quanto a receber.
-      const payload = { ...partyForm, kind: 'AMBOS' };
-      if (editingPartyId) {
-        await financeService.updateParty(editingPartyId, payload);
-        toast.success('Cadastro atualizado com sucesso!');
-      } else {
-        await financeService.createParty(payload);
-        toast.success('Cadastro salvo com sucesso!');
-      }
-      setPartyForm({ name: '', document: '', notes: '' });
-      setEditingPartyId(null);
-      const pts = await financeService.getParties();
-      setParties(pts || []);
-    } catch (error) {
-      console.error(error);
-      toast.error('Erro ao salvar o cadastro.');
-    }
-  };
-
-  const handleEditParty = (party) => {
-    setPartyForm({
-      name: party.name,
-      document: maskDocumento(party.document || ''),
-      notes: party.notes || ''
-    });
-    setEditingPartyId(party.id);
-  };
-
-  const handleDeleteParty = async (id) => {
-    if (!(await askConfirm({ title: 'Remover cadastro', message: 'Deseja remover este pagador/fornecedor? Os lançamentos vinculados ficam sem vínculo.', confirmLabel: 'Remover' }))) return;
-    try {
-      await financeService.deleteParty(id);
-      toast.success('Cadastro removido com sucesso!');
-      setParties(parties.filter(p => p.id !== id));
-    } catch (error) {
-      console.error(error);
-      toast.error('Erro ao remover cadastro.');
-    }
-  };
-
   // --- DERIVADOS DE SERVIÇOS (busca + filtro de status + paginação) ---
   const filteredServices = useMemo(() => {
     const q = serviceSearch.trim().toLowerCase();
@@ -661,7 +607,7 @@ export default function FinanceSettings() {
 
   // Impressão do cadastro da aba ativa (estilo planilha).
   const TAB_TITLES = {
-    services: 'Serviços Ofertados', parties: 'Pagadores / Fornecedores',
+    services: 'Catálogo de Serviços', parties: 'Clientes e Fornecedores',
     categories: 'Plano de Contas (Categorias DRE)', costcenters: 'Centros de Custo', bankaccounts: 'Contas Bancárias',
   };
   const printActiveTab = () => {
@@ -717,13 +663,13 @@ export default function FinanceSettings() {
           onClick={() => setActiveTab('services')}
           className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'services' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
         >
-          Serviços Ofertados
+          Catálogo de Serviços
         </button>
         <button
           onClick={() => setActiveTab('parties')}
           className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'parties' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
         >
-          Pagadores / Fornecedores
+          Clientes e Fornecedores
         </button>
         <button
           onClick={() => setActiveTab('categories')}
@@ -952,128 +898,18 @@ export default function FinanceSettings() {
         </div>
       )}
 
-      {/* Tab Content: PARTIES (Pagadores / Fornecedores) */}
+      {/* Tab Content: PARTIES — o cadastro de empresas é único e mora em Clientes. */}
       {!loading && activeTab === 'parties' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-          {/* Formulário */}
-          <div className="lg:col-span-4 bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-4 shadow-sm">
-            <h3 className="text-[10px] font-semibold text-[#0071e3] uppercase tracking-widest mb-5 flex items-center gap-2">
-              <Plus size={16} /> {editingPartyId ? 'Editar Cadastro' : 'Novo Pagador / Fornecedor'}
-            </h3>
-
-            <form onSubmit={handleSaveParty} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome</label>
-                <input
-                  type="text"
-                  value={partyForm.name}
-                  onChange={e => setPartyForm({ ...partyForm, name: e.target.value })}
-                  className={baseInputStyle}
-                  placeholder="Ex: Empresa X, Fornecedor Y"
-                />
-                <p className="text-[10px] text-slate-400 font-medium mt-1 ml-1">Disponível tanto em contas a pagar quanto a receber.</p>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">CNPJ / CPF (Opcional)</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={partyForm.document}
-                  onChange={e => setPartyForm({ ...partyForm, document: maskDocumento(e.target.value) })}
-                  className={baseInputStyle}
-                  placeholder="00.000.000/0000-00"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Observações (Opcional)</label>
-                <textarea
-                  value={partyForm.notes}
-                  onChange={e => setPartyForm({ ...partyForm, notes: e.target.value })}
-                  className={`${baseInputStyle} h-20 resize-none py-1.5`}
-                  placeholder="Contato, condições de pagamento, etc."
-                />
-              </div>
-
-              <div className="pt-2">
-                <button type="submit" className="w-full h-10 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-bold text-xs uppercase shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all">
-                  <Save size={14} /> Salvar Cadastro
-                </button>
-                {editingPartyId && (
-                  <button
-                    type="button"
-                    onClick={() => { setEditingPartyId(null); setPartyForm({ name: '', document: '', notes: '' }); }}
-                    className="w-full h-8 text-xs font-bold text-slate-400 hover:text-slate-600 uppercase mt-2"
-                  >
-                    Cancelar Edição
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-
-          {/* Listagem */}
-          <div className="lg:col-span-8 bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-4 shadow-sm flex flex-col">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-                Cadastrados <span className="ml-1 text-slate-400">· {parties.length}</span>
-              </h3>
-              <div className="relative w-56 max-w-[55%]">
-                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={partySearch}
-                  onChange={e => setPartySearch(e.target.value)}
-                  placeholder="Buscar por nome ou documento..."
-                  className={`${baseInputStyle} h-8 pl-8 text-xs`}
-                />
-              </div>
-            </div>
-
-            <div className="max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar -mx-1">
-              {(() => {
-                const q = partySearch.trim().toLowerCase();
-                const list = parties.filter(p => !q || (p.name || '').toLowerCase().includes(q) || (p.document || '').toLowerCase().includes(q));
-                if (parties.length === 0) {
-                  return (
-                    <div className="flex flex-col items-center justify-center text-center py-12 gap-2">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-100 grid place-items-center text-slate-300"><Users size={22} /></div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Nenhum pagador/fornecedor</p>
-                      <p className="text-[11px] text-slate-400">Cadastre o primeiro no formulário ao lado.</p>
-                    </div>
-                  );
-                }
-                if (list.length === 0) {
-                  return <div className="text-center py-10 text-xs font-bold text-slate-400 uppercase">Nada encontrado para “{partySearch}”.</div>;
-                }
-                return list.map(p => (
-                  <div key={p.id} className="group flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                    <div className={`shrink-0 grid place-items-center h-9 w-9 rounded-xl text-[11px] font-semibold ${monoColor(p.name)}`}>
-                      {initialsOf(p.name)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-bold text-slate-800 text-sm truncate">{p.name}</h4>
-                      <p className="text-[11px] font-medium text-slate-400 truncate">
-                        {p.document ? <span className="tabular-nums">{maskDocumento(p.document)}</span> : <span className="italic text-slate-300">Sem documento</span>}
-                        {p.notes ? <span className="text-slate-400"> · {p.notes}</span> : null}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <button onClick={() => handleEditParty(p)} title="Editar"
-                        className="p-1.5 text-slate-400 hover:text-[#0071e3] hover:bg-indigo-50 rounded-lg transition-colors">
-                        <Edit2 size={14} />
-                      </button>
-                      <button onClick={() => handleDeleteParty(p.id)} title="Excluir"
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                ));
-              })()}
-            </div>
-          </div>
+        <div className="bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-8 shadow-sm text-center max-w-xl mx-auto">
+          <p className="text-sm font-bold text-slate-700">Clientes e fornecedores ficam num cadastro só</p>
+          <p className="text-xs font-semibold text-slate-500 mt-1.5">
+            O mesmo cadastro serve para o CRM (leads e clientes) e para o financeiro (quem paga e quem recebe).
+            No lançamento você ainda pode cadastrar na hora, pelo campo Origem/Destino.
+          </p>
+          <Link to="/clientes"
+            className="inline-flex mt-4 h-9 px-4 items-center bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg font-bold text-[11px] uppercase">
+            Abrir Clientes
+          </Link>
         </div>
       )}
 

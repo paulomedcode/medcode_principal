@@ -324,3 +324,39 @@ export async function criarPaginaDeEntregas(projeto, { userId = null } = {}) {
     await supabase.from('projetos').update({ workspace_page_id: db.id }).eq('id', projeto.id);
     return db;
 }
+
+/**
+ * Progresso das entregas: tarefas com Status "Concluído" ÷ total, por quadro.
+ * Devolve { [workspacePageId]: { feitas, total } }.
+ */
+export async function progressoDasEntregas(pageIds = []) {
+    const ids = pageIds.filter(Boolean);
+    if (!ids.length) return {};
+    const [{ data: props, error: e1 }, { data: linhas, error: e2 }] = await Promise.all([
+        supabase.from('workspace_db_properties').select('id, database_id, options').in('database_id', ids).eq('name', 'Status'),
+        supabase.from('workspace_pages').select('id, parent_id').in('parent_id', ids).is('deleted_at', null),
+    ]);
+    if (e1) throw e1;
+    if (e2) throw e2;
+    const out = Object.fromEntries(ids.map((id) => [id, { feitas: 0, total: 0 }]));
+    (linhas || []).forEach((l) => { out[l.parent_id].total += 1; });
+    const statusProps = props || [];
+    if (!statusProps.length || !(linhas || []).length) return out;
+    const { data: valores, error: e3 } = await supabase.from('workspace_db_values')
+        .select('row_id, property_id, value').in('property_id', statusProps.map((p) => p.id));
+    if (e3) throw e3;
+    const concluida = new Map(statusProps.map((p) => [p.id, (p.options || []).find((o) => /conclu/i.test(o.name))?.id]));
+    const pai = new Map((linhas || []).map((l) => [l.id, l.parent_id]));
+    (valores || []).forEach((v) => {
+        const db = pai.get(v.row_id);
+        if (db && v.value && v.value === concluida.get(v.property_id)) out[db].feitas += 1;
+    });
+    return out;
+}
+
+/** Últimas atividades registradas (feed da tela inicial). */
+export async function atividadesRecentes(limite = 8) {
+    return ok(await supabase.from('crm_atividades')
+        .select('id, tipo, titulo, data, party_id, oportunidade_id, projeto_id, autor:users!crm_atividades_autor_id_fkey(name), empresa:finance_parties(name)')
+        .order('data', { ascending: false }).limit(limite));
+}
