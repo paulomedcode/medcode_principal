@@ -15,7 +15,9 @@ export default function CurrencyInput({ value, onChange, className = '', placeho
       {...rest}
       type="text"
       inputMode="numeric"
-      value={fmtBRL(value)}
+      // Zero aparece vazio (só o placeholder): com "0,00" escrito, o clique
+      // punha o cursor no meio dos zeros e a digitação saía multiplicada.
+      value={Number(value) ? fmtBRL(value) : ''}
       onChange={handle}
       placeholder={placeholder}
       className={className}

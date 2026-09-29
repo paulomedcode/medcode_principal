@@ -19,6 +19,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
   const [categories, setCategories] = useState([]);
   const [parties, setParties] = useState([]);
   const [costCenters, setCostCenters] = useState([]);
+  const [projetos, setProjetos] = useState([]);
   const [saving, setSaving] = useState(false);
   const DEFAULT_CC_ID = '30000000-0000-0000-0000-000000000001';
 
@@ -94,6 +95,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
     status: 'PENDENTE',
     payment_method: 'PIX',
     cost_center_id: '',
+    projeto_id: '',
     doc_number: '',
     reference_month: ''
   });
@@ -107,17 +109,19 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
   const loadDependencies = async () => {
     try {
       setLoading(true);
-      const [accs, cats, pts, ccs] = await Promise.all([
+      const [accs, cats, pts, ccs, { data: projs }] = await Promise.all([
         financeService.getAccounts(),
         financeService.getCategories(),
         financeService.getParties(),
-        financeService.getCostCenters()
+        financeService.getCostCenters(),
+        supabase.from('projetos').select('id, nome, party_id, status').order('nome')
       ]);
 
       setAccounts(accs || []);
       setCategories(cats || []);
       setParties(pts || []);
       setCostCenters(ccs || []);
+      setProjetos(projs || []);
 
       if (transactionId) {
         // Modo Edição: carrega a transação existente
@@ -159,7 +163,8 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             amount: parseFloat(tx.amount),
             description: tx.description,
             payment_method: tx.payment_method || 'PIX',
-            cost_center_id: tx.cost_center_id || DEFAULT_CC_ID
+            cost_center_id: tx.cost_center_id || DEFAULT_CC_ID,
+            projeto_id: tx.projeto_id || null
           });
           setFormData({
             account_id: tx.account_id,
@@ -173,6 +178,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             status: tx.status,
             payment_method: tx.payment_method || 'PIX',
             cost_center_id: tx.cost_center_id || DEFAULT_CC_ID,
+            projeto_id: tx.projeto_id || '',
             doc_number: tx.doc_number || '',
             reference_month: tx.reference_month || ''
           });
@@ -215,6 +221,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
           status: 'PENDENTE',
           payment_method: 'PIX',
           cost_center_id: '', // obrigatório, mas nasce em branco — o usuário escolhe
+          projeto_id: '',
           doc_number: '',
           reference_month: prevMonthISO() // padrão: competência do mês que fechou
         });
@@ -293,6 +300,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
     status: formData.status,
     payment_method: formData.payment_method,
     cost_center_id: formData.cost_center_id || DEFAULT_CC_ID,
+    projeto_id: formData.projeto_id || null,
     doc_number: formData.doc_number || null,
     reference_month: formData.reference_month || null,
     attachments
@@ -444,7 +452,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
         if (txRecurrenceId) {
           // Propaga para a série SÓ os campos que realmente mudaram (não sobrescreve
           // categoria/valor das demais com algo que o usuário não tocou).
-          const propagable = ['account_id', 'category_id', 'party_id', 'type', 'amount', 'description', 'payment_method', 'cost_center_id'];
+          const propagable = ['account_id', 'category_id', 'party_id', 'type', 'amount', 'description', 'payment_method', 'cost_center_id', 'projeto_id'];
           const changed = {};
           for (const k of propagable) {
             if (!origValues || payload[k] !== origValues[k]) changed[k] = payload[k];
@@ -875,6 +883,20 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                 value={formData.cost_center_id}
                 onChange={v => setFormData({ ...formData, cost_center_id: v })}
                 placeholder="Selecione o centro de custo…"
+                searchPlaceholder="Digite para buscar…"
+              />
+            </div>
+
+            {/* Projeto (opcional): receita ou custo do projeto — alimenta a margem dele. */}
+            <div>
+              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Projeto (Opcional)</label>
+              <SearchableSelect
+                options={projetos
+                  .filter(p => !['CONCLUIDO', 'CANCELADO'].includes(p.status) || p.id === formData.projeto_id)
+                  .map(p => ({ value: p.id, label: p.nome }))}
+                value={formData.projeto_id}
+                onChange={v => setFormData({ ...formData, projeto_id: v })}
+                allowEmpty emptyLabel="Sem projeto"
                 searchPlaceholder="Digite para buscar…"
               />
             </div>

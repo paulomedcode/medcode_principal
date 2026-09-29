@@ -16,13 +16,14 @@ import React, { useState } from 'react';
 import {
     Building2, CalendarRange, Activity, DollarSign, CalendarClock,
     LayoutDashboard, Settings, ClipboardList, ShieldCheck, ShieldAlert,
-    Check, Lock, ChevronLeft, Sparkles
+    Check, Lock, ChevronLeft, Sparkles, Target, FolderKanban, Users
 } from 'lucide-react';
 import { chaveDeAcessoDe } from '../../utils/permissoes';
 
 const ICONS = {
     Building2, CalendarRange, Activity, DollarSign, CalendarClock,
-    LayoutDashboard, Settings, ClipboardList, ShieldCheck, ShieldAlert
+    LayoutDashboard, Settings, ClipboardList, ShieldCheck, ShieldAlert,
+    Target, FolderKanban, Users
 };
 
 // Interruptor. Não é <input type="checkbox"> estilizado: é um botão com

@@ -77,6 +77,7 @@ function _occurrenceRow(rule, dateStr) {
     account_id: rule.account_id,
     category_id: rule.category_id,
     party_id: rule.party_id,
+    projeto_id: rule.projeto_id || null,
     type: rule.type,
     amount: rule.amount,
     description: rule.description,
@@ -398,7 +399,8 @@ export const financeService = {
         finance_accounts (name, bank_name),
         finance_categories (name, color, icon),
         finance_parties (name, kind),
-        finance_cost_centers (name, color)
+        finance_cost_centers (name, color),
+        projetos (nome)
       `)
       .order('transaction_date', { ascending: false })
       .order('id', { ascending: true });
@@ -793,6 +795,7 @@ export const financeService = {
         account_id: rule.account_id,
         category_id: rule.category_id || null,
         party_id: rule.party_id || null,
+        projeto_id: rule.projeto_id || null,
         amount: rule.amount,
         description: rule.description,
         payment_method: rule.payment_method || null,
@@ -881,7 +884,8 @@ export const financeService = {
       type: payload.type,
       amount: payload.amount,
       description: payload.description,
-      payment_method: payload.payment_method
+      payment_method: payload.payment_method,
+      projeto_id: payload.projeto_id
     };
     await this.updateTransaction(transaction.id, payload);
 
@@ -1326,6 +1330,7 @@ export const financeService = {
       .select('*, finance_parties(name)')
       .order('created_at', { ascending: false });
     if (filters.status) query = query.eq('status', filters.status);
+    if (filters.oportunidadeId) query = query.eq('oportunidade_id', filters.oportunidadeId);
     const { data, error } = await query;
     if (error) throw error;
     return data;

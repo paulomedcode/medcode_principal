@@ -16,6 +16,11 @@ import UserManagement from './pages/UserManagement';
 import ConfiguracoesHub from './pages/ConfiguracoesHub';
 import Login from './pages/Login';
 import RedefinirSenha, { DesvioDeRecuperacao } from './pages/RedefinirSenha';
+import Clientes from './pages/crm/Clientes';
+import ClienteDetalhe from './pages/crm/ClienteDetalhe';
+import Funil from './pages/vendas/Funil';
+import Projetos from './pages/projetos/Projetos';
+import ProjetoDetalhe from './pages/projetos/ProjetoDetalhe';
 // Workspace (Compromisso/Notion) carrega o editor BlockNote, que é pesado:
 // lazy-load mantém o bundle das outras telas leve.
 const Workspace = lazy(() => import('./pages/Workspace'));
@@ -130,6 +135,43 @@ const App = () => {
                         <Suspense fallback={<div className="h-[calc(100vh-64px)] flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" size={36} /></div>}>
                           <Workspace />
                         </Suspense>
+                      </PermissionRoute>
+                    } />
+
+                    {/* --- CRM, VENDAS E PROJETOS --- */}
+                    <Route path="/clientes" element={
+                      <PermissionRoute requiredPermission="Acessar Clientes">
+                        <Clientes />
+                      </PermissionRoute>
+                    } />
+
+                    <Route path="/clientes/:id" element={
+                      <PermissionRoute requiredPermission="Acessar Clientes">
+                        <ClienteDetalhe />
+                      </PermissionRoute>
+                    } />
+
+                    <Route path="/vendas" element={
+                      <PermissionRoute requiredPermission="Acessar Vendas">
+                        <Funil />
+                      </PermissionRoute>
+                    } />
+
+                    <Route path="/vendas/propostas" element={
+                      <PermissionRoute requiredPermission="Acessar Vendas">
+                        <Quotes />
+                      </PermissionRoute>
+                    } />
+
+                    <Route path="/projetos" element={
+                      <PermissionRoute requiredPermission="Acessar Projetos">
+                        <Projetos />
+                      </PermissionRoute>
+                    } />
+
+                    <Route path="/projetos/:id" element={
+                      <PermissionRoute requiredPermission="Acessar Projetos">
+                        <ProjetoDetalhe />
                       </PermissionRoute>
                     } />
 

@@ -24,7 +24,8 @@ const inputCls = "w-full h-9 px-3 bg-white border border-black/[.085] rounded-lg
 
 export default function Quotes() {
   const { hasPermission } = usePermission();
-  const canEdit = hasPermission('Editar Financeiro'); // sem ela: modo somente-leitura
+  const canEdit = hasPermission('Editar Financeiro') || hasPermission('Editar Vendas'); // sem ela: modo somente-leitura
+  const canApprove = hasPermission('Editar Financeiro'); // aprovar gera conta a receber
   const [loading, setLoading] = useState(false);
   const [quotes, setQuotes] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
@@ -48,13 +49,13 @@ export default function Quotes() {
       const [qs, svc, pts, accs, cats] = await Promise.all([
         financeService.getQuotes(),
         financeService.getServices(),
-        financeService.getParties('CLIENTE'),
+        financeService.getParties(),
         financeService.getAccounts(),
         financeService.getCategories()
       ]);
       setQuotes(qs || []);
       setServices(svc || []);
-      setParties(pts || []);
+      setParties((pts || []).filter(p => p.kind !== 'FORNECEDOR'));
       setAccounts(accs || []);
       setCategories(cats || []);
     } catch (e) {
@@ -151,8 +152,8 @@ export default function Quotes() {
                           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             {pend && (
                               <>
-                                <button onClick={() => setApproveTarget(q)} title="Aprovar (gera conta a receber)"
-                                  className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><CheckCircle2 size={15} /></button>
+                                {canApprove && <button onClick={() => setApproveTarget(q)} title="Aprovar (gera conta a receber)"
+                                  className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><CheckCircle2 size={15} /></button>}
                                 <button onClick={() => recusar(q)} title="Recusar"
                                   className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><XCircle size={15} /></button>
                               </>
@@ -197,11 +198,11 @@ export default function Quotes() {
 }
 
 // ---- Modal de criação/edição de orçamento (com itens) ----
-function QuoteModal({ quote, services, parties, onClose, onSaved }) {
+export function QuoteModal({ quote, services, parties, onClose, onSaved, oportunidade = null }) {
   const isEdit = !!quote;
   const [saving, setSaving] = useState(false);
-  const [partyId, setPartyId] = useState(quote?.party_id || '');
-  const [title, setTitle] = useState(quote?.title || '');
+  const [partyId, setPartyId] = useState(quote?.party_id || oportunidade?.party_id || '');
+  const [title, setTitle] = useState(quote?.title || oportunidade?.titulo || '');
   const [validUntil, setValidUntil] = useState(quote?.valid_until || addDays(15));
   const [notes, setNotes] = useState(quote?.notes || '');
   const [items, setItems] = useState(
@@ -236,7 +237,8 @@ function QuoteModal({ quote, services, parties, onClose, onSaved }) {
         unit_price: parseFloat(it.unit_price) || 0,
         amount: (parseFloat(it.quantity) || 1) * (parseFloat(it.unit_price) || 0)
       }));
-      const header = { party_id: partyId, title: title.trim() || null, valid_until: validUntil || null, total_amount: total, notes: notes.trim() || null };
+      const header = { party_id: partyId, title: title.trim() || null, valid_until: validUntil || null, total_amount: total, notes: notes.trim() || null,
+        ...(oportunidade ? { oportunidade_id: oportunidade.id } : {}) };
       if (isEdit) await financeService.updateQuote(quote.id, header, payloadItems);
       else await financeService.createQuote({ ...header, status: 'PENDENTE' }, payloadItems);
       toast.success(isEdit ? 'Orçamento atualizado!' : 'Orçamento criado!');
@@ -269,7 +271,7 @@ function QuoteModal({ quote, services, parties, onClose, onSaved }) {
             </div>
             <div className="md:col-span-3">
               <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Descrição / Título</label>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={inputCls} placeholder="Ex: Pacote de exames - Fulano" />
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={inputCls} placeholder="Ex: Landing page de captação" />
             </div>
           </div>
 

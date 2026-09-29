@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { DollarSign, Settings as SettingsIcon, ClipboardList } from 'lucide-react';
+import { DollarSign, Settings as SettingsIcon, ClipboardList, Building2, Target, FolderKanban } from 'lucide-react';
 import HomeLayout from '../components/home/HomeLayout';
 import { usePermission } from '../contexts/PermissionContext';
 import { HOME_BLOCK_PERMISSION } from '../config/permissions';
@@ -35,6 +35,9 @@ const HomeHub = () => {
 
     // Um bloco por módulo do catálogo de permissões (HOME_BLOCK_PERMISSION).
     const modules = [
+        { id: 'clientes', title: 'Clientes', icon: Building2, path: '/clientes', gradient: 'from-sky-400 to-blue-500 shadow-sky-500/30' },
+        { id: 'vendas', title: 'Vendas', icon: Target, path: '/vendas', gradient: 'from-emerald-400 to-teal-500 shadow-emerald-500/30' },
+        { id: 'projetos', title: 'Projetos', icon: FolderKanban, path: '/projetos', gradient: 'from-amber-400 to-orange-500 shadow-amber-500/30' },
         { id: 'financeiro', title: 'Financeiro', icon: DollarSign, path: '/finance/dashboard', gradient: 'from-violet-400 to-fuchsia-500 shadow-violet-500/30' },
         { id: 'compromissos', title: 'Compromissos', icon: ClipboardList, path: '/compromissos', gradient: 'from-fuchsia-400 to-pink-500 shadow-fuchsia-500/30' },
         { id: 'configuracoes', title: 'Configurações', icon: SettingsIcon, path: '/configuracoes', gradient: 'from-slate-400 to-slate-500 shadow-slate-500/30' },
