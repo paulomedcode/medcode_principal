@@ -10,14 +10,13 @@ import { PAYMENT_METHODS, paymentMethodLabel } from './paymentMethods';
 import CurrencyInput from './CurrencyInput';
 import SearchableSelect from './SearchableSelect';
 import PartyModal from './PartyModal';
-import { isDoctorCategory, counterpartyLabel } from '../../utils/financeCounterparty';
+import { counterpartyLabel } from '../../utils/financeCounterparty';
 import { WITHHOLD_DEFAULT_PCT, WITHHOLD_AME_PCT, isAmeParty } from '../../utils/financeTaxes';
 
 export default function TransactionModal({ isOpen, onClose, onSave, transactionId = null, presetType = null }) {
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [doctors, setDoctors] = useState([]);
   const [parties, setParties] = useState([]);
   const [costCenters, setCostCenters] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -94,7 +93,6 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
     description: '',
     status: 'PENDENTE',
     payment_method: 'PIX',
-    doctor_id: '',
     cost_center_id: '',
     doc_number: '',
     reference_month: ''
@@ -109,19 +107,17 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
   const loadDependencies = async () => {
     try {
       setLoading(true);
-      const [accs, cats, pts, ccs, { data: users }] = await Promise.all([
+      const [accs, cats, pts, ccs] = await Promise.all([
         financeService.getAccounts(),
         financeService.getCategories(),
         financeService.getParties(),
-        financeService.getCostCenters(),
-        supabase.from('users').select('id, name, role').order('name')
+        financeService.getCostCenters()
       ]);
 
       setAccounts(accs || []);
       setCategories(cats || []);
       setParties(pts || []);
       setCostCenters(ccs || []);
-      setDoctors(users?.filter(u => ['Médico', 'Médico Coordenador', 'Administrador'].includes(u.role)) || []);
 
       if (transactionId) {
         // Modo Edição: carrega a transação existente
@@ -163,7 +159,6 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             amount: parseFloat(tx.amount),
             description: tx.description,
             payment_method: tx.payment_method || 'PIX',
-            doctor_id: tx.doctor_id || null,
             cost_center_id: tx.cost_center_id || DEFAULT_CC_ID
           });
           setFormData({
@@ -177,7 +172,6 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             description: tx.description,
             status: tx.status,
             payment_method: tx.payment_method || 'PIX',
-            doctor_id: tx.doctor_id || '',
             cost_center_id: tx.cost_center_id || DEFAULT_CC_ID,
             doc_number: tx.doc_number || '',
             reference_month: tx.reference_month || ''
@@ -220,7 +214,6 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
           description: '',
           status: 'PENDENTE',
           payment_method: 'PIX',
-          doctor_id: '',
           cost_center_id: '', // obrigatório, mas nasce em branco — o usuário escolhe
           doc_number: '',
           reference_month: prevMonthISO() // padrão: competência do mês que fechou
@@ -234,11 +227,6 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
     }
   };
 
-  // Categoria selecionada e regra de contraparte (Origem/Destino):
-  // categorias de médico (Repasse Médico / Coordenação) usam doctor_id;
-  // as demais usam party_id (fornecedor/pagador). No rateio, cai para party.
-  const selectedCategoryName = categories.find(c => c.id === formData.category_id)?.name;
-  const useDoctorParty = !splitOn && isDoctorCategory(selectedCategoryName);
 
   // Opções de categoria em árvore ordenada (pai → filhos, indentado), como no
   // seletor de Centro de Custo. Órfãos (pai de outro tipo/inexistente) vão ao final.
@@ -290,7 +278,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
     account_id: formData.account_id,
     category_id: formData.category_id || null,
     // Grava só a contraparte que se aplica à categoria; zera a outra p/ evitar dado órfão.
-    party_id: useDoctorParty ? null : (formData.party_id || null),
+    party_id: formData.party_id || null,
     type: formData.type,
     // Com retenção: amount = LÍQUIDO (o que cai na conta); bruto/retenção nas colunas próprias.
     amount: wh ? wh.liquido : parseFloat(formData.amount),
@@ -304,7 +292,6 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
     description: formData.description,
     status: formData.status,
     payment_method: formData.payment_method,
-    doctor_id: useDoctorParty ? (formData.doctor_id || null) : null,
     cost_center_id: formData.cost_center_id || DEFAULT_CC_ID,
     doc_number: formData.doc_number || null,
     reference_month: formData.reference_month || null,
@@ -457,7 +444,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
         if (txRecurrenceId) {
           // Propaga para a série SÓ os campos que realmente mudaram (não sobrescreve
           // categoria/valor das demais com algo que o usuário não tocou).
-          const propagable = ['account_id', 'category_id', 'party_id', 'type', 'amount', 'description', 'payment_method', 'doctor_id', 'cost_center_id'];
+          const propagable = ['account_id', 'category_id', 'party_id', 'type', 'amount', 'description', 'payment_method', 'cost_center_id'];
           const changed = {};
           for (const k of propagable) {
             if (!origValues || payload[k] !== origValues[k]) changed[k] = payload[k];
@@ -764,35 +751,23 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
               )}
             </div>
 
-            {/* Origem / Destino (contraparte unificada) — puxa de médicos nas categorias
-                Repasse Médico/Coordenação e de fornecedores/pagadores nas demais. */}
+            {/* Origem / Destino: cliente (entrada) ou fornecedor (saída). */}
             <div>
               <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block flex items-center gap-1.5">
                 {counterpartyLabel(formData.type)} <span className="text-slate-300 font-medium normal-case">(Origem/Destino)</span>
-                {useDoctorParty && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-500 border border-indigo-100 normal-case">Médico</span>}
               </label>
-              {useDoctorParty ? (
-                <SearchableSelect
-                  options={doctors.map(d => ({ value: d.id, label: d.name }))}
-                  value={formData.doctor_id}
-                  onChange={v => setFormData({ ...formData, doctor_id: v, party_id: '' })}
-                  allowEmpty emptyLabel="Selecione o médico…"
-                  searchPlaceholder="Digite para buscar…"
-                />
-              ) : (
-                <SearchableSelect
-                  options={parties
-                    .filter(p => formData.type === 'ENTRADA'
-                      ? ['CLIENTE', 'AMBOS'].includes(p.kind)
-                      : ['FORNECEDOR', 'AMBOS'].includes(p.kind))
-                    .map(p => ({ value: p.id, label: p.name }))}
-                  value={formData.party_id}
-                  onChange={v => setFormData({ ...formData, party_id: v, doctor_id: '' })}
-                  allowEmpty emptyLabel="Não vinculado"
-                  searchPlaceholder="Digite para buscar…"
-                  onCreate={handleCreateParty} createLabel="Cadastrar"
-                />
-              )}
+              <SearchableSelect
+                options={parties
+                  .filter(p => formData.type === 'ENTRADA'
+                    ? ['CLIENTE', 'AMBOS'].includes(p.kind)
+                    : ['FORNECEDOR', 'AMBOS'].includes(p.kind))
+                  .map(p => ({ value: p.id, label: p.name }))}
+                value={formData.party_id}
+                onChange={v => setFormData({ ...formData, party_id: v })}
+                allowEmpty emptyLabel="Não vinculado"
+                searchPlaceholder="Digite para buscar…"
+                onCreate={handleCreateParty} createLabel="Cadastrar"
+              />
             </div>
 
             {/* Data do Lançamento */}
@@ -925,7 +900,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                 className={baseInputStyle}
-                placeholder="Ex: Mensalidade de software, Honorário cirurgia tal..."
+                placeholder="Ex: Landing page Cliente X — parcela 1/3"
               />
             </div>
 

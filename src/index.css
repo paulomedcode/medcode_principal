@@ -51,7 +51,7 @@
    Toque: nenhuma ação fica escondida atrás do hover.
 
    Em iPad e celular não existe "passar o mouse por cima". Botões escritos como
-   `opacity-0 group-hover:opacity-100` — usados em listas de pacientes, AIH,
+   `opacity-0 group-hover:opacity-100` — usados em listas,
    quadros e configurações — simplesmente nunca apareciam nesses aparelhos, e o
    usuário concluía que o botão não existe.
 

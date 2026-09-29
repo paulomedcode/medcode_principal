@@ -62,13 +62,11 @@ export function podeAcessar({ cargo, matriz = {}, extras = {}, permissao }) {
     const doCargo = matriz[papel] || matriz[cargo] || {};
 
     /*
-     * Módulo PESSOAL (hoje: Meus Repasses) não é aberto por coringa nenhum.
+     * Módulo PESSOAL (marcado com `pessoal: true` no catálogo) não é aberto por coringa nenhum.
      *
      * 'Acesso Total (Admin)' e o passe do Desenvolvedor existem para administrar
-     * o sistema — e a tela pessoal de alguém não é uma área administrativa: para
-     * quem não assina folha ela seria uma casca vazia, ocupando um bloco na tela
-     * inicial de todo mundo. Aqui vale só a concessão explícita, do cargo ou dos
-     * extras.
+     * o sistema — e a tela pessoal de alguém não é uma área administrativa.
+     * Aqui vale só a concessão explícita, do cargo ou dos extras.
      */
     if (ehPermissaoPessoal(permissao)) {
         return !!{ ...doCargo, ...(extras || {}) }[permissao];

@@ -24,7 +24,6 @@ const DIMENSIONS = {
   categoria:   { label: 'Categoria',        keyOf: t => t.finance_categories?.name || 'Sem categoria' },
   costCenter:  { label: 'Centro de Custo',  keyOf: t => t.finance_cost_centers?.name || 'Sem centro de custo' },
   contraparte: { label: 'Origem/Destino',   keyOf: t => counterpartyName(t) || 'Sem contraparte' },
-  medico:      { label: 'Médico',           keyOf: t => t.users?.name || 'Sem médico' },
   conta:       { label: 'Conta',            keyOf: t => t.finance_accounts?.name || 'Sem conta' },
   metodo:      { label: 'Método',           keyOf: t => paymentMethodLabel(t.payment_method) || 'Sem método' },
   status:      { label: 'Status',           keyOf: t => (t.status === 'PAGO' ? 'Pago/Realizado' : 'Pendente') },
@@ -43,7 +42,7 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
   const [dim, setDim] = useState('categoria');
   const [view, setView] = useState('resumo'); // 'resumo' | 'detalhe'
   const [selectedIds, setSelectedIds] = useState(() => new Set()); // seleção múltipla no detalhado
-  const [f, setF] = useState({ tipo: '', status: '', conta: '', categoria: '', cc: '', metodo: '', medico: '', contraparte: '', busca: '', min: '', max: '', transfers: false });
+  const [f, setF] = useState({ tipo: '', status: '', conta: '', categoria: '', cc: '', metodo: '', contraparte: '', busca: '', min: '', max: '', transfers: false });
   const setFilter = (k, v) => setF(prev => ({ ...prev, [k]: v }));
 
   // Opções dos selects derivadas dos próprios lançamentos do período (zero queries extras).
@@ -54,7 +53,6 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
       categorias: u(t => t.finance_categories?.name),
       ccs: u(t => t.finance_cost_centers?.name),
       metodos: u(t => paymentMethodLabel(t.payment_method)),
-      medicos: u(t => t.users?.name),
       contrapartes: u(t => counterpartyName(t)),
     };
   }, [transactions]);
@@ -74,7 +72,6 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
       if (f.categoria && (t.finance_categories?.name || '') !== f.categoria) return false;
       if (f.cc && (t.finance_cost_centers?.name || '') !== f.cc) return false;
       if (f.metodo && paymentMethodLabel(t.payment_method) !== f.metodo) return false;
-      if (f.medico && (t.users?.name || '') !== f.medico) return false;
       if (f.contraparte && counterpartyName(t) !== f.contraparte) return false;
       const v = Math.abs(Number(t.amount) || 0);
       if (!Number.isNaN(min) && v < min) return false;
@@ -155,7 +152,6 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
     if (f.categoria) parts.push(`Cat: ${f.categoria}`);
     if (f.cc) parts.push(`CC: ${f.cc}`);
     if (f.metodo) parts.push(`Método: ${f.metodo}`);
-    if (f.medico) parts.push(`Médico: ${f.medico}`);
     if (f.contraparte) parts.push(`Contraparte: ${f.contraparte}`);
     if (f.min || f.max) parts.push(`Valor ${f.min || '0'}–${f.max || '∞'}`);
     if (f.busca) parts.push(`Busca: "${f.busca}"`);
@@ -255,7 +251,6 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
         {sel(f.categoria, v => setFilter('categoria', v), 'Todas as Categorias', opts.categorias)}
         {sel(f.cc, v => setFilter('cc', v), 'Todos os C. Custo', opts.ccs)}
         {sel(f.metodo, v => setFilter('metodo', v), 'Todos os Métodos', opts.metodos)}
-        {sel(f.medico, v => setFilter('medico', v), 'Todos os Médicos', opts.medicos)}
         {sel(f.contraparte, v => setFilter('contraparte', v), 'Todas Origens/Destinos', opts.contrapartes)}
         <input type="text" placeholder="R$ mín" value={f.min} onChange={e => setFilter('min', e.target.value)} className={`${inputCls} w-[70px]`} />
         <input type="text" placeholder="R$ máx" value={f.max} onChange={e => setFilter('max', e.target.value)} className={`${inputCls} w-[70px]`} />
@@ -264,7 +259,7 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
           <input type="checkbox" checked={f.transfers} onChange={e => setFilter('transfers', e.target.checked)} className="accent-indigo-600" /> Incluir transferências
         </label>
         {(activeFiltersText || f.busca) && (
-          <button onClick={() => setF({ tipo: '', status: '', conta: '', categoria: '', cc: '', metodo: '', medico: '', contraparte: '', busca: '', min: '', max: '', transfers: false })}
+          <button onClick={() => setF({ tipo: '', status: '', conta: '', categoria: '', cc: '', metodo: '', contraparte: '', busca: '', min: '', max: '', transfers: false })}
             className="h-8 px-2.5 rounded-lg text-[10px] font-semibold uppercase text-rose-500 hover:bg-rose-50 transition-colors">Limpar</button>
         )}
       </div>

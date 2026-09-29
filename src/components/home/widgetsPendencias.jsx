@@ -1,38 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { FileSignature, CalendarClock, Building, ShieldCheck, Loader2, ClipboardList, AlertTriangle, Check } from 'lucide-react';
-import { fetchPendingSignatures } from '../../utils/folhaAssinaturas';
+import { ShieldCheck, Loader2, ClipboardList, AlertTriangle, Check } from 'lucide-react';
 import { tarefasAtribuidas } from '../../services/notificacoes';
 import { concluirLembrete } from '../../services/concluirLembrete';
-import SignFolhaModal from './SignFolhaModal.jsx';
 import { CARD_SHELL, CardHeader } from './cardUI.jsx';
 
 /*
- * PENDÊNCIAS — card único da tela inicial (médico e administrativo).
+ * PENDÊNCIAS — card da tela inicial.
  *
- * Junta num lugar só tudo que está esperando uma ação da pessoa logada:
- *   • folha de ponto enviada pelo RH aguardando assinatura eletrônica;
- *   • compromisso do módulo Compromisso atribuído a ela E com data marcada
- *     (é a data que transforma a tarefa em lembrete: "quinta que vem").
- *
- * Antes a assinatura vivia num widget próprio, colocado à mão num slot da
- * home; quem tivesse outro layout simplesmente nunca via a folha. Aqui a
- * pendência é do usuário, não do layout: as duas telas iniciais mostram este
- * card, então não existe mais combinação de configuração que a esconda.
+ * Junta o que está esperando uma ação da pessoa logada: compromisso do
+ * módulo Compromisso atribuído a ela E com data marcada (é a data que
+ * transforma a tarefa em lembrete: "quinta que vem").
  */
 
 // Compromisso muito distante não é pendência, é agenda — encheria o card e
 // empurraria o que precisa de ação hoje para fora da vista.
 const HORIZONTE_DIAS = 30;
-
-const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-const formatMonthLabel = (monthVal) => {
-    if (!monthVal || !monthVal.includes('-')) return monthVal || '';
-    const [y, m] = monthVal.split('-');
-    return `${MESES[parseInt(m, 10) - 1] || m} de ${y}`;
-};
 
 const hojeZerado = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 
@@ -60,18 +44,14 @@ const dataCurta = (data, hora) => {
 // ---------------------------------------------------------------------------
 
 const LinhaPendencia = ({ item, onClick, onConcluir }) => {
-    const assinatura = item.tipo === 'assinatura';
     const atrasado = !!item.prazo?.atrasado;
-    const Icone = assinatura ? Building : ClipboardList;
 
     // Um tom por estado, aplicado de leve: o que pede ação fica quente, o resto
     // fica neutro. Sem borda grossa — a cor já separa a linha do fundo.
-    const fundo = assinatura ? 'bg-amber-400/[0.12] hover:bg-amber-400/20'
-        : atrasado ? 'bg-rose-400/[0.12] hover:bg-rose-400/20'
-            : 'bg-white/55 hover:bg-white/80';
-    const tomIcone = assinatura ? 'text-amber-600' : atrasado ? 'text-rose-500' : 'text-slate-400';
-    const tomTitulo = assinatura ? 'text-amber-900' : atrasado ? 'text-rose-900' : 'text-slate-800';
-    const tomApoio = assinatura ? 'text-amber-700/70' : atrasado ? 'text-rose-700/70' : 'text-slate-400';
+    const fundo = atrasado ? 'bg-rose-400/[0.12] hover:bg-rose-400/20' : 'bg-white/55 hover:bg-white/80';
+    const tomIcone = atrasado ? 'text-rose-500' : 'text-slate-400';
+    const tomTitulo = atrasado ? 'text-rose-900' : 'text-slate-800';
+    const tomApoio = atrasado ? 'text-rose-700/70' : 'text-slate-400';
 
     // Dois botões lado a lado, e não um dentro do outro: abrir a pendência e
     // dar baixa nela são ações diferentes, e botão dentro de botão não é HTML
@@ -86,7 +66,7 @@ const LinhaPendencia = ({ item, onClick, onConcluir }) => {
     return (
         <div className={`w-full rounded-2xl transition-colors flex items-start shrink-0 ${fundo}`}>
             <button onClick={onClick} className="min-w-0 flex-1 text-left px-2.5 py-2 flex items-start gap-2.5">
-                <Icone size={14} className={`shrink-0 mt-[2px] ${tomIcone}`} />
+                <ClipboardList size={14} className={`shrink-0 mt-[2px] ${tomIcone}`} />
                 <div className="min-w-0 flex-1">
                     <p className={`text-[12.5px] font-semibold leading-snug line-clamp-2 break-words ${tomTitulo}`} title={item.titulo}>{item.titulo}</p>
                     <p className={`text-[10.5px] font-medium leading-snug mt-0.5 truncate ${tomApoio}`}>{item.legenda}</p>
@@ -98,7 +78,6 @@ const LinhaPendencia = ({ item, onClick, onConcluir }) => {
                 )}
             </button>
 
-            {/* Só compromisso: folha de ponto não se "conclui", se assina. */}
             {onConcluir && (
                 <button
                     onClick={onConcluir}
@@ -117,7 +96,6 @@ export const PendenciasWidget = ({ currentUser }) => {
     const navigate = useNavigate();
     const [itens, setItens] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [folhaAberta, setFolhaAberta] = useState(null);
     // Lembrete esperando o "sim" da confirmação, e o que está sendo gravado.
     const [confirmar, setConfirmar] = useState(null);
     const [concluindo, setConcluindo] = useState(false);
@@ -126,23 +104,10 @@ export const PendenciasWidget = ({ currentUser }) => {
         let active = true;
         (async () => {
             if (!currentUser) return;
-            // As duas origens são independentes: uma falhando (banco sem as tabelas
-            // do Compromisso, por exemplo) não pode derrubar a outra.
-            const [folhas, tarefas] = await Promise.all([
-                fetchPendingSignatures(currentUser).catch((e) => { console.error('Erro ao buscar folhas pendentes', e); return []; }),
-                tarefasAtribuidas(currentUser.id).catch((e) => { console.error('Erro ao buscar compromissos', e); return []; }),
-            ]);
+            const tarefas = await tarefasAtribuidas(currentUser.id)
+                .catch((e) => { console.error('Erro ao buscar compromissos', e); return []; });
 
             const limite = new Date(hojeZerado().getTime() + HORIZONTE_DIAS * 86400000);
-
-            const deFolhas = folhas.map((f) => ({
-                id: `folha:${f.id}`,
-                tipo: 'assinatura',
-                titulo: `Assinar folha · ${f.hospital_name}`,
-                legenda: formatMonthLabel(f.month_val),
-                prazo: null,
-                registro: f,
-            }));
 
             const deTarefas = tarefas
                 .map((t) => ({ t, data: parseISO(t.dataISO) }))
@@ -158,21 +123,13 @@ export const PendenciasWidget = ({ currentUser }) => {
                     rowId: t.rowId,
                 }));
 
-            // Assinatura na frente: trava o repasse ao financeiro, então é a
-            // pendência que segura dinheiro.
-            if (active) { setItens([...deFolhas, ...deTarefas]); setLoading(false); }
+            if (active) { setItens(deTarefas); setLoading(false); }
         })();
         return () => { active = false; };
     }, [currentUser]);
 
     const abrir = (item) => {
-        if (item.tipo === 'assinatura') return setFolhaAberta(item.registro);
         navigate(item.rowId ? `/compromissos?abrir=${item.rowId}` : '/compromissos');
-    };
-
-    const aoAssinar = (id) => {
-        setFolhaAberta(null);
-        setItens((prev) => prev.filter((i) => i.id !== `folha:${id}`));
     };
 
     // Dar baixa sem sair da tela inicial: é aqui que a pessoa vê a pendência,
@@ -250,14 +207,6 @@ export const PendenciasWidget = ({ currentUser }) => {
                 </div>
             )}
 
-            {folhaAberta && (
-                <SignFolhaModal
-                    record={folhaAberta}
-                    currentUser={currentUser}
-                    onClose={() => setFolhaAberta(null)}
-                    onSigned={aoAssinar}
-                />
-            )}
         </>
     );
 };

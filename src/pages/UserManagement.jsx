@@ -10,7 +10,7 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermission } from '../contexts/PermissionContext';
-import { maskCPF, maskTelefone } from '../utils/masks';
+import { maskTelefone } from '../utils/masks';
 import { logAction } from '../utils/logger';
 import { ROLES, PERMISSION_MODULES, EXTRA_MODULES, ADMIN_KEY } from '../config/permissions';
 import PermissionBlocks from '../components/permissions/PermissionBlocks';
@@ -243,48 +243,6 @@ const PermissionsModal = ({ onClose }) => {
     );
 };
 
-// --- UNIDADES SELECTION HELPER ---
-const UnidadesSelection = ({ selected, onChange }) => {
-    const [availableUnits, setAvailableUnits] = useState([]);
-    useEffect(() => {
-        supabase.from('unidades').select('nome').then(({data}) => setAvailableUnits(data?.map(u=>u.nome) || []));
-    }, []);
-
-    const isAll = selected.includes('*');
-
-    const handleToggleAll = (checked) => {
-        onChange(checked ? ['*'] : []);
-    };
-
-    const handleToggleUnit = (unit, checked) => {
-        if (checked) {
-            onChange([...selected.filter(u => u !== '*'), unit]);
-        } else {
-            onChange(selected.filter(u => u !== unit && u !== '*'));
-        }
-    };
-
-    return (
-        <div className="mt-4 p-4 border border-white/60 bg-white/60 rounded-xl space-y-3">
-            <h4 className="text-[11px] font-black text-slate-500 uppercase">Acesso de Unidades</h4>
-            <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={isAll} onChange={e => handleToggleAll(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500"/>
-                <span className="text-xs font-bold text-slate-900 drop-shadow-none">Acesso Total (Ver todas as unidades)</span>
-            </label>
-            {!isAll && availableUnits.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-white/400">
-                    {availableUnits.map(unit => (
-                        <label key={unit} className="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" checked={selected.includes(unit)} onChange={e => handleToggleUnit(unit, e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500"/>
-                            <span className="text-xs font-semibold text-slate-700">{unit}</span>
-                        </label>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
-
 // --- USER CREATION MODAL ---
 const UserCreationModal = ({ onClose, onSave }) => {
     const { currentUser } = useAuth();
@@ -306,24 +264,17 @@ const UserCreationModal = ({ onClose, onSave }) => {
     const cargosOcultos = !podeGerenciarPermissoes && ROLES.some(r => r !== 'Desenvolvedor' && cargoAdministraAcesso(r));
     const [formData, setFormData] = useState({
         name: '', email: '', password: '', role: 'Visualizador',
-        crm: '', rqe: '', sexo: '', cpf: '', telefone: '', categoria_medica: 'Normal', especialidade: '',
-        unidades_permitidas: ['*'],
-        exibir_agenda_home: false, categoria_agenda_id: '', permissoes_extras: {}
+        sexo: '', telefone: '', categoria_agenda_id: '', permissoes_extras: {}
     });
     const [categoriasAgenda, setCategoriasAgenda] = useState([]);
-    const [especialidades, setEspecialidades] = useState([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         supabase.from('agenda_categorias').select('*').order('nome').then(({data}) => setCategoriasAgenda(data || []));
-        supabase.from('settings').select('data').eq('id', 'general').maybeSingle().then(({data}) => {
-            if (data?.data?.especialidades) setEspecialidades(data.data.especialidades);
-        });
     }, []);
 
     const handleCreate = async () => {
         if (!formData.name || !formData.email || !formData.password) return toast.error("Preencha todos os campos");
-        if ((formData.role === 'Médico' || formData.role === 'Médico Coordenador') && !formData.crm) return toast.error("CRM é obrigatório para médicos");
 
         setLoading(true);
 
@@ -370,17 +321,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                 status: 'Ativo',
                 createdAt: new Date().toISOString()
             };
-            // Telefone é base de todos; CRM/RQE/CPF/especialidade são só de médicos.
             userData.telefone = formData.telefone || '';
-            if (['Médico', 'Médico Coordenador'].includes(formData.role)) {
-                userData.crm = formData.crm || '';
-                userData.rqe = formData.rqe || '';
-                userData.cpf = formData.cpf || '';
-                userData.categoria_medica = formData.categoria_medica || 'Normal';
-                userData.especialidade = formData.especialidade || '';
-            }
-            userData.unidades_permitidas = formData.unidades_permitidas;
-            userData.exibir_agenda_home = formData.exibir_agenda_home;
             userData.categoria_agenda_id = formData.categoria_agenda_id || null;
             userData.permissoes_extras = formData.permissoes_extras || {};
 
@@ -497,88 +438,11 @@ const UserCreationModal = ({ onClose, onSave }) => {
                         />
                     </div>
 
-                    {['Médico', 'Médico Coordenador'].includes(formData.role) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Especialidade Principal</label>
-                                <select
-                                    value={formData.especialidade}
-                                    onChange={e => setFormData({ ...formData, especialidade: e.target.value })}
-                                    className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500 transition-colors uppercase"
-                                >
-                                    <option value="">Selecione...</option>
-                                    {especialidades.map(e => <option key={e} value={e}>{e}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Categoria Médica</label>
-                                <select
-                                    value={formData.categoria_medica}
-                                    onChange={e => setFormData({ ...formData, categoria_medica: e.target.value })}
-                                    className="w-full px-3 py-2.5 bg-indigo-500/20/10 border border-indigo-100 rounded-lg text-sm text-indigo-800 font-bold outline-none focus:border-indigo-500 transition-colors"
-                                >
-                                    <option value="Normal">Normal</option>
-                                    <option value="Top">Top</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {['Médico', 'Médico Coordenador'].includes(formData.role) && (
-                        <div className="space-y-4">
-                            <div className="flex gap-4">
-                                <div className="flex-1">
-                                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">CRM *</label>
-                                    <input
-                                        value={formData.crm}
-                                        onChange={e => setFormData({ ...formData, crm: e.target.value })}
-                                        className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500"
-                                        placeholder="Ex: 12345/SP"
-                                    />
-                                </div>
-                                <div className="flex-1">
-                                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">RQE (Opcional)</label>
-                                    <input
-                                        value={formData.rqe}
-                                        onChange={e => setFormData({ ...formData, rqe: e.target.value })}
-                                        className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500"
-                                        placeholder="Ex: 67890"
-                                    />
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">CPF *</label>
-                                <input
-                                    value={formData.cpf}
-                                    onChange={e => setFormData({ ...formData, cpf: maskCPF(e.target.value) })}
-                                    className="w-full px-3 py-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm text-slate-900 drop-shadow-none font-semibold outline-none focus:border-blue-500"
-                                    placeholder="Ex: 000.000.000-00"
-                                    maxLength="14"
-                                />
-                            </div>
-                        </div>
-                    )}
-                    
-                    <UnidadesSelection selected={formData.unidades_permitidas} onChange={(v) => setFormData({ ...formData, unidades_permitidas: v })} />
                     
                     {podeGerenciarPermissoes && (
                         <ExtraPermissionsSelection role={formData.role} value={formData.permissoes_extras} onChange={(v) => setFormData({ ...formData, permissoes_extras: v })} />
                     )}
 
-                    <div className="mt-4 p-4 border border-indigo-100 bg-indigo-50/50 rounded-xl space-y-2">
-                        <h4 className="text-[11px] font-black text-indigo-500 uppercase tracking-wide">Preferências de Tela Inicial</h4>
-                        <label className="flex items-center gap-3 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={formData.exibir_agenda_home}
-                                onChange={(e) => setFormData({ ...formData, exibir_agenda_home: e.target.checked })}
-                                className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
-                            />
-                            <span className="text-xs font-bold text-slate-800">
-                                Exibir Agenda de Compromissos (Substitui a frase motivacional)
-                            </span>
-                        </label>
-                    </div>
                 </div>
 
                 <div className="flex gap-3 mt-8">
@@ -607,45 +471,22 @@ const UserEditModal = ({ user, onClose, onSave }) => {
         name: user.name || '',
         role: user.role || 'Visualizador',
         status: user.status || 'Ativo',
-        crm: user.crm || '',
-        rqe: user.rqe || '',
         sexo: user.sexo || '',
-        cpf: user.cpf || '',
         telefone: user.telefone || '',
-        especialidade: user.especialidade || '',
-        categoria_medica: user.categoria_medica || 'Normal',
-        unidades_permitidas: user.unidades_permitidas || ['*'],
-        exibir_agenda_home: user.exibir_agenda_home || false,
         categoria_agenda_id: user.categoria_agenda_id || '',
         permissoes_extras: user.permissoes_extras || {}
     });
     const [categoriasAgenda, setCategoriasAgenda] = useState([]);
-    const [especialidades, setEspecialidades] = useState([]);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         supabase.from('agenda_categorias').select('*').order('nome').then(({data}) => setCategoriasAgenda(data || []));
-        supabase.from('settings').select('data').eq('id', 'general').maybeSingle().then(({data}) => {
-            if (data?.data?.especialidades) setEspecialidades(data.data.especialidades);
-        });
     }, []);
 
     const handleSave = async () => {
-        if (['Médico', 'Médico Coordenador'].includes(formData.role) && !formData.crm) {
-            return toast.error("CRM é obrigatório para médicos");
-        }
-
         setSaving(true);
         try {
             const dataToSave = { ...formData };
-            // CRM/RQE/CPF/especialidade são exclusivos de médicos; Telefone é base de todos.
-            if (!['Médico', 'Médico Coordenador'].includes(dataToSave.role)) {
-                dataToSave.crm = '';
-                dataToSave.rqe = '';
-                dataToSave.cpf = '';
-                dataToSave.categoria_medica = 'Normal';
-                dataToSave.especialidade = '';
-            }
             // Coluna uuid não aceita string vazia — converte '' para null
             dataToSave.categoria_agenda_id = dataToSave.categoria_agenda_id || null;
             const { error } = await supabase.from('users').update(dataToSave).eq('id', user.id);
@@ -761,96 +602,11 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                         />
                     </div>
 
-                    {['Médico', 'Médico Coordenador'].includes(formData.role) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
-                                    Especialidade Principal
-                                </label>
-                                <select
-                                    value={formData.especialidade}
-                                    onChange={(e) => setFormData({ ...formData, especialidade: e.target.value })}
-                                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all cursor-pointer uppercase"
-                                >
-                                    <option value="">Selecione...</option>
-                                    {especialidades.map(e => <option key={e} value={e}>{e}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
-                                    Categoria Médica
-                                </label>
-                                <select
-                                    value={formData.categoria_medica}
-                                    onChange={(e) => setFormData({ ...formData, categoria_medica: e.target.value })}
-                                    className="w-full px-4 py-3 bg-indigo-500/20/10 border border-indigo-100 rounded-xl text-sm text-indigo-800 font-bold outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all cursor-pointer"
-                                >
-                                    <option value="Normal">Normal</option>
-                                    <option value="Top">Top</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {['Médico', 'Médico Coordenador'].includes(formData.role) && (
-                        <div className="space-y-4">
-                            <div className="flex gap-4">
-                                <div className="flex-1">
-                                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">CRM *</label>
-                                    <input
-                                        type="text"
-                                        value={formData.crm}
-                                        onChange={(e) => setFormData({ ...formData, crm: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
-                                        placeholder="Ex: 12345/SP"
-                                    />
-                                </div>
-                                <div className="flex-1">
-                                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">RQE (Opcional)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.rqe}
-                                        onChange={(e) => setFormData({ ...formData, rqe: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 drop-shadow-none font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
-                                        placeholder="Ex: 67890"
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                                <div>
-                                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">CPF *</label>
-                                    <input
-                                        value={formData.cpf}
-                                        onChange={e => setFormData({ ...formData, cpf: maskCPF(e.target.value) })}
-                                        className="w-full px-4 py-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl text-sm text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
-                                        placeholder="Ex: 000.000.000-00"
-                                        maxLength="14"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <UnidadesSelection selected={formData.unidades_permitidas} onChange={(v) => setFormData({ ...formData, unidades_permitidas: v })} />
                     
                     {podeGerenciarPermissoes && (
                         <ExtraPermissionsSelection role={formData.role} value={formData.permissoes_extras} onChange={(v) => setFormData({ ...formData, permissoes_extras: v })} />
                     )}
 
-                    <div className="mt-4 p-4 border border-indigo-100 bg-indigo-50/50 rounded-xl space-y-2">
-                        <h4 className="text-[11px] font-black text-indigo-500 uppercase tracking-wide">Preferências de Tela Inicial</h4>
-                        <label className="flex items-center gap-3 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={formData.exibir_agenda_home}
-                                onChange={(e) => setFormData({ ...formData, exibir_agenda_home: e.target.checked })}
-                                className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
-                            />
-                            <span className="text-xs font-bold text-slate-800">
-                                Exibir Agenda de Compromissos (Substitui a frase motivacional)
-                            </span>
-                        </label>
-                    </div>
 
                     {/* Status Toggle */}
                     <div>
@@ -920,7 +676,7 @@ const UserManagement = ({ isEmbedded = false }) => {
     const [editingUser, setEditingUser] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showPermissionsModal, setShowPermissionsModal] = useState(false);
-    const [activeFilter, setActiveFilter] = useState('todos'); // 'todos', 'medicos', 'administrativo'
+    const [activeFilter, setActiveFilter] = useState('todos'); // 'todos' | 'ativos' | 'inativos'
     const [searchTerm, setSearchTerm] = useState('');
     const { currentUser } = useAuth();
 
@@ -954,20 +710,6 @@ const UserManagement = ({ isEmbedded = false }) => {
         }
     };
 
-    const toggleTopCategoria = async (user) => {
-        try {
-            const newCategoria = user.categoria_medica === 'Top' ? 'Normal' : 'Top';
-            const { error } = await supabase.from('users').update({ categoria_medica: newCategoria }).eq('id', user.id);
-            if (error) throw error;
-            await logAction('ALTERAÇÃO DE CATEGORIA MÉDICA', `Médico ${user.name || user.email} classificado como ${newCategoria}.`);
-            setUsers(users.map(u => u.id === user.id ? { ...u, categoria_medica: newCategoria } : u));
-            toast.success(`Médico marcado como ${newCategoria}`);
-        } catch (error) {
-            console.error(error);
-            toast.error("Erro ao alterar categoria.");
-        }
-    };
-
     if (loading) return (
         <div className="flex justify-center items-center h-full">
             <Loader2 className="animate-spin text-blue-500" size={32} />
@@ -978,22 +720,22 @@ const UserManagement = ({ isEmbedded = false }) => {
         const colors = {
             'Desenvolvedor': 'bg-white/40 text-amber-400 border-amber-500/50 shadow-sm shadow-amber-900/20',
             'Administrador': 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none border-blue-100',
-            'Operador': 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none border-blue-100',
             'Visualizador': 'bg-white/60 text-slate-600 border-white/40',
-            'Médico': 'bg-emerald-500/20 text-emerald-600 border-emerald-100',
-            'Médico Coordenador': 'bg-emerald-500/20 text-emerald-600 border-emerald-100'
+            'Sócio': 'bg-violet-600 text-white shadow-[0_4px_15px_rgba(124,58,237,0.35)] border-none',
+            'Comercial': 'bg-emerald-500/20 text-emerald-700 border-emerald-100',
+            'Gestor de Projetos': 'bg-indigo-500/15 text-indigo-700 border-indigo-100',
+            'Produção': 'bg-sky-500/15 text-sky-700 border-sky-100',
+            'Financeiro': 'bg-amber-500/15 text-amber-700 border-amber-100'
         };
         return colors[role] || colors['Visualizador'];
     };
 
-    const medicosRoles = ['Médico', 'Médico Coordenador'];
-    
     const termo = searchTerm.trim().toLowerCase();
     const filteredUsers = users.filter(user => {
         const matchFilter =
             activeFilter === 'todos' ? true :
-            activeFilter === 'medicos' ? medicosRoles.includes(user.role) :
-            activeFilter === 'administrativo' ? !medicosRoles.includes(user.role) :
+            activeFilter === 'ativos' ? (user.status || 'Ativo') !== 'Inativo' :
+            activeFilter === 'inativos' ? user.status === 'Inativo' :
             true;
         if (!matchFilter) return false;
         if (!termo) return true;
@@ -1058,17 +800,17 @@ const UserManagement = ({ isEmbedded = false }) => {
                     >
                         Todos <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'todos' ? 'bg-white/70 text-slate-500' : 'bg-slate-200/50'}`}>{users.length}</span>
                     </button>
-                    <button 
-                        onClick={() => setActiveFilter('medicos')} 
-                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'medicos' ? 'bg-emerald-500/20 text-white shadow-sm shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-700'}`}
+                    <button
+                        onClick={() => setActiveFilter('ativos')}
+                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'ativos' ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        Corpo Clínico <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'medicos' ? 'bg-white/80 text-slate-800' : 'bg-slate-200/50'}`}>{users.filter(u => medicosRoles.includes(u.role)).length}</span>
+                        Ativos <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'ativos' ? 'bg-white/80 text-slate-800' : 'bg-slate-200/50'}`}>{users.filter(u => (u.status || 'Ativo') !== 'Inativo').length}</span>
                     </button>
-                    <button 
-                        onClick={() => setActiveFilter('administrativo')} 
-                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'administrativo' ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700'}`}
+                    <button
+                        onClick={() => setActiveFilter('inativos')}
+                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'inativos' ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        Administrativo <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'administrativo' ? 'bg-white/80 text-slate-800' : 'bg-slate-200/50'}`}>{users.filter(u => !medicosRoles.includes(u.role)).length}</span>
+                        Inativos <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'inativos' ? 'bg-white/80 text-slate-800' : 'bg-slate-200/50'}`}>{users.filter(u => u.status === 'Inativo').length}</span>
                     </button>
                 </div>
             </div>
@@ -1112,16 +854,6 @@ const UserManagement = ({ isEmbedded = false }) => {
                                     </td>
                                     <td className="px-4 py-2.5 text-center">
                                         <div className="flex items-center justify-center gap-1 opacity-100 transition-opacity">
-                                            {/* Toggle Top Button for Médicos */}
-                                            {['Médico', 'Médico Coordenador'].includes(user.role) && (
-                                                <button
-                                                    onClick={() => toggleTopCategoria(user)}
-                                                    className={`px-2 py-1 rounded-md text-[9px] font-black uppercase transition-colors mr-1 ${user.categoria_medica === 'Top' ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-white/70 text-slate-500 hover:bg-white/80'}`}
-                                                    title={user.categoria_medica === 'Top' ? 'Remover Top' : 'Marcar como Top'}
-                                                >
-                                                    TOP
-                                                </button>
-                                            )}
                                             {/* Edit Button Logic */}
                                             {PROTECTED_EMAILS.includes(user.email) || isProtectedRole ? (
                                                 <div className="p-1.5 text-slate-600 cursor-not-allowed" title={isProtectedRole ? "Perfil Protegido (God Mode)" : "Usuário Sistema (Protegido)"}>

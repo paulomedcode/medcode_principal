@@ -113,7 +113,6 @@ export const AuthProvider = ({ children }) => {
             } else if (event === 'SIGNED_OUT') {
                 sessionStorage.removeItem('login_timestamp');
                 sessionStorage.removeItem('apa_draft_state');
-                sessionStorage.removeItem('@medcode_unidade_sessao');
                 sessionStorage.removeItem('@medcode_hub_animation_seen');
                 setCurrentUser(null);
             } else if (event === 'USER_UPDATED') {
@@ -124,7 +123,7 @@ export const AuthProvider = ({ children }) => {
 
         // --- Logout por inatividade: SOMENTE em computador ---
         // Celular/tablet permanecem logados; PCs deslogam após 3h sem
-        // atividade (segurança em máquinas compartilhadas de hospital).
+        // atividade (segurança em máquinas compartilhadas).
         const isMobileOrTablet =
             /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(navigator.userAgent) ||
             (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent)); // iPadOS se passa por Mac

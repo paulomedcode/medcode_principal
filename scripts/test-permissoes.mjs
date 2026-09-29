@@ -38,7 +38,7 @@ teste('permissão fora do catálogo não tem porta', () => {
 
 console.log('\nconcede() — o caso que apareceu em produção');
 teste('módulo fechado invalida a permissão fina', () => {
-    // Estado real do cargo Médico: porta fechada, permissões internas ligadas
+    // Estado de um cargo: porta fechada, permissões internas ligadas
     const medico = {
         'Acessar Compromissos': false,
         'Excluir Páginas Compromisso': true,
@@ -68,21 +68,21 @@ teste('porta vinda de outra origem é aceita', () => {
 
 console.log('\npodeAcessar() — cargo, extras e Acesso Total');
 const matriz = {
-    'Médico': {
+    'Produção': {
         'Acessar Compromissos': false,
         'Excluir Páginas Compromisso': true,
-        'Visualizar Atendimentos': true
+        'Acessar Financeiro': true
     },
     'Administrador': { 'Acesso Total (Admin)': true },
     'Visualizador': {}
 };
 
-teste('médico não exclui página com o módulo fechado', () => {
-    falso(podeAcessar({ cargo: 'Médico', matriz, permissao: 'Excluir Páginas Compromisso' }));
+teste('produção não exclui página com o módulo fechado', () => {
+    falso(podeAcessar({ cargo: 'Produção', matriz, permissao: 'Excluir Páginas Compromisso' }));
 });
 teste('extra que abre a porta faz a permissão do cargo valer', () => {
     verdadeiro(podeAcessar({
-        cargo: 'Médico', matriz,
+        cargo: 'Produção', matriz,
         extras: { 'Acessar Compromissos': true },
         permissao: 'Excluir Páginas Compromisso'
     }), 'o extra abriu o módulo: ');
@@ -108,37 +108,14 @@ teste('Desenvolvedor mantém o passe livre', () => {
     verdadeiro(podeAcessar({ cargo: 'Desenvolvedor', matriz: {}, permissao: 'Qualquer Coisa' }));
 });
 teste('cargo sem nada não acessa', () => {
-    falso(podeAcessar({ cargo: 'Visualizador', matriz, permissao: 'Visualizar Atendimentos' }));
+    falso(podeAcessar({ cargo: 'Visualizador', matriz, permissao: 'Acessar Financeiro' }));
 });
 teste('permissão que o cargo tem, com porta aberta, continua valendo', () => {
-    // 'Visualizar Atendimentos' é a própria porta do módulo PEP
-    verdadeiro(podeAcessar({ cargo: 'Médico', matriz, permissao: 'Visualizar Atendimentos' }));
+    // 'Acessar Financeiro' é a própria porta do módulo Financeiro
+    verdadeiro(podeAcessar({ cargo: 'Produção', matriz, permissao: 'Acessar Financeiro' }));
 });
 teste('usuário sem cargo não quebra', () => {
-    falso(podeAcessar({ matriz, permissao: 'Visualizar Atendimentos' }));
-});
-
-// --- Módulo pessoal (Meus Repasses): mostra os dados de quem está logado, e de
-// mais ninguém. Coringa nenhum abre — nem Acesso Total, nem Desenvolvedor. ---
-teste('Acesso Total NÃO abre módulo pessoal', () => {
-    falso(podeAcessar({ cargo: 'Administrador', matriz, permissao: 'Acessar Meus Repasses' }));
-});
-teste('Desenvolvedor NÃO abre módulo pessoal', () => {
-    falso(podeAcessar({ cargo: 'Desenvolvedor', matriz: {}, permissao: 'Acessar Meus Repasses' }));
-});
-teste('cargo com a chave abre o módulo pessoal', () => {
-    verdadeiro(podeAcessar({
-        cargo: 'Médico',
-        matriz: { ...matriz, 'Médico': { ...matriz['Médico'], 'Acessar Meus Repasses': true } },
-        permissao: 'Acessar Meus Repasses'
-    }));
-});
-teste('extra individual abre o módulo pessoal', () => {
-    verdadeiro(podeAcessar({
-        cargo: 'Visualizador', matriz,
-        extras: { 'Acessar Meus Repasses': true },
-        permissao: 'Acessar Meus Repasses'
-    }));
+    falso(podeAcessar({ matriz, permissao: 'Acessar Financeiro' }));
 });
 
 console.log(`\n${passou} passaram, ${falhou} falharam\n`);

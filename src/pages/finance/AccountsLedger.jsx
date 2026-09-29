@@ -212,7 +212,6 @@ export default function AccountsLedger({ type }) {
       if (q && !(
         (r.description || '').toLowerCase().includes(q) ||
         (r.finance_parties?.name || '').toLowerCase().includes(q) ||
-        (r.users?.name || '').toLowerCase().includes(q) ||
         (r.finance_categories?.name || '').toLowerCase().includes(q) ||
         (r.doc_number || '').toLowerCase().includes(q) ||
         // valores: líquido, BRUTO (nota c/ retenção) e pendente — cru e formatado pt-BR

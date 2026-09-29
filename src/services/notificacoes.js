@@ -196,8 +196,8 @@ export async function lembretesLegado(currentUser) {
       .not('alerta_minutos', 'is', null)
       .not('hora_agendada', 'is', null);
 
-    const ehMedico = currentUser?.role === 'Médico';
-    if (ehMedico) q = q.or(`user_id.eq.${currentUser.id},autor_id.eq.${currentUser.id}`);
+    // Lembrete da agenda pessoal é de quem é dono ou de quem o criou.
+    q = q.or(`user_id.eq.${currentUser.id},autor_id.eq.${currentUser.id}`);
 
     const { data, error } = await q;
     if (error || !data) return [];

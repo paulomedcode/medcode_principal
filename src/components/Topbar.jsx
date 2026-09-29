@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useWhiteLabel } from '../contexts/WhiteLabelContext';
 import { usePermission } from '../contexts/PermissionContext';
-import { UnitSelector } from './UnitSelector';
 import {
     LayoutDashboard, Users, Settings, LogOut,
     Activity, User, FileText, TrendingUp, ShoppingCart,
@@ -107,7 +106,6 @@ export const Topbar = () => {
                 { path: '/finance/orcamentos', icon: FileText, label: 'Orçamentos' }
             ]
         },
-        { id: 'estoque', label: 'Estoque', soon: true },
         {
             id: 'relatorios', label: 'Relatórios',
             items: [
@@ -115,8 +113,6 @@ export const Topbar = () => {
                 { path: '/finance/relatorios/fluxo', icon: TrendingUp, label: 'Fluxo de Caixa' },
                 { path: '/finance/relatorios/gerencial', icon: LayoutDashboard, label: 'Gerencial' },
                 { path: '/finance/relatorios/vendas', icon: ShoppingCart, label: 'Vendas' },
-                { path: '/finance/relatorios/contratos', icon: FileSignature, label: 'Análise de Contratos' },
-                { label: 'Estoque', soon: true }
             ]
         },
         { id: 'config', label: 'Configurações', path: '/finance/configuracoes', icon: Settings, show: hasPermission('Acessar Configurações') }
@@ -242,13 +238,6 @@ export const Topbar = () => {
                 </div>
                 {/* DIREITA */}
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                    {!isFinance && (
-                        <>
-                            <UnitSelector />
-                            <div className="h-5 w-px hidden sm:block mx-1 bg-white/80"></div>
-                        </>
-                    )}
-
                     {/* COMPROMISSO / WORKSPACE (estilo Notion) */}
                     {/* Alternar tema claro/escuro */}
                     <button
@@ -378,10 +367,10 @@ export const Topbar = () => {
                                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Perfil</label>
                                     <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-[11px] font-black uppercase rounded">{currentUser?.role || '---'}</span>
                                 </div>
-                                {(currentUser?.crm || currentUser?.cpf) && (
+                                {currentUser?.cpf && (
                                     <div>
                                         <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Documento</label>
-                                        <div className="text-xs font-bold text-slate-700">{currentUser?.crm || currentUser?.cpf}</div>
+                                        <div className="text-xs font-bold text-slate-700">{currentUser?.cpf}</div>
                                     </div>
                                 )}
                             </div>

@@ -31,7 +31,7 @@ export const PermissionProvider = ({ children }) => {
      *
      * Matriz vazia não derruba ninguém para uma tela de erro: derruba para o
      * cargo sem nenhuma permissão. Quem tinha permissões individuais
-     * (`permissoes_extras`) via só elas — um médico abria o celular e só
+     * (`permissoes_extras`) via só elas — um usuário abria o celular e só
      * enxergava Financeiro, Configurações e Compromissos, que são justamente os
      * extras dele. Quem não tem extras via "Seu acesso ainda não foi
      * liberado". No computador, onde a sessão estava fresca, os mesmos usuários

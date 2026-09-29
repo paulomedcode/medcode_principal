@@ -25,8 +25,8 @@ const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#3b82f6', '#ef4444'
 const GRAPHS = {
   fluxo:   { label: 'Fluxo de Caixa', types: ['area', 'bar', 'line'] },
   saldos:  { label: 'Saldos por Conta', types: ['bar', 'pie'] },
-  medicos: { label: 'Por Médico (Top 5)', types: ['bar', 'pie'] },
-  origens: { label: 'Origens de Faturamento', types: ['pie', 'bar'] }
+  clientes: { label: 'Por Cliente (Top 5)', types: ['bar', 'pie'] },
+  origens: { label: 'Receita por Categoria', types: ['pie', 'bar'] }
 };
 const TYPE_ICON = { area: AreaChartIcon, bar: BarChart3, line: LineChartIcon, pie: PieChartIcon };
 
@@ -220,21 +220,25 @@ export default function FinanceDashboard() {
       .map(a => ({ name: a.name, value: parseFloat(a.current_balance || 0) }))
       .filter(a => Math.abs(a.value) > 0.005);
 
-    const doctorMap = {};
-    transactions.forEach(t => { if (t.type === 'ENTRADA' && t.users?.name) doctorMap[t.users.name] = (doctorMap[t.users.name] || 0) + parseFloat(t.amount); });
-    const medicos = Object.entries(doctorMap).map(([name, value]) => ({ name: name.split(' ').slice(0, 2).join(' '), value }))
+    const clienteMap = {};
+    transactions.forEach(t => {
+      const nome = t.finance_parties?.name;
+      if (t.type === 'ENTRADA' && nome) clienteMap[nome] = (clienteMap[nome] || 0) + parseFloat(t.amount);
+    });
+    const clientes = Object.entries(clienteMap).map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value).slice(0, 5);
 
-    const convenioMap = {};
+    const categoriaMap = {};
     transactions.forEach(t => {
-      if (t.type === 'ENTRADA') {
-        const key = t.surgery_id ? 'Cirurgias' : 'Plantões / Outros';
-        convenioMap[key] = (convenioMap[key] || 0) + parseFloat(t.amount);
+      if (t.type === 'ENTRADA' && !t.transfer_group_id) {
+        const key = t.finance_categories?.name || 'Sem categoria';
+        categoriaMap[key] = (categoriaMap[key] || 0) + parseFloat(t.amount);
       }
     });
-    const origens = Object.entries(convenioMap).map(([name, value]) => ({ name, value }));
+    const origens = Object.entries(categoriaMap).map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
 
-    return { fluxo, saldos, medicos, origens };
+    return { fluxo, saldos, clientes, origens };
   }, [transactions, accounts]);
 
   const horizonLbl = `Próx. ${horizon} dias`;
@@ -286,9 +290,9 @@ export default function FinanceDashboard() {
       );
     }
 
-    // Gráficos categóricos: saldos / medicos / origens
+    // Gráficos categóricos: saldos / clientes / origens
     const data = graphData[graph];
-    const emptyText = graph === 'saldos' ? 'Sem saldo nas contas' : graph === 'medicos' ? 'Sem faturamento por médico' : 'Sem dados de faturamento';
+    const emptyText = graph === 'saldos' ? 'Sem saldo nas contas' : graph === 'clientes' ? 'Sem faturamento por cliente' : 'Sem dados de faturamento';
     if (!data || data.length === 0) return <Empty text={emptyText} />;
 
     if (chartType === 'pie') {

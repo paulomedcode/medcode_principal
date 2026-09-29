@@ -77,7 +77,6 @@ function _occurrenceRow(rule, dateStr) {
     account_id: rule.account_id,
     category_id: rule.category_id,
     party_id: rule.party_id,
-    doctor_id: rule.doctor_id,
     type: rule.type,
     amount: rule.amount,
     description: rule.description,
@@ -251,13 +250,6 @@ export const financeService = {
     return data[0];
   },
 
-  // Médicos (p/ amarrar repasse a um profissional na conciliação).
-  async getDoctors() {
-    const { data, error } = await supabase.from('users').select('id, name, role').order('name');
-    if (error) throw error;
-    return (data || []).filter(u => ['Médico', 'Médico Coordenador', 'Administrador'].includes(u.role));
-  },
-
   // Persiste a nova ordem de um conjunto de categorias (reordenação por arrastar/setas).
   async updateCategoriesOrder(orderedIds) {
     const updates = orderedIds.map((id, index) =>
@@ -267,16 +259,6 @@ export const financeService = {
     const failed = results.find(r => r.error);
     if (failed) throw failed.error;
     return true;
-  },
-
-  // Lançamentos do ano por COMPETÊNCIA (reference_month), com fallback p/ a data do
-  // lançamento quando a competência não foi preenchida. Base da Análise de Contratos.
-  async getContractAnalysis(year) {
-    return _fetchAll(() => supabase
-      .from('finance_transactions')
-      .select('id, amount, type, cost_center_id, doctor_id, reference_month, transaction_date, transfer_group_id, status, category_id, users(name)')
-      .or(`and(reference_month.gte.${year}-01,reference_month.lte.${year}-12),and(reference_month.is.null,transaction_date.gte.${year}-01-01,transaction_date.lte.${year}-12-31)`)
-      .order('id', { ascending: true }));
   },
 
   async deleteCategory(id) {
@@ -416,8 +398,7 @@ export const financeService = {
         finance_accounts (name, bank_name),
         finance_categories (name, color, icon),
         finance_parties (name, kind),
-        finance_cost_centers (name, color),
-        users (name)
+        finance_cost_centers (name, color)
       `)
       .order('transaction_date', { ascending: false })
       .order('id', { ascending: true });
@@ -451,7 +432,6 @@ export const financeService = {
       const s = filters.dueOrTxStart, e = filters.dueOrTxEnd;
       query = query.or(`and(due_date.gte.${s},due_date.lte.${e}),and(due_date.is.null,transaction_date.gte.${s},transaction_date.lte.${e})`);
     }
-    if (filters.doctorId) query = query.eq('doctor_id', filters.doctorId);
     if (filters.costCenterId) query = query.eq('cost_center_id', filters.costCenterId);
     // Apenas lançamentos ainda SEM conciliação (para a tela de conciliação oferecer
     // como candidatos — inclui pagos e pendentes, não só "em aberto").
@@ -585,8 +565,7 @@ export const financeService = {
         finance_transactions (
           id, type, description, category_id, transfer_group_id,
           finance_categories (name, color, in_cash_flow),
-          finance_parties (name, kind),
-          users (name)
+          finance_parties (name, kind)
         )
       `)
       .order('payment_date', { ascending: true });
@@ -612,7 +591,6 @@ export const financeService = {
         transfer_group_id: p.finance_transactions.transfer_group_id,
         finance_categories: p.finance_transactions.finance_categories,
         finance_parties: p.finance_transactions.finance_parties,
-        users: p.finance_transactions.users,
       }));
   },
 
@@ -815,7 +793,6 @@ export const financeService = {
         account_id: rule.account_id,
         category_id: rule.category_id || null,
         party_id: rule.party_id || null,
-        doctor_id: rule.doctor_id || null,
         amount: rule.amount,
         description: rule.description,
         payment_method: rule.payment_method || null,
@@ -904,8 +881,7 @@ export const financeService = {
       type: payload.type,
       amount: payload.amount,
       description: payload.description,
-      payment_method: payload.payment_method,
-      doctor_id: payload.doctor_id
+      payment_method: payload.payment_method
     };
     await this.updateTransaction(transaction.id, payload);
 
@@ -1419,125 +1395,5 @@ export const financeService = {
     if (error) throw error;
     await logAction('FINANCEIRO - ORÇAMENTO', `Aprovou orçamento ${quoteId} → conta a receber gerada`);
     return data;
-  },
-
-  // ==========================================
-  // 6. REPASSE MÉDICO (DOCTOR SPLITS)
-  // ==========================================
-  async getDoctorSettings(doctorId) {
-    const { data, error } = await supabase
-      .from('finance_doctor_settings')
-      .select('*')
-      .eq('doctor_id', doctorId)
-      .maybeSingle();
-    if (error) throw error;
-    return data;
-  },
-
-  async updateDoctorSettings(doctorId, settings) {
-    const { data, error } = await supabase
-      .from('finance_doctor_settings')
-      .upsert({ doctor_id: doctorId, ...settings })
-      .select();
-    if (error) throw error;
-    await logAction('FINANCEIRO - REPASSE', `Atualizou configurações de repasse do médico ID: ${doctorId}`);
-    return data[0];
-  },
-
-  async getRepasses(filters = {}) {
-    let query = supabase
-      .from('finance_repasses')
-      .select('*, users(name)')
-      .order('reference_month', { ascending: false });
-
-    if (filters.doctorId) query = query.eq('doctor_id', filters.doctorId);
-    if (filters.month) query = query.eq('reference_month', filters.month);
-    if (filters.status) query = query.eq('status', filters.status);
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data;
-  },
-
-  async getRepasseDetails(repasseId) {
-    const { data: repasse, error: err1 } = await supabase
-      .from('finance_repasses')
-      .select('*, users(*)')
-      .eq('id', repasseId)
-      .single();
-    if (err1) throw err1;
-
-    const { data: items, error: err2 } = await supabase
-      .from('finance_repasse_items')
-      .select('*, surgeries(*)')
-      .eq('repasse_id', repasseId);
-    if (err2) throw err2;
-
-    return { ...repasse, items };
-  },
-
-  // Cria o fechamento de repasse: cabeçalho + itens + vínculo das glosas — atômico via RPC.
-  // glosaIds: ids das glosas pendentes a marcar como GLOSADO/deduzidas (antes feito num loop na página).
-  async createRepasse(repasse, items, glosaIds = []) {
-    const { data, error } = await supabase.rpc('create_repasse', {
-      p_repasse: repasse,
-      p_items: items || [],
-      p_glosa_ids: glosaIds || []
-    });
-    if (error) throw error;
-    await logAction('FINANCEIRO - REPASSE', `Criou repasse ID: ${data?.id} para o médico ID: ${repasse.doctor_id}`);
-    return data;
-  },
-
-  // Efetiva o pagamento do repasse: cria a SAIDA PAGA e marca o repasse PAGO — atômico via RPC.
-  // O lock + recheck de status na RPC impede débito dobrado em duplo clique/corrida.
-  async payRepasse(repasseId, accountId, paymentDate) {
-    const { data, error } = await supabase.rpc('pay_repasse', {
-      p_repasse_id: repasseId,
-      p_account_id: accountId,
-      p_payment_date: paymentDate
-    });
-    if (error) throw error;
-    await logAction('FINANCEIRO - REPASSE', `Marcou repasse ID: ${repasseId} como PAGO.`);
-    return data;
-  },
-
-  // ==========================================
-  // 7. CONTROLE DE GLOSAS (GLOSAS)
-  // ==========================================
-  async getGlosas(filters = {}) {
-    let query = supabase
-      .from('finance_glosas')
-      .select('*, surgeries(*), users(name)')
-      .order('glosa_date', { ascending: false });
-
-    if (filters.status) query = query.eq('status', filters.status);
-    if (filters.doctorId) query = query.eq('doctor_id', filters.doctorId);
-    if (filters.convenio) query = query.eq('convenio', filters.convenio);
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data;
-  },
-
-  async createGlosa(glosa) {
-    const { data, error } = await supabase
-      .from('finance_glosas')
-      .insert([glosa])
-      .select();
-    if (error) throw error;
-    await logAction('FINANCEIRO - GLOSA', `Criou glosa no valor de R$${glosa.amount}`);
-    return data[0];
-  },
-
-  async updateGlosa(id, glosa) {
-    const { data, error } = await supabase
-      .from('finance_glosas')
-      .update(glosa)
-      .eq('id', id)
-      .select();
-    if (error) throw error;
-    await logAction('FINANCEIRO - GLOSA', `Atualizou glosa ID: ${id}`);
-    return data[0];
   }
 };

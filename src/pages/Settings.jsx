@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { logAction } from '../utils/logger';
 import imageCompression from 'browser-image-compression';
@@ -20,181 +20,12 @@ const compressImage = async (file) => {
 import { Plus, Trash2, Edit2, Check, X, UploadCloud, FileText, Loader2, AlertTriangle, CheckCircle, FileSpreadsheet, ChevronRight, Search, Clock, User, Activity, Palette, Users, Building, Syringe, MapPin, Stethoscope, ShieldCheck, LayoutGrid, CalendarDays, ArrowLeft, Printer, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import ProcedureManager from './ProcedureManager';
 import UserManagement from './UserManagement';
-import ConfiguracoesApaTab from '../components/apa/ConfiguracoesApaTab';
 import { usePermission } from '../contexts/PermissionContext';
 import { useWhiteLabel } from '../contexts/WhiteLabelContext';
-import { maskCPF } from '../utils/masks';
 import * as XLSX from 'xlsx';
 import { printReport } from '../utils/printReport';
-import { extrairDadosDoPlantao } from '../utils/logEscalaParser';
 import { useAuth } from '../contexts/AuthContext';
-
-// --- BASE SUS TAB COMPONENT ---
-const BaseSUSTab = () => {
-    const [loading, setLoading] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [total, setTotal] = useState(0);
-    const [status, setStatus] = useState('Aguardando arquivo do SIGTAP...');
-
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setStatus('Lendo arquivo...');
-        const reader = new FileReader();
-
-        // ISO-8859-1 garante que os acentos do governo venham corretos
-        reader.readAsText(file, 'ISO-8859-1');
-
-        reader.onload = async (event) => {
-            try {
-                const text = event.target.result;
-                const lines = text.split('\n');
-                const parsedData = [];
-
-                // Processa linha por linha do TXT
-                lines.forEach(line => {
-                    if (line.length > 20) {
-                        const codigo = line.substring(0, 10).trim();
-                        const nome = line.substring(10, 260).trim();
-
-                        if (codigo && nome) {
-                            parsedData.push({ codigo, nome });
-                        }
-                    }
-                });
-
-                if (parsedData.length === 0) {
-                    return toast.error("Nenhum procedimento encontrado. Verifique se é o arquivo tb_procedimento.txt");
-                }
-
-                uploadDataInBatches(parsedData);
-
-            } catch (error) {
-                console.error(error);
-                toast.error("Erro ao ler o arquivo TXT.");
-            }
-        };
-    };
-
-    const uploadDataInBatches = async (data) => {
-        setLoading(true);
-        setTotal(data.length);
-        let currentBatchIndex = 0;
-        const batchSize = 450;
-        const totalBatches = Math.ceil(data.length / batchSize);
-
-        try {
-            for (let i = 0; i < data.length; i += batchSize) {
-                const chunk = data.slice(i, i + batchSize);
-                const sigtapRecords = chunk.map(item => {
-                    if (item.codigo && item.nome) {
-                        return {
-                            id: String(item.codigo),
-                            codigo: String(item.codigo),
-                            nome: item.nome.toUpperCase()
-                        };
-                    }
-                    return null;
-                }).filter(Boolean);
-
-                if (sigtapRecords.length > 0) {
-                    const { error } = await supabase.from('sigtap').upsert(sigtapRecords, { onConflict: 'id' });
-                    if (error) throw error;
-                    await logAction('ATUALIZAÇÃO SIGTAP', `Atualizou ${sigtapRecords.length} procedimentos (Lote ${currentBatchIndex}).`);
-                }
-
-                currentBatchIndex++;
-                setProgress(Math.min((i + batchSize), data.length));
-                setStatus(`Processando lote ${currentBatchIndex} de ${totalBatches}...`);
-
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-
-            setStatus('Importação Concluída!');
-            toast.success(`${data.length} procedimentos atualizados com sucesso!`);
-        } catch (error) {
-            console.error(error);
-            setStatus('Erro na importação.');
-            toast.error("Falha na conexão com o banco.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="max-w-3xl mx-auto py-12">
-            <div className="bg-white/60 backdrop-blur-lg p-10 rounded-[2.5rem] shadow-sm border border-white/60 text-center space-y-8">
-
-                <div className="bg-blue-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto text-white shadow-lg shadow-blue-200">
-                    <FileText size={36} />
-                </div>
-
-                <div>
-                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-widest">Importador SIGTAP</h2>
-                    <p className="text-sm font-bold text-slate-500 mt-2 uppercase tracking-wide">
-                        Aceita o arquivo oficial <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">tb_procedimento.txt</span>
-                    </p>
-                </div>
-
-                {!loading && progress === 0 && (
-                    <label className="block w-full cursor-pointer group">
-                        <input type="file" accept=".txt" onChange={handleFileUpload} className="hidden" />
-                        <div className="w-full py-8 border-2 border-dashed border-white/80 rounded-2xl bg-white/60 group-hover:bg-blue-50 group-hover:border-blue-300 transition-all flex flex-col items-center gap-2">
-                            <UploadCloud size={28} className="text-slate-500 group-hover:text-blue-500 transition-colors" />
-                            <span className="text-xs font-black text-slate-500 group-hover:text-blue-600 uppercase tracking-widest transition-colors">
-                                Arraste o arquivo TXT ou clique aqui
-                            </span>
-                        </div>
-                    </label>
-                )}
-
-                {loading && (
-                    <div className="space-y-6">
-                        <div className="w-full bg-white/70 rounded-full h-3 overflow-hidden">
-                            <div
-                                className="bg-blue-600 h-full transition-all duration-300 rounded-full"
-                                style={{ width: `${(progress / total) * 100}%` }}
-                            ></div>
-                        </div>
-                        <div className="flex justify-between text-[11px] font-black text-slate-500 uppercase tracking-widest">
-                            <span>{progress} processados</span>
-                            <span>{total} total</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 text-blue-600 animate-pulse">
-                            <Loader2 className="animate-spin" size={16} />
-                            <span className="text-xs font-black uppercase">{status}</span>
-                        </div>
-                    </div>
-                )}
-
-                {!loading && progress > 0 && progress === total && (
-                    <div className="bg-emerald-50 text-emerald-600 p-6 rounded-2xl border border-emerald-100 flex flex-col items-center gap-2 font-black">
-                        <CheckCircle size={32} />
-                        <span className="uppercase text-sm tracking-widest">Importação Finalizada!</span>
-                        <span className="text-[11px] opacity-70 font-bold">Base SUS atualizada com sucesso.</span>
-                    </div>
-                )}
-
-                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 flex items-start gap-3 text-left shadow-sm">
-                    <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-amber-700 font-bold leading-relaxed">
-                        ATENÇÃO: Este processo pode levar alguns minutos pois o arquivo do governo é grande. Não saia desta aba até a barra completar.
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// O antigo PermissoesEscalaTab foi removido: era um segundo editor de permissões,
-// sem link no menu havia tempos, que gravava chaves camelCase (verEscalaTodos,
-// editarEscala…) na MESMA linha settings.id='permissions' usada pela Matriz de
-// Permissões — nenhuma delas lida por lugar nenhum do sistema. Permissão de
-// escala agora se ajusta na Matriz (Configurações › Usuários), pelo catálogo em
-// src/config/permissions.js.
 
 // --- IDENTIDADE VISUAL COMPONENT ---
 const IdentidadeVisualTab = ({ data, setData }) => {
@@ -202,9 +33,6 @@ const IdentidadeVisualTab = ({ data, setData }) => {
     const [corPrincipal, setCorPrincipal] = useState(data.corPrincipal || '#2563eb');
     const [logoUrl, setLogoUrl] = useState(data.logoUrl || '/logo.png');
     const [faviconUrl, setFaviconUrl] = useState(data.faviconUrl || '');
-    const [executanteNome, setExecutanteNome] = useState(data.executanteNome || '');
-    const [executanteCnes, setExecutanteCnes] = useState(data.executanteCnes || '');
-    const [orgaoEmissor, setOrgaoEmissor] = useState(data.orgaoEmissor || '');
     const [marqueeText, setMarqueeText] = useState(data.marqueeText || 'Bem-vindo ao sistema da MedCode Assessoria.');
     const [uploading, setUploading] = useState(false);
     const [uploadingFavicon, setUploadingFavicon] = useState(false);
@@ -217,9 +45,6 @@ const IdentidadeVisualTab = ({ data, setData }) => {
             corPrincipal,
             logoUrl,
             faviconUrl,
-            executanteNome,
-            executanteCnes,
-            orgaoEmissor,
             marqueeText
         };
         try {
@@ -286,22 +111,8 @@ const IdentidadeVisualTab = ({ data, setData }) => {
             </h2>
             <div className="space-y-4">
                 <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Nome da Instituição/Prefeitura</label>
+                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Nome da Empresa</label>
                     <input value={nomeInstituicao} onChange={e => setNomeInstituicao(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-blue-500 text-sm font-bold text-slate-700" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Nome do Estabelecimento Executante (AIH)</label>
-                        <input value={executanteNome} onChange={e => setExecutanteNome(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-blue-500 text-sm font-bold text-slate-700 uppercase" placeholder="Nome na AIH" />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">CNES do Estabelecimento Executante (AIH)</label>
-                        <input value={executanteCnes} onChange={e => setExecutanteCnes(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-blue-500 text-sm font-bold text-slate-700" placeholder="0000000" maxLength="7" />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Cód. Órgão Emissor (AIH)</label>
-                    <input value={orgaoEmissor} onChange={e => setOrgaoEmissor(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-blue-500 text-sm font-bold text-slate-700" placeholder="Ex: M350000001" />
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Texto Flutuante (Letreiro Hub)</label>
@@ -537,191 +348,6 @@ const HubSettingsTab = ({ data, setData }) => {
     );
 };
 
-// --- UNIDADES MANAGER COMPONENT ---
-const UnidadesManager = () => {
-    const [unidades, setUnidades] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [newUnidade, setNewUnidade] = useState('');
-    const [newCnes, setNewCnes] = useState('');
-    const [editingId, setEditingId] = useState(null);
-    const [editValue, setEditValue] = useState('');
-    const [editCnes, setEditCnes] = useState('');
-    // Identidade institucional impressa no cabeçalho dos documentos (ex.: a folha
-    // anexa de Requisição de Transfusão). Cada unidade tem a sua — o deploy
-    // atende vários hospitais, então não dá para ter uma identidade só.
-    const [editIdentidade, setEditIdentidade] = useState({ razao_social: '', endereco: '', cidade: '', cnpj: '', contato: '', logo_url: '' });
-    const [uploadingLogo, setUploadingLogo] = useState(false);
-
-    useEffect(() => {
-        fetchUnidades();
-    }, []);
-
-    const fetchUnidades = async () => {
-        setLoading(true);
-        const { data, error } = await supabase.from('unidades').select('*').order('nome');
-        if (!error) setUnidades(data || []);
-        setLoading(false);
-    };
-
-    const handleAdd = async () => {
-        if (!newUnidade.trim()) return;
-        const { error } = await supabase.from('unidades').insert([{ nome: newUnidade, cnes: newCnes, tipo: 'Padrão' }]);
-        if (!error) {
-            await logAction('CRIAÇÃO DE UNIDADE', `Unidade adicionada: ${newUnidade} (CNES: ${newCnes})`);
-            toast.success('Unidade adicionada!');
-            setNewUnidade('');
-            setNewCnes('');
-            fetchUnidades();
-        } else {
-            toast.error('Erro ao adicionar unidade.');
-        }
-    };
-
-    const handleLogoUpload = async (e, unidadeId) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setUploadingLogo(true);
-        try {
-            const fileExt = file.name.split('.').pop() || 'png';
-            const fileName = `unidade-${Date.now()}.${fileExt}`;
-            const { error: uploadError } = await supabase.storage.from('logos').upload(fileName, file);
-            if (uploadError) throw uploadError;
-            const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(fileName);
-            const url = publicUrlData.publicUrl;
-            setEditIdentidade(prev => ({ ...prev, logo_url: url }));
-            // Grava na hora: a logo já está no storage, não faz sentido depender
-            // de alguém lembrar de apertar o ✓ depois.
-            const { error: saveError } = await supabase.from('unidades').update({ logo_url: url }).eq('id', unidadeId);
-            if (saveError) throw saveError;
-            setUnidades(prev => prev.map(u => u.id === unidadeId ? { ...u, logo_url: url } : u));
-            toast.success('Logo enviada e salva!');
-        } catch (error) {
-            console.error(error);
-            toast.error('Erro no upload da logo.');
-        } finally {
-            setUploadingLogo(false);
-        }
-    };
-
-    const handleRemoverLogo = async (unidadeId) => {
-        setEditIdentidade(prev => ({ ...prev, logo_url: '' }));
-        const { error } = await supabase.from('unidades').update({ logo_url: null }).eq('id', unidadeId);
-        if (error) return toast.error('Erro ao remover a logo.');
-        setUnidades(prev => prev.map(u => u.id === unidadeId ? { ...u, logo_url: null } : u));
-        toast.success('Logo removida.');
-    };
-
-    const abrirEdicao = (u) => {
-        setEditingId(u.id);
-        setEditValue(u.nome);
-        setEditCnes(u.cnes || '');
-        setEditIdentidade({
-            razao_social: u.razao_social || '', endereco: u.endereco || '',
-            cidade: u.cidade || '', cnpj: u.cnpj || '', contato: u.contato || '', logo_url: u.logo_url || ''
-        });
-    };
-
-    const handleEdit = async (id) => {
-        if (!editValue.trim()) return;
-        const { error } = await supabase.from('unidades').update({ nome: editValue, cnes: editCnes, ...editIdentidade }).eq('id', id);
-        if (!error) {
-            await logAction('EDIÇÃO DE UNIDADE', `Unidade alterada para: ${editValue} (CNES: ${editCnes})`);
-            toast.success('Unidade atualizada!');
-            setEditingId(null);
-            fetchUnidades();
-        } else {
-            toast.error('Erro ao atualizar unidade.');
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm("Remover esta unidade?")) return;
-        const unidade = unidades.find(u => u.id === id);
-        const { error } = await supabase.from('unidades').delete().eq('id', id);
-        if (!error) {
-            if (unidade) {
-                await logAction('EXCLUSÃO DE UNIDADE', `A unidade ${unidade.nome} foi removida das configurações.`);
-            }
-            toast.success('Unidade removida!');
-            fetchUnidades();
-        } else {
-            toast.error('Erro ao remover unidade.');
-        }
-    };
-
-    return (
-        <div className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/60 shadow-sm p-8 animate-in fade-in max-w-2xl mx-auto space-y-6">
-            <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-500"></div> Unidades de Atendimento
-            </h2>
-            <div className="flex gap-2">
-                <input value={newUnidade} onChange={e => setNewUnidade(e.target.value)} placeholder="Nova Unidade..." className="flex-1 h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-blue-500 text-sm font-bold text-slate-700 uppercase" />
-                <input value={newCnes} onChange={e => setNewCnes(e.target.value)} placeholder="CNES..." maxLength="7" className="w-24 h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-blue-500 text-sm font-bold text-slate-700" />
-                <button onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase px-4 rounded-xl shadow-lg transition-all active:scale-95">Adicionar</button>
-            </div>
-            {loading ? <div className="p-4 text-center"><Loader2 className="animate-spin text-blue-500 mx-auto" /></div> : (
-                <ul className="space-y-2">
-                    {unidades.map(u => (
-                        <li key={u.id} className={`flex justify-between bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl p-2 rounded-xl ${editingId === u.id ? 'items-start' : 'items-center'}`}>
-                            {editingId === u.id ? (
-                                <div className="flex flex-col gap-3 w-full">
-                                    <div className="flex gap-2">
-                                        <input value={editValue} onChange={e => setEditValue(e.target.value)} className="flex-1 px-2 py-2 rounded-lg border border-blue-400 outline-none text-sm font-bold text-slate-700 uppercase" />
-                                        <input value={editCnes} onChange={e => setEditCnes(e.target.value)} placeholder="CNES" maxLength="7" className="w-24 px-2 py-2 rounded-lg border border-blue-400 outline-none text-sm font-bold text-slate-700" />
-                                        <button onClick={() => handleEdit(u.id)} className="text-emerald-600 font-bold px-3"><Check size={16} /></button>
-                                        <button onClick={() => setEditingId(null)} className="text-rose-600 font-bold px-3"><X size={16} /></button>
-                                    </div>
-
-                                    {/* Identidade impressa no cabeçalho dos documentos desta unidade */}
-                                    <div className="border-t border-slate-200 pt-3 space-y-2">
-                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-wide">Identidade para documentos</p>
-                                        <input value={editIdentidade.razao_social} onChange={e => setEditIdentidade({ ...editIdentidade, razao_social: e.target.value })} placeholder="Razão social (ex: Hospital Central de...)" className="w-full px-2 py-2 rounded-lg border border-slate-300 outline-none focus:border-blue-400 text-xs font-semibold text-slate-700" />
-                                        <input value={editIdentidade.endereco} onChange={e => setEditIdentidade({ ...editIdentidade, endereco: e.target.value })} placeholder="Endereço completo com CEP" className="w-full px-2 py-2 rounded-lg border border-slate-300 outline-none focus:border-blue-400 text-xs font-semibold text-slate-700" />
-                                        <div className="flex gap-2">
-                                            <input value={editIdentidade.cidade} onChange={e => setEditIdentidade({ ...editIdentidade, cidade: e.target.value })} placeholder="Cidade (usada no fecho: 'São Paulo, 01 de setembro de 2026')" className="flex-1 px-2 py-2 rounded-lg border border-slate-300 outline-none focus:border-blue-400 text-xs font-semibold text-slate-700" />
-                                            <input value={editIdentidade.cnpj} onChange={e => setEditIdentidade({ ...editIdentidade, cnpj: e.target.value })} placeholder="CNPJ" className="w-56 px-2 py-2 rounded-lg border border-slate-300 outline-none focus:border-blue-400 text-xs font-semibold text-slate-700" />
-                                        </div>
-                                        <input value={editIdentidade.contato} onChange={e => setEditIdentidade({ ...editIdentidade, contato: e.target.value })} placeholder="Contato do timbre (ex: Telefone: (11) 0000-0000 - E-mail: contato@hospital.com.br)" className="w-full px-2 py-2 rounded-lg border border-slate-300 outline-none focus:border-blue-400 text-xs font-semibold text-slate-700" />
-                                        <div className="flex items-center gap-3">
-                                            {editIdentidade.logo_url
-                                                ? <img src={editIdentidade.logo_url} alt="Logo da unidade" className="h-10 w-auto object-contain rounded bg-white border border-slate-200 p-1" />
-                                                : <div className="h-10 w-20 rounded bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-[9px] font-bold text-slate-400 uppercase">Sem logo</div>}
-                                            <label className="cursor-pointer text-[10px] font-black uppercase text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors">
-                                                {uploadingLogo ? 'Enviando...' : 'Enviar logo'}
-                                                <input type="file" accept="image/*" className="hidden" disabled={uploadingLogo} onChange={(e) => handleLogoUpload(e, u.id)} />
-                                            </label>
-                                            {editIdentidade.logo_url && <button onClick={() => handleRemoverLogo(u.id)} className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-700">Remover</button>}
-                                        </div>
-                                        <p className="text-[10px] text-slate-400 font-semibold">Vazio não quebra nada: o documento sai só com o nome da unidade.</p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="flex items-center gap-3 ml-2">
-                                        {u.logo_url && <img src={u.logo_url} alt="" className="h-8 w-auto object-contain" onError={(e) => e.target.style.display = 'none'} />}
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-slate-700 uppercase leading-tight">{u.nome}</span>
-                                            <span className="text-[11px] font-bold text-slate-500 uppercase mt-0.5">
-                                                CNES: {u.cnes || 'N/A'}
-                                                {!u.razao_social && <span className="ml-2 text-amber-600">· sem identidade p/ documentos</span>}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => abrirEdicao(u)} className="p-1.5 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md"><Edit2 size={14} /></button>
-                                        <button onClick={() => handleDelete(u.id)} className="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-md"><Trash2 size={14} /></button>
-                                    </div>
-                                </>
-                            )}
-                        </li>
-                    ))}
-                    {unidades.length === 0 && <p className="text-xs text-slate-500 font-bold uppercase text-center py-4">Nenhuma unidade cadastrada.</p>}
-                </ul>
-            )}
-        </div>
-    );
-};
-
 // --- AGENDA CATEGORIAS MANAGER COMPONENT ---
 const AgendaCategoriasManager = () => {
     const [categorias, setCategorias] = useState([]);
@@ -816,118 +442,6 @@ const AgendaCategoriasManager = () => {
                         </li>
                     ))}
                     {categorias.length === 0 && <p className="text-xs text-slate-500 font-bold uppercase text-center py-4">Nenhuma categoria cadastrada.</p>}
-                </ul>
-            )}
-        </div>
-    );
-};
-
-// --- MOTIVOS SUSPENSAO MANAGER COMPONENT ---
-const MotivosSuspensaoManager = () => {
-    const [motivos, setMotivos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [novoMotivo, setNovoMotivo] = useState('');
-    const [editingId, setEditingId] = useState(null);
-    const [editValue, setEditValue] = useState('');
-
-    useEffect(() => {
-        fetchMotivos();
-    }, []);
-
-    const fetchMotivos = async () => {
-        setLoading(true);
-        const { data, error } = await supabase.from('motivos_suspensao').select('*').order('descricao');
-        if (!error) setMotivos(data || []);
-        setLoading(false);
-    };
-
-    const handleAdd = async () => {
-        if (!novoMotivo.trim()) return;
-        const { error } = await supabase.from('motivos_suspensao').insert([{ descricao: novoMotivo, ativo: true }]);
-        if (!error) {
-            await logAction('CRIAÇÃO DE MOTIVO DE SUSPENSÃO', `Novo motivo: ${novoMotivo}`);
-            toast.success('Motivo adicionado!');
-            setNovoMotivo('');
-            fetchMotivos();
-        } else {
-            toast.error('Erro ao adicionar motivo.');
-        }
-    };
-
-    const handleEdit = async (id) => {
-        if (!editValue.trim()) return;
-        const { error } = await supabase.from('motivos_suspensao').update({ descricao: editValue }).eq('id', id);
-        if (!error) {
-            await logAction('EDIÇÃO DE MOTIVO DE SUSPENSÃO', `Motivo alterado para: ${editValue}`);
-            toast.success('Motivo atualizado!');
-            setEditingId(null);
-            fetchMotivos();
-        } else {
-            toast.error('Erro ao atualizar motivo.');
-        }
-    };
-
-    const handleToggleAtivo = async (id, isAtivo) => {
-        const { error } = await supabase.from('motivos_suspensao').update({ ativo: !isAtivo }).eq('id', id);
-        if (!error) {
-            await logAction('STATUS DE MOTIVO DE SUSPENSÃO', `Status do motivo alterado para: ${!isAtivo ? 'Ativo' : 'Inativo'}`);
-            toast.success(isAtivo ? 'Desativado!' : 'Ativado!');
-            fetchMotivos();
-        } else {
-            toast.error('Erro ao alterar status.');
-        }
-    };
-
-    const handleDelete = async (id) => {
-         if (!window.confirm("Remover este motivo permanentemente? Se ele já foi usado, o sistema pode impedir. Nesses casos, prefira apenas DESATIVAR.")) return;
-         const motivo = motivos.find(m => m.id === id);
-         const { error } = await supabase.from('motivos_suspensao').delete().eq('id', id);
-         if (!error) {
-             if (motivo) {
-                 await logAction('EXCLUSÃO DE MOTIVO DE SUSPENSÃO', `O motivo "${motivo.motivo}" foi removido das configurações.`);
-             }
-             toast.success('Removido com sucesso!');
-             fetchMotivos();
-         } else {
-             toast.error('Erro ao remover (pode estar em uso por alguma cirurgia).');
-         }
-    };
-
-    return (
-        <div className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/60 shadow-sm p-8 animate-in fade-in max-w-2xl mx-auto space-y-6">
-            <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-orange-500"></div> Motivos de Suspensão
-            </h2>
-            <div className="flex gap-2">
-                <input value={novoMotivo} onChange={e => setNovoMotivo(e.target.value)} placeholder="Novo Motivo (Ex: Falta de Jejum)..." className="flex-1 h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-orange-500 text-sm font-bold text-slate-700 uppercase" />
-                <button onClick={handleAdd} className="bg-orange-600 hover:bg-orange-700 text-slate-800 font-black text-xs uppercase px-4 rounded-xl shadow-lg transition-all active:scale-95">Adicionar</button>
-            </div>
-            {loading ? <div className="p-4 text-center"><Loader2 className="animate-spin text-orange-500 mx-auto" /></div> : (
-                <ul className="space-y-2">
-                    {motivos.map(u => (
-                        <li key={u.id} className={`flex justify-between items-center bg-white/60 border ${u.ativo ? 'border-white/60' : 'border-rose-200 bg-rose-50/20'} p-2 rounded-xl`}>
-                            {editingId === u.id ? (
-                                <div className="flex gap-2 w-full">
-                                    <input value={editValue} onChange={e => setEditValue(e.target.value)} className="flex-1 px-2 py-2 rounded-lg border border-orange-400 outline-none text-sm font-bold text-slate-700 uppercase" />
-                                    <button onClick={() => handleEdit(u.id)} className="text-emerald-600 font-bold px-3"><Check size={16} /></button>
-                                    <button onClick={() => setEditingId(null)} className="text-rose-600 font-bold px-3"><X size={16} /></button>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="flex flex-col ml-2">
-                                        <span className={`text-sm font-bold uppercase leading-tight ${u.ativo ? 'text-slate-700' : 'text-slate-500 line-through'}`}>{u.descricao}</span>
-                                        <span className={`text-[11px] font-bold uppercase mt-0.5 ${u.ativo ? 'text-emerald-500' : 'text-rose-500'}`}>{u.ativo ? 'Ativo' : 'Inativo'}</span>
-                                    </div>
-                                    <div className="flex gap-2 items-center">
-                                        <button onClick={() => handleToggleAtivo(u.id, u.ativo)} title={u.ativo ? 'Desativar este motivo' : 'Reativar este motivo'} className={`p-1 text-[11px] font-bold uppercase border rounded-md mr-1 ${u.ativo ? 'text-amber-600 border-amber-200 hover:bg-amber-50' : 'text-emerald-600 border-emerald-200 hover:bg-emerald-50'}`}>{u.ativo ? 'Desativar' : 'Ativar'}</button>
-                                        <button onClick={() => { setEditingId(u.id); setEditValue(u.descricao); }} className="p-1.5 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md"><Edit2 size={14} /></button>
-                                        <button onClick={() => handleDelete(u.id)} className="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-md"><Trash2 size={14} /></button>
-                                    </div>
-                                </>
-                            )}
-                        </li>
-                    ))}
-                    {motivos.length === 0 && <p className="text-xs text-slate-500 font-bold uppercase text-center py-4">Nenhum motivo cadastrado.</p>}
                 </ul>
             )}
         </div>
@@ -1032,562 +546,6 @@ const RenderSection = ({ title, category, placeholder, inputValue, items, onInpu
 };
 
 
-// --- ORIENTACOES E REGRAS DE INTERNAÇÃO MANAGER COMPONENT ---
-const OrientacoesManager = () => {
-    const [orientacoes, setOrientacoes] = useState({});
-    const [regras, setRegras] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [newKey, setNewKey] = useState('');
-    const [editingKey, setEditingKey] = useState(null);
-    const [editTitleValue, setEditTitleValue] = useState('');
-
-    // Estados da nova regra
-    const [newRegraTipo, setNewRegraTipo] = useState('mesmo');
-    const [newRegraHorario, setNewRegraHorario] = useState('07:00');
-
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            // Busca os Textos e converte o formato antigo para o novo caso necessário
-            const { data: oriData } = await supabase.from('settings').select('data').eq('id', 'orientacoes').maybeSingle();
-            if (oriData && oriData.data) {
-                const migrado = {};
-                Object.keys(oriData.data).forEach(k => {
-                    migrado[k] = typeof oriData.data[k] === 'string' 
-                        ? { texto: oriData.data[k], regraInternacao: 'dia_anterior' } 
-                        : oriData.data[k];
-                });
-                setOrientacoes(migrado);
-            }
-
-            // Busca as Regras de Horário (ou aplica o padrão se não existir)
-            const { data: regData } = await supabase.from('settings').select('data').eq('id', 'regras_internacao').maybeSingle();
-            if (regData && regData.data?.lista) {
-                setRegras(regData.data.lista);
-            } else {
-                setRegras([
-                    { id: 'dia_anterior', label: 'Internar no DIA ANTERIOR às 19:00', tipo: 'anterior', horario: '19:00' },
-                    { id: 'mesmo_dia_07h', label: 'Internar no MESMO DIA às 07:00', tipo: 'mesmo', horario: '07:00' },
-                    { id: 'mesmo_dia_11h', label: 'Internar no MESMO DIA às 11:00', tipo: 'mesmo', horario: '11:00' }
-                ]);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // --- Ações de Regras de Horário ---
-    const handleAddRegra = async () => {
-        if (!newRegraHorario) return toast.error('Informe o horário!');
-        const id = `${newRegraTipo}_${newRegraHorario.replace(':', '')}`;
-        if (regras.some(r => r.id === id)) return toast.error('Esta regra já existe.');
-
-        const label = newRegraTipo === 'anterior' 
-            ? `Internar no DIA ANTERIOR às ${newRegraHorario}`
-            : `Internar no MESMO DIA às ${newRegraHorario}`;
-
-        const updated = [...regras, { id, label, tipo: newRegraTipo, horario: newRegraHorario }];
-        setRegras(updated);
-        try {
-            await supabase.from('settings').upsert({ id: 'regras_internacao', data: { lista: updated } });
-            await logAction('REGRA DE INTERNAÇÃO', `Horário de internação adicionado: ${newRegraHorario}`);
-            toast.success('Horário adicionado!');
-        } catch (error) { toast.error('Erro ao salvar regra.'); }
-    };
-
-    const handleRemoveRegra = async (idToRemove) => {
-        if (!window.confirm("Remover este horário? As especialidades que o utilizam voltarão para o padrão.")) return;
-        const updated = regras.filter(r => r.id !== idToRemove);
-        setRegras(updated);
-        try {
-            await supabase.from('settings').upsert({ id: 'regras_internacao', data: { lista: updated } });
-            await logAction('REGRA DE INTERNAÇÃO', `Horário de internação removido.`);
-            toast.success('Horário removido!');
-        } catch (error) { toast.error('Erro ao remover regra.'); }
-    };
-
-    // --- Ações de Especialidades ---
-    const handleSave = async (silent = false) => {
-        if (!silent) setSaving(true);
-        try {
-            await supabase.from('settings').upsert({ id: 'orientacoes', data: orientacoes });
-            await logAction('ORIENTAÇÕES/REGRAS', 'Ajustes gerais nas orientações e regras salvos.');
-            if (!silent) toast.success('Ajustes salvos com sucesso!');
-        } catch (error) { if (!silent) toast.error('Erro ao salvar.'); } finally { if (!silent) setSaving(false); }
-    };
-
-    const handleAddType = async () => {
-        const key = newKey.trim();
-        if (!key) return;
-        if (orientacoes[key]) return toast.error('Esse tipo já existe.');
-        const updated = { ...orientacoes, [key]: { texto: 'Insira o texto...', regraInternacao: 'dia_anterior' } };
-        setOrientacoes(updated); setNewKey('');
-        try { await supabase.from('settings').upsert({ id: 'orientacoes', data: updated }); await logAction('ORIENTAÇÕES DE ESPECIALIDADE', `Especialidade "${key}" adicionada.`); toast.success('Especialidade adicionada!'); } catch (error) {}
-    };
-
-    const handleRemoveType = async (keyToRemove) => {
-        if (!window.confirm(`Excluir as orientações de "${keyToRemove}"?`)) return;
-        const updated = { ...orientacoes }; delete updated[keyToRemove]; setOrientacoes(updated);
-        try { await supabase.from('settings').upsert({ id: 'orientacoes', data: updated }); await logAction('ORIENTAÇÕES DE ESPECIALIDADE', `Especialidade "${keyToRemove}" excluída.`); toast.success('Excluído!'); } catch (error) {}
-    };
-
-    const handleRenameType = async (oldKey) => {
-        const newKey = editTitleValue.trim();
-        if (!newKey || newKey === oldKey) return setEditingKey(null);
-        if (orientacoes[newKey]) return toast.error('Nome já existe.');
-        const updated = { ...orientacoes }; updated[newKey] = updated[oldKey]; delete updated[oldKey];
-        setOrientacoes(updated); setEditingKey(null);
-        try { await supabase.from('settings').upsert({ id: 'orientacoes', data: updated }); await logAction('ORIENTAÇÕES DE ESPECIALIDADE', `Especialidade "${oldKey}" renomeada para "${newKey}".`); toast.success('Renomeado!'); } catch (error) {}
-    };
-
-    if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-blue-500" size={32} /></div>;
-
-    return (
-        <div className="bg-white/60 backdrop-blur-md rounded-xl border border-white/60 shadow-sm p-6 animate-in fade-in duration-300 space-y-8">
-            
-            <div className="border-b border-white/60 pb-4">
-                <h2 className="text-lg font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                    <FileText size={20} className="text-blue-600" /> Fluxo de Internação e Orientações
-                </h2>
-                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                    Gerencie os horários e textos que sairão no PDF do paciente
-                </p>
-            </div>
-
-            {/* BLOCO 1: REGRAS DE HORÁRIO */}
-            <div className="space-y-4">
-                <h3 className="text-xs font-black text-slate-700 uppercase flex items-center gap-2 tracking-widest pl-1">
-                    <Clock size={14} className="text-blue-500"/> 1. Horários de Internação
-                </h3>
-                
-                <div className="flex flex-col sm:flex-row gap-2 bg-slate-50/80 p-3 rounded-xl border border-white/60 shadow-sm items-center">
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Nova Regra:</span>
-                    <select value={newRegraTipo} onChange={e => setNewRegraTipo(e.target.value)} className="h-9 px-3 rounded-lg border border-white/60 outline-none focus:border-blue-500 text-xs font-bold text-slate-700 bg-white/60">
-                        <option value="anterior">Internar no Dia Anterior</option>
-                        <option value="mesmo">Internar no Mesmo Dia</option>
-                    </select>
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">às</span>
-                    <input type="time" value={newRegraHorario} onChange={e => setNewRegraHorario(e.target.value)} className="h-9 px-3 rounded-lg border border-white/60 outline-none focus:border-blue-500 text-xs font-bold text-slate-700 bg-white/60" />
-                    <button onClick={handleAddRegra} className="bg-blue-600 text-white px-4 h-9 rounded-lg font-black text-[11px] uppercase hover:bg-blue-700 transition-all flex items-center gap-1 shadow-sm sm:ml-auto w-full sm:w-auto justify-center">
-                        <Plus size={14} /> Adicionar
-                    </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2 px-1">
-                    {regras.map(r => (
-                        <div key={r.id} className="flex items-center gap-2 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 shadow-sm group">
-                            {r.label}
-                            <button onClick={() => handleRemoveRegra(r.id)} className="text-slate-600 hover:text-rose-500 transition-colors" title="Remover Regra"><X size={14}/></button>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <div className="h-px w-full bg-slate-200/60"></div>
-
-            {/* BLOCO 2: ESPECIALIDADES */}
-            <div className="space-y-4">
-                <h3 className="text-xs font-black text-slate-700 uppercase flex items-center gap-2 tracking-widest pl-1">
-                    <FileText size={14} className="text-emerald-500"/> 2. Textos por Especialidade
-                </h3>
-
-                <div className="flex gap-2 bg-white/60 p-3 rounded-xl border border-white/60 shadow-sm">
-                    <input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="Nova Especialidade (Ex: Ortopedia)" className="flex-1 h-9 px-3 rounded-lg border border-white/60 outline-none focus:border-blue-500 text-sm font-bold text-slate-700" onKeyDown={e => e.key === 'Enter' && handleAddType()} />
-                    <button onClick={handleAddType} disabled={!newKey.trim()} className="bg-slate-800 text-white px-4 h-9 rounded-lg font-black text-[11px] uppercase hover:bg-slate-900 transition-all flex items-center gap-1 shadow-sm disabled:opacity-50">
-                        <Plus size={14} /> Criar
-                    </button>
-                </div>
-
-                <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2 pt-2">
-                    {Object.entries(orientacoes).map(([key, config]) => {
-                        const currentConfig = typeof config === 'string' ? { texto: config, regraInternacao: 'dia_anterior' } : config;
-                        return (
-                            <div key={key} className="bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-xl overflow-hidden shadow-sm group">
-                                <div className="flex justify-between items-center px-4 py-2.5 bg-white/60 border-b border-white/60">
-                                    {editingKey === key ? (
-                                        <div className="flex items-center gap-2 animate-in fade-in">
-                                            <input value={editTitleValue} onChange={(e) => setEditTitleValue(e.target.value)} className="h-7 px-2 border border-blue-400 rounded text-xs font-black text-slate-700 uppercase outline-none focus:border-blue-600 shadow-sm" autoFocus onKeyDown={(e) => { if (e.key === 'Enter') handleRenameType(key); if (e.key === 'Escape') setEditingKey(null); }} />
-                                            <button onClick={() => handleRenameType(key)} className="text-emerald-600 hover:bg-emerald-100 p-1 rounded transition-colors"><Check size={14}/></button>
-                                            <button onClick={() => setEditingKey(null)} className="text-rose-600 hover:bg-rose-100 p-1 rounded transition-colors"><X size={14}/></button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2 group/title">
-                                            <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">{key}</h3>
-                                            <button onClick={() => { setEditingKey(key); setEditTitleValue(key); }} className="text-slate-600 hover:text-blue-600 opacity-0 group-hover/title:opacity-100 transition-all"><Edit2 size={12} /></button>
-                                        </div>
-                                    )}
-                                    <button onClick={() => handleRemoveType(key)} className="text-slate-500 hover:text-rose-600 bg-white/60 hover:bg-rose-50 p-1.5 rounded-lg border border-white/60 hover:border-rose-200 transition-all shadow-sm"><Trash2 size={14} /></button>
-                                </div>
-                                <div className="p-4 flex flex-col gap-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {/* Bloco 1: Regra de Internação */}
-                                        <div className="flex flex-col gap-1.5 bg-blue-50/50 p-3 rounded-xl border border-blue-100 shadow-sm">
-                                            <div className="flex items-center gap-1.5">
-                                                <Clock size={14} className="text-blue-500" />
-                                                <span className="text-[11px] font-black uppercase tracking-widest text-blue-800">1. Horário da Internação:</span>
-                                            </div>
-                                            <select 
-                                                value={currentConfig.regraInternacao || 'dia_anterior'}
-                                                onChange={(e) => setOrientacoes({ ...orientacoes, [key]: { ...currentConfig, regraInternacao: e.target.value } })}
-                                                className="w-full h-9 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-black text-slate-700 outline-none focus:border-blue-500 uppercase tracking-wide cursor-pointer"
-                                            >
-                                                {regras.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
-                                            </select>
-                                        </div>
-
-                                        {/* Bloco 2: Horário Estático da Cirurgia no PDF */}
-                                        <div className="flex flex-col gap-1.5 bg-purple-50/50 p-3 rounded-xl border border-purple-100 shadow-sm">
-                                            <div className="flex items-center gap-1.5">
-                                                <Activity size={14} className="text-purple-500" />
-                                                <span className="text-[11px] font-black uppercase tracking-widest text-purple-800">2. Horário da Cirurgia (No PDF):</span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="time"
-                                                    value={currentConfig.horarioCirurgiaPdf || ''}
-                                                    onChange={(e) => setOrientacoes({ ...orientacoes, [key]: { ...currentConfig, horarioCirurgiaPdf: e.target.value } })}
-                                                    className="flex-1 h-9 px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-xs font-black text-slate-700 outline-none focus:border-purple-500 transition-all cursor-pointer"
-                                                />
-                                                <button onClick={() => setOrientacoes({ ...orientacoes, [key]: { ...currentConfig, horarioCirurgiaPdf: '' } })} className="px-3 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-[10px] font-bold text-slate-500 hover:text-rose-500 hover:border-rose-200 uppercase transition-colors shadow-sm" title="Limpar e usar horário do Mapa">
-                                                    Usar do Mapa
-                                                </button>
-                                            </div>
-                                            <p className="text-[8.5px] font-bold text-purple-600/70 uppercase leading-tight mt-0.5 ml-1">Deixe em branco para usar o horário exato da agenda.</p>
-                                        </div>
-                                    </div>
-                                    <textarea
-                                        value={currentConfig.texto}
-                                        onChange={(e) => setOrientacoes({ ...orientacoes, [key]: { ...currentConfig, texto: e.target.value } })}
-                                        className="w-full min-h-[140px] p-4 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-y leading-relaxed"
-                                        placeholder={`Escreva as orientações para ${key}...`}
-                                    />
-                                    <div className="flex justify-end mt-1">
-                                        <button onClick={() => handleSave(false)} disabled={saving} className="bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white px-5 py-2 rounded-lg font-black text-[11px] uppercase tracking-widest transition-all flex items-center gap-2 shadow-sm disabled:opacity-50">
-                                            {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Salvar Ajustes
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const medicamentosComuns = [
-    // ANALGÉSICOS, ANTITÉRMICOS E ANTI-INFLAMATÓRIOS
-    { nome: 'DIPIRONA 500mg', posologia: 'Tomar 1 comp. via oral de 6/6h se dor ou febre', tipo: 'simples' },
-    { nome: 'DIPIRONA 1g', posologia: 'Tomar 1 comp. via oral de 6/6h se dor ou febre forte', tipo: 'simples' },
-    { nome: 'DIPIRONA GOTAS 500mg/mL', posologia: 'Tomar 1 gota por kg de peso via oral de 6/6h se febre', tipo: 'simples' },
-    { nome: 'NOVALGINA 1g', posologia: 'Tomar 1 comp. via oral de 6/6h se dor ou febre', tipo: 'simples' },
-    { nome: 'PARACETAMOL 750mg', posologia: 'Tomar 1 comp. via oral de 6/6h se dor ou febre', tipo: 'simples' },
-    { nome: 'PARACETAMOL GOTAS 200mg/mL', posologia: 'Tomar 1 gota por kg de peso via oral de 6/6h se febre', tipo: 'simples' },
-    { nome: 'IBUPROFENO 600mg', posologia: 'Tomar 1 comp. via oral de 8/8h após as refeições', tipo: 'simples' },
-    { nome: 'IBUPROFENO GOTAS 50mg/mL', posologia: 'Tomar 1 gota por kg via oral de 8/8h se febre', tipo: 'simples' },
-    { nome: 'NIMESULIDA 100mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 5 dias', tipo: 'simples' },
-    { nome: 'DICLOFENACO DE SÓDIO 50mg', posologia: 'Tomar 1 comp. via oral de 8/8h por 5 dias', tipo: 'simples' },
-    { nome: 'CETOPROFENO 100mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 5 dias', tipo: 'simples' },
-    { nome: 'NAPROXENO 500mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 5 dias', tipo: 'simples' },
-    { nome: 'CELECOXIBE 200mg', posologia: 'Tomar 1 caps. via oral 1x ao dia por 7 dias', tipo: 'simples' },
-    { nome: 'TROMETAMOL CETOROLACO 10mg', posologia: 'Tomar 1 comp. sublingual de 8/8h se dor forte (máx 5 dias)', tipo: 'simples' },
-
-    // CORTICÓIDES
-    { nome: 'PREDNISONA 20mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã por 5 dias', tipo: 'simples' },
-    { nome: 'PREDNISONA 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã', tipo: 'simples' },
-    { nome: 'PREDNISOLONA XAROPE 3mg/mL', posologia: 'Tomar conforme peso via oral de manhã por 5 dias', tipo: 'simples' },
-    { nome: 'DEXAMETASONA 4mg', posologia: 'Tomar 1 comp. via oral de 8/8h por 5 dias', tipo: 'simples' },
-    { nome: 'DEFLAZACORTE 30mg', posologia: 'Tomar 1 comp. via oral 1x ao dia por 5 dias', tipo: 'simples' },
-
-    // ANTIBIÓTICOS (Devem reter receita, mas geralmente colocamos no comum e a farmácia retém a 2a via se for gerada manualmente, mas podemos classificar como controle para forçar 2 vias)
-    { nome: 'AMOXICILINA 500mg', posologia: 'Tomar 1 caps. via oral de 8/8h por 7 dias', tipo: 'controle' },
-    { nome: 'AMOXICILINA 875mg + CLAVULANATO', posologia: 'Tomar 1 comp. via oral de 12/12h por 7 dias', tipo: 'controle' },
-    { nome: 'AZITROMICINA 500mg', posologia: 'Tomar 1 comp. via oral 1x ao dia por 5 dias', tipo: 'controle' },
-    { nome: 'CEFALEXINA 500mg', posologia: 'Tomar 1 caps. via oral de 6/6h por 7 dias', tipo: 'controle' },
-    { nome: 'CIPROFLOXACINO 500mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 7 dias', tipo: 'controle' },
-    { nome: 'LEVOFLOXACINO 500mg', posologia: 'Tomar 1 comp. via oral 1x ao dia por 7 dias', tipo: 'controle' },
-    { nome: 'SULFAMETOXAZOL + TRIMETOPRIMA 800/160mg', posologia: 'Tomar 1 comp. via oral de 12/12h por 7 dias', tipo: 'controle' },
-    { nome: 'NITROFURANTOÍNA 100mg', posologia: 'Tomar 1 caps. via oral de 6/6h por 7 dias', tipo: 'controle' },
-    { nome: 'CEFTRIAXONA 1g (IM)', posologia: 'Aplicar 1 ampola intramuscular 1x ao dia por 3 dias', tipo: 'controle' },
-    { nome: 'METRONIDAZOL 400mg', posologia: 'Tomar 1 comp. via oral de 8/8h por 7 dias', tipo: 'controle' },
-
-    // GASTROINTESTINAL E ANTIEMÉTICOS
-    { nome: 'OMEPRAZOL 20mg', posologia: 'Tomar 1 caps. via oral em jejum', tipo: 'simples' },
-    { nome: 'PANTOPRAZOL 40mg', posologia: 'Tomar 1 comp. via oral em jejum', tipo: 'simples' },
-    { nome: 'ESOMEPRAZOL 40mg', posologia: 'Tomar 1 comp. via oral em jejum', tipo: 'simples' },
-    { nome: 'DOMPERIDONA 10mg', posologia: 'Tomar 1 comp. via oral 30 min antes das refeições', tipo: 'simples' },
-    { nome: 'METOCLOPRAMIDA 10mg (PLASIL)', posologia: 'Tomar 1 comp. via oral de 8/8h se enjoo', tipo: 'simples' },
-    { nome: 'ONDANSETRONA 4mg', posologia: 'Tomar 1 comp. sublingual de 8/8h se enjoo/vômito', tipo: 'simples' },
-    { nome: 'BROMETO DE PINAVÉRIO 100mg', posologia: 'Tomar 1 comp. via oral de 12/12h', tipo: 'simples' },
-    { nome: 'BESCOPAN COMPOSTO', posologia: 'Tomar 1 comp. via oral de 8/8h se cólica', tipo: 'simples' },
-    { nome: 'DIMETICONA (SIMETICONA) 40mg', posologia: 'Tomar 1 comp. via oral de 8/8h se gases', tipo: 'simples' },
-    { nome: 'BISACODIL 5mg', posologia: 'Tomar 1 drágea via oral à noite', tipo: 'simples' },
-
-    // ANTI-HIPERTENSIVOS E CARDIOLOGIA
-    { nome: 'LOSARTANA POTÁSSICA 50mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
-    { nome: 'ENALAPRIL 20mg', posologia: 'Tomar 1 comp. via oral de 12/12h', tipo: 'simples' },
-    { nome: 'CAPTOPRIL 25mg', posologia: 'Tomar 1 comp. sublingual em caso de pico hipertensivo', tipo: 'simples' },
-    { nome: 'HIDROCLOROTIAZIDA 25mg', posologia: 'Tomar 1 comp. via oral pela manhã', tipo: 'simples' },
-    { nome: 'ANLODIPINO 5mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'simples' },
-    { nome: 'ATENOLOL 50mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
-    { nome: 'CARVEDILOL 12,5mg', posologia: 'Tomar 1 comp. via oral de 12/12h', tipo: 'simples' },
-    { nome: 'BISOPROLOL 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
-    { nome: 'ESPIRONOLACTONA 25mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
-    { nome: 'FUROSEMIDA 40mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã', tipo: 'simples' },
-    { nome: 'AAS 100mg', posologia: 'Tomar 1 comp. via oral após o almoço', tipo: 'simples' },
-    { nome: 'CLOPIDOGREL 75mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
-    { nome: 'RIVAROXABANA 20mg', posologia: 'Tomar 1 comp. via oral com a refeição principal', tipo: 'simples' },
-    { nome: 'SINVASTATINA 20mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'simples' },
-    { nome: 'ROSUVASTATINA 10mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'simples' },
-    { nome: 'ATORVASTATINA 20mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'simples' },
-
-    // DIABETES
-    { nome: 'METFORMINA 850mg', posologia: 'Tomar 1 comp. via oral após as refeições (almoço e jantar)', tipo: 'simples' },
-    { nome: 'METFORMINA XR 500mg', posologia: 'Tomar 1 comp. via oral à noite, após o jantar', tipo: 'simples' },
-    { nome: 'GLIBENCLAMIDA 5mg', posologia: 'Tomar 1 comp. via oral 30 min antes do almoço', tipo: 'simples' },
-    { nome: 'GLICLAZIDA MR 30mg', posologia: 'Tomar 1 comp. via oral no café da manhã', tipo: 'simples' },
-    { nome: 'DAPAGLIFLOZINA 10mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã', tipo: 'simples' },
-    { nome: 'EMPAGLIFLOZINA 25mg', posologia: 'Tomar 1 comp. via oral 1x ao dia pela manhã', tipo: 'simples' },
-
-    // ANTIALÉRGICOS E RESPIRATÓRIOS
-    { nome: 'LORATADINA 10mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
-    { nome: 'DESLORATADINA 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
-    { nome: 'FEXOFENADINA 120mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
-    { nome: 'DEXCLORFENIRAMINA 2mg', posologia: 'Tomar 1 comp. via oral de 8/8h', tipo: 'simples' },
-    { nome: 'DEXCLORFENIRAMINA XAROPE', posologia: 'Tomar 1 medida via oral de 8/8h', tipo: 'simples' },
-    { nome: 'ACETILCISTEÍNA 600mg ENV', posologia: 'Dissolver 1 envelope em água e tomar à noite por 5 dias', tipo: 'simples' },
-    { nome: 'AMBROXOL XAROPE ADULTO', posologia: 'Tomar 5mL via oral de 8/8h por 5 dias', tipo: 'simples' },
-    { nome: 'SALBUTAMOL SPRAY (AEROLIN)', posologia: 'Fazer 2 jatos via inalatória de 6/6h se falta de ar', tipo: 'simples' },
-    { nome: 'FORMOTEROL + BUDESONIDA 12/400mcg', posologia: 'Inalar 1 cápsula de 12/12h após bochecho com água', tipo: 'simples' },
-    { nome: 'SPLAY NASAL (SORO FISIOLÓGICO)', posologia: 'Aplicar 2 jatos em cada narina de 8/8h', tipo: 'simples' },
-    { nome: 'BUDESONIDA SPRAY NASAL 50mcg', posologia: 'Aplicar 1 jato em cada narina 2x ao dia', tipo: 'simples' },
-
-    // PSIQUIATRIA E NEUROLOGIA (CONTROLE ESPECIAL)
-    { nome: 'CLONAZEPAM 2mg (RIVOTRIL)', posologia: 'Tomar 1 comp. via oral à noite ao deitar', tipo: 'controle' },
-    { nome: 'CLONAZEPAM GOTAS 2,5mg/mL', posologia: 'Tomar 5 gotas via oral à noite ao deitar', tipo: 'controle' },
-    { nome: 'ALPRAZOLAM 1mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
-    { nome: 'DIAZEPAM 10mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
-    { nome: 'BROMAZEPAM 3mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
-    { nome: 'ZOLPIDEM 10mg', posologia: 'Tomar 1 comp. via oral imediatamente ao deitar', tipo: 'controle' },
-    { nome: 'ZOLPIDEM CR 12,5mg', posologia: 'Tomar 1 comp. via oral imediatamente ao deitar', tipo: 'controle' },
-    { nome: 'FLUOXETINA 20mg', posologia: 'Tomar 1 caps. via oral de manhã', tipo: 'controle' },
-    { nome: 'SERTRALINA 50mg', posologia: 'Tomar 1 comp. via oral de manhã', tipo: 'controle' },
-    { nome: 'ESCITALOPRAM 10mg', posologia: 'Tomar 1 comp. via oral de manhã', tipo: 'controle' },
-    { nome: 'CITALOPRAM 20mg', posologia: 'Tomar 1 comp. via oral de manhã', tipo: 'controle' },
-    { nome: 'DESVENLAFAXINA 50mg', posologia: 'Tomar 1 comp. via oral de manhã', tipo: 'controle' },
-    { nome: 'VENLAFAXINA 75mg', posologia: 'Tomar 1 caps. via oral de manhã', tipo: 'controle' },
-    { nome: 'AMITRIPTILINA 25mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
-    { nome: 'NORTRIPTILINA 25mg', posologia: 'Tomar 1 caps. via oral à noite', tipo: 'controle' },
-    { nome: 'DULOXETINA 30mg', posologia: 'Tomar 1 caps. via oral de manhã', tipo: 'controle' },
-    { nome: 'PREGABALINA 75mg', posologia: 'Tomar 1 caps. via oral à noite', tipo: 'controle' },
-    { nome: 'GABAPENTINA 300mg', posologia: 'Tomar 1 caps. via oral à noite', tipo: 'controle' },
-    { nome: 'CARBAMAZEPINA 200mg', posologia: 'Tomar 1 comp. via oral de 12/12h', tipo: 'controle' },
-    { nome: 'QUETIAPINA 25mg', posologia: 'Tomar 1 comp. via oral à noite ao deitar', tipo: 'controle' },
-    { nome: 'RISPERIDONA 1mg', posologia: 'Tomar 1 comp. via oral à noite', tipo: 'controle' },
-    { nome: 'TRAMADOL 50mg', posologia: 'Tomar 1 caps. via oral de 8/8h se dor forte', tipo: 'controle' },
-    { nome: 'CODEÍNA 30mg + PARACETAMOL 500mg', posologia: 'Tomar 1 comp. via oral de 8/8h se dor', tipo: 'controle' },
-    { nome: 'PACO (PARACETAMOL + CODEÍNA)', posologia: 'Tomar 1 comp. via oral de 8/8h se dor', tipo: 'controle' },
-
-    // VITAMINAS E SUPLEMENTOS
-    { nome: 'COLECALCIFEROL (VIT D) 50.000 UI', posologia: 'Tomar 1 caps. via oral por semana durante 8 semanas', tipo: 'simples' },
-    { nome: 'COLECALCIFEROL (VIT D) 7.000 UI', posologia: 'Tomar 1 caps. via oral 1x ao dia', tipo: 'simples' },
-    { nome: 'SULFATO FERROSO 40mg', posologia: 'Tomar 1 comp. via oral 1 hora antes do almoço com suco cítrico', tipo: 'simples' },
-    { nome: 'ÁCIDO FÓLICO 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
-    { nome: 'CITRATO DE CÁLCIO + VIT D', posologia: 'Tomar 1 comp. via oral de 12/12h junto às refeições', tipo: 'simples' },
-    { nome: 'COMPLEXO B', posologia: 'Tomar 1 drágea via oral 1x ao dia', tipo: 'simples' },
-    { nome: 'VITAMINA C 1g', posologia: 'Dissolver 1 comp. efervescente em água e tomar 1x ao dia', tipo: 'simples' },
-
-    // OUTROS (HORMONIOS, ANTIPARASITÁRIOS, GINECO, URO)
-    { nome: 'LEVOTIROXINA 50mcg', posologia: 'Tomar 1 comp. via oral em jejum (aguardar 30 min para comer)', tipo: 'simples' },
-    { nome: 'ALBENDAZOL 400mg', posologia: 'Tomar 1 comp. via oral em dose única mastigado', tipo: 'simples' },
-    { nome: 'IVERMECTINA 6mg', posologia: 'Tomar os comprimidos (conforme peso) via oral em dose única', tipo: 'simples' },
-    { nome: 'SECNIDAZOL 1000mg', posologia: 'Tomar 2 comp. via oral em dose única junto com a refeição', tipo: 'simples' },
-    { nome: 'FLUCONAZOL 150mg', posologia: 'Tomar 1 caps. via oral em dose única', tipo: 'simples' },
-    { nome: 'MICONAZOL CREME VAGINAL', posologia: 'Aplicar 1 aplicador cheio via vaginal à noite por 14 dias', tipo: 'simples' },
-    { nome: 'TANSULOSINA 0,4mg', posologia: 'Tomar 1 caps. via oral 1x ao dia após o jantar', tipo: 'simples' },
-    { nome: 'FINASTERIDA 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia', tipo: 'simples' },
-    { nome: 'SILDENAFILA 50mg', posologia: 'Tomar 1 comp. via oral 1 hora antes da relação', tipo: 'simples' },
-    { nome: 'TADALAFILA 5mg', posologia: 'Tomar 1 comp. via oral 1x ao dia (uso contínuo)', tipo: 'simples' },
-    { nome: 'ESPIRONOLACTONA 50mg', posologia: 'Tomar 1 comp. via oral 1x ao dia de manhã', tipo: 'simples' },
-
-    // USO TÓPICO / DERMATOLÓGICO / OFTÁLMICO
-    { nome: 'CETOCONAZOL CREME', posologia: 'Aplicar na área afetada 2x ao dia', tipo: 'simples' },
-    { nome: 'DEXAMETASONA CREME', posologia: 'Aplicar fina camada na lesão 2x ao dia', tipo: 'simples' },
-    { nome: 'NEOMICINA + BACITRACINA POMADA', posologia: 'Aplicar na lesão após limpeza 3x ao dia', tipo: 'simples' },
-    { nome: 'MUPIROCINA POMADA 2%', posologia: 'Aplicar na lesão 3x ao dia por 7 dias', tipo: 'simples' },
-    { nome: 'PERMETRINA LOÇÃO 5%', posologia: 'Aplicar no corpo todo à noite, deixar por 12h e lavar. Repetir em 7 dias.', tipo: 'simples' },
-    { nome: 'TOBRAMICINA COLÍRIO', posologia: 'Pingar 1 gota no olho afetado de 6/6h por 7 dias', tipo: 'simples' },
-    { nome: 'CARMELOSE SÓDICA COLÍRIO', posologia: 'Pingar 1 gota em cada olho de 6/6h ou se ressecamento', tipo: 'simples' }
-];
-
-// --- CONFIGURAÇÕES MÉDICAS COMPONENT ---
-const ConfiguracoesMedicasTab = () => {
-    const [config, setConfig] = useState({
-        cabecalho: 'HOSPITAL MUNICIPAL / SANTA CASA',
-        rodape: 'Av. Brasil, 100 - Centro\nTel: (00) 0000-0000',
-        medicamentos_padrao: []
-    });
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    
-    // Form para novo medicamento
-    const [novoMed, setNovoMed] = useState('');
-    const [novaPosologia, setNovaPosologia] = useState('');
-    const [tipo, setTipo] = useState('simples');
-
-    useEffect(() => {
-        const loadMedicas = async () => {
-            const { data, error } = await supabase.from('settings').select('data').eq('id', 'medicas').maybeSingle();
-            if (!error && data && data.data) {
-                setConfig(prev => ({ ...prev, ...data.data }));
-            }
-            setLoading(false);
-        };
-        loadMedicas();
-    }, []);
-
-    const handleSave = async (updatedConfig) => {
-        setSaving(true);
-        try {
-            const { error } = await supabase.from('settings').upsert({ id: 'medicas', data: updatedConfig || config });
-            if (error) throw error;
-            toast.success('Configurações salvas com sucesso!');
-        } catch (err) {
-            toast.error('Erro ao salvar as configurações.');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const addMedicamento = () => {
-        if (!novoMed.trim()) return toast.error('Digite o nome do medicamento.');
-        const novo = { id: Date.now().toString(), nome: novoMed, posologia: novaPosologia, tipo };
-        const updated = { ...config, medicamentos_padrao: [...(config.medicamentos_padrao || []), novo] };
-        setConfig(updated);
-        handleSave(updated);
-        setNovoMed('');
-        setNovaPosologia('');
-    };
-
-    const removeMedicamento = (id) => {
-        if (!window.confirm("Remover este medicamento padrão?")) return;
-        const updated = { ...config, medicamentos_padrao: config.medicamentos_padrao.filter(m => m.id !== id) };
-        setConfig(updated);
-        handleSave(updated);
-    };
-
-    const preCarregarMedicamentos = () => {
-        if (!window.confirm("Isso vai adicionar dezenas de medicamentos do protocolo geral à sua lista. Deseja continuar?")) return;
-        
-        const novos = medicamentosComuns.map(m => ({
-            id: Math.random().toString(36).substring(7) + Date.now().toString(36),
-            nome: m.nome,
-            posologia: m.posologia,
-            tipo: m.tipo
-        }));
-
-        const listaAtual = config.medicamentos_padrao || [];
-        const aAdicionar = novos.filter(n => !listaAtual.some(a => a.nome === n.nome));
-
-        const updated = { ...config, medicamentos_padrao: [...listaAtual, ...aAdicionar] };
-        setConfig(updated);
-        handleSave(updated);
-        toast.success(`${aAdicionar.length} medicamentos pré-carregados!`);
-    };
-
-    if (loading) return <div className="p-8 text-center"><Loader2 className="animate-spin text-blue-600 mx-auto" size={32} /></div>;
-
-    return (
-        <div className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/60 shadow-sm p-8 animate-in fade-in max-w-4xl mx-auto space-y-8">
-            <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-indigo-500"></div> Configurações do Receituário
-            </h2>
-
-            <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Título do Cabeçalho</label>
-                        <input value={config.cabecalho || ''} onChange={e => setConfig({ ...config, cabecalho: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-indigo-500 text-sm font-bold text-slate-700 bg-white/50" placeholder="Ex: CLÍNICA MÉDICA SÃO PAULO" />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Rodapé (Endereço / Telefone)</label>
-                        <textarea value={config.rodape || ''} onChange={e => setConfig({ ...config, rodape: e.target.value })} className="w-full h-20 p-3 rounded-xl border border-white/60 outline-none focus:border-indigo-500 text-sm font-bold text-slate-700 bg-white/50 resize-none" placeholder="Endereço que vai no rodapé..." />
-                    </div>
-                </div>
-                <div className="flex justify-end">
-                    <button onClick={() => handleSave(config)} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase px-6 py-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2">
-                        {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />} Salvar Textos
-                    </button>
-                </div>
-            </div>
-
-            <hr className="border-white/60 my-8" />
-
-            <div className="flex justify-between items-center mt-8 mb-4">
-                <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Banco de Medicamentos
-                </h2>
-                <button onClick={preCarregarMedicamentos} className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 border border-emerald-200">
-                    <Activity size={14}/> Auto-Preencher Cód. Completo (+90)
-                </button>
-            </div>
-
-            <div className="bg-white/40 p-4 rounded-xl border border-white/50 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                    <div className="md:col-span-1">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tipo</label>
-                        <select value={tipo} onChange={e => setTipo(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-emerald-500 text-xs font-bold text-slate-700 bg-white/70 uppercase">
-                            <option value="simples">Receita Simples</option>
-                            <option value="controle">Controle Especial</option>
-                        </select>
-                    </div>
-                    <div className="md:col-span-1">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nome</label>
-                        <input value={novoMed} onChange={e => setNovoMed(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-emerald-500 text-sm font-bold text-slate-700 uppercase" placeholder="Dipirona 500mg..." />
-                    </div>
-                    <div className="md:col-span-1">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Posologia Padrão</label>
-                        <input value={novaPosologia} onChange={e => setNovaPosologia(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-white/60 outline-none focus:border-emerald-500 text-sm font-bold text-slate-700" placeholder="Tomar 1 comp. de 8/8h" />
-                    </div>
-                    <div className="md:col-span-1">
-                        <button onClick={addMedicamento} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase h-10 rounded-xl shadow-md transition-all active:scale-95 flex justify-center items-center gap-2">
-                            <Plus size={16} /> Adicionar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-2 mt-4 max-h-[400px] overflow-y-auto custom-scrollbar">
-                {(!config.medicamentos_padrao || config.medicamentos_padrao.length === 0) && (
-                    <p className="text-center text-xs font-bold text-slate-400 uppercase py-6">Nenhum medicamento cadastrado.</p>
-                )}
-                {config.medicamentos_padrao?.map(med => (
-                    <div key={med.id} className="flex justify-between items-center bg-white/70 backdrop-blur-xl border border-white shadow-sm p-3 rounded-xl group">
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-slate-700 uppercase leading-tight">{med.nome}</span>
-                                {med.tipo === 'controle' && <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-rose-100 text-rose-600">Controle</span>}
-                            </div>
-                            <span className="text-xs font-bold text-slate-500 mt-0.5">{med.posologia || 'Sem posologia padrão'}</span>
-                        </div>
-                        <button onClick={() => removeMedicamento(med.id)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
-                            <Trash2 size={16} />
-                        </button>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
 // --- LOGS: filtros e exportação -------------------------------------------
 // O PostgREST devolve no máximo 1000 linhas por requisição; a exportação pagina
 // até LOGS_EXPORT_MAX para não travar o navegador com a tabela inteira.
@@ -1660,7 +618,7 @@ const Settings = () => {
     const tabFromUrl = searchParams.get('tab');
 
     const [loading, setLoading] = useState(true);
-    const [activeSection, setActiveSection] = useState((tabFromUrl === 'medicos' ? 'especialidades' : tabFromUrl) || 'especialidades');
+    const [activeSection, setActiveSection] = useState(tabFromUrl || 'segmentos');
     // Bloco (card) aberto no Painel de Controle. null = mostra a grade de cards.
     // Sempre inicia na grade para o usuário escolher o bloco (Estrutura,
     // Cadastros, Fila, Faturamento) antes de ver as opções.
@@ -1678,7 +636,7 @@ const Settings = () => {
     const [exportandoLogs, setExportandoLogs] = useState(false);
 
     useEffect(() => {
-        if (tabFromUrl) setActiveSection(tabFromUrl === 'medicos' ? 'especialidades' : tabFromUrl);
+        if (tabFromUrl) setActiveSection(tabFromUrl);
     }, [tabFromUrl]);
 
     // Uma única consulta traz a página E o total do filtro (count exact), então o
@@ -1795,25 +753,15 @@ const Settings = () => {
         return todos;
     };
 
-    // 500+ linhas na tela: o parser roda uma vez por carga, não a cada render.
-    const logsNaTela = useMemo(
-        () => logs.map((log) => ({ log, plantao: extrairDadosDoPlantao(log) })),
-        [logs]
-    );
 
     const linhasDeLog = (registros) => registros.map((log) => {
         const d = log.timestamp ? new Date(log.timestamp) : null;
-        // Data do plantão e médico saem do texto do log (ver logEscalaParser).
-        const plantao = extrairDadosDoPlantao(log);
         return {
             data: d ? d.toLocaleDateString('pt-BR') : '',
             hora: d ? d.toLocaleTimeString('pt-BR') : '',
             usuario: nomeDoLog(log),
             email: log.userEmail || '',
             acao: log.action || '',
-            dataPlantao: plantao.dataPlantao,
-            medico: plantao.medico,
-            medicoAnterior: plantao.medicoAnterior,
             detalhes: log.details || (log.data ? JSON.stringify(log.data) : ''),
             ip: log.ip_address || '',
         };
@@ -1842,25 +790,22 @@ const Settings = () => {
                     orientation: 'landscape',
                     columns: [
                         { header: 'Data / Hora' }, { header: 'Usuário' }, { header: 'Ação' },
-                        { header: 'Plantão' }, { header: 'Médico' }, { header: 'Detalhes' }, { header: 'IP' },
+                        { header: 'Detalhes' }, { header: 'IP' },
                     ],
                     rows: linhas.map((l) => [
-                        `${l.data} ${l.hora}`, l.usuario, l.acao, l.dataPlantao || '—',
-                        l.medicoAnterior ? `${l.medico} (antes: ${l.medicoAnterior})` : (l.medico || '—'),
-                        l.detalhes, l.ip,
+                        `${l.data} ${l.hora}`, l.usuario, l.acao, l.detalhes, l.ip,
                     ]),
                     totalLabel: 'Total de Registros Exportados',
                 });
             } else {
                 const planilha = linhas.map((l) => ({
                     'Data': l.data, 'Hora': l.hora, 'Usuário': l.usuario, 'E-mail': l.email,
-                    'Ação': l.acao, 'Data do Plantão': l.dataPlantao, 'Médico': l.medico,
-                    'Médico Anterior': l.medicoAnterior, 'Detalhes': l.detalhes, 'IP': l.ip,
+                    'Ação': l.acao, 'Detalhes': l.detalhes, 'IP': l.ip,
                 }));
                 const ws = XLSX.utils.json_to_sheet(planilha);
                 ws['!cols'] = [
                     { wch: 11 }, { wch: 10 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
-                    { wch: 16 }, { wch: 30 }, { wch: 30 }, { wch: 80 }, { wch: 16 },
+                    { wch: 80 }, { wch: 16 },
                 ];
                 if (formato === 'csv') {
                     // CSV abre direto no Google Planilhas e no Excel (BOM garante os acentos).
@@ -1889,15 +834,11 @@ const Settings = () => {
     };
 
     const [data, setData] = useState({
-        convenios: [], status: [], locais: [], cidades: [], anestesias: [], especialidades: [],
-        clinicas: ['Cirúrgica', 'Ambulatorial'],
-        caraterInternacao: ['01 - ELETIVA', '02 - URGÊNCIA', '03 - EMERGÊNCIA'],
+        segmentos: [], origens_lead: [],
         nomeInstituicao: 'MedCode Assessoria', corPrincipal: '#2563eb', logoUrl: '/logo.png'
     });
 
-    const [newItem, setNewItem] = useState({
-        convenios: '', status: '', locais: '', cidades: '', anestesias: '', especialidades: '', clinicas: '', caraterInternacao: ''
-    });
+    const [newItem, setNewItem] = useState({ segmentos: '', origens_lead: '' });
 
     const navigate = useNavigate();
 
@@ -1980,31 +921,16 @@ const Settings = () => {
 
     const tabGroups = {
         'cadastros_gerais': [
-            { id: 'unidades', label: 'Unidades (Hospitais)', show: hasPermission('Acesso Total (Admin)') },
-            { id: 'especialidades', label: 'Especialidades', show: hasPermission('Acessar Configurações') },
-            { id: 'convenios', label: 'Convênios', show: hasPermission('Acessar Configurações') },
-            { id: 'locais', label: 'Salas Cirúrgicas', show: hasPermission('Acessar Configurações') },
-            { id: 'cidades', label: 'Cidades', show: hasPermission('Acessar Configurações') },
-            { id: 'anestesias', label: 'Anestesias', show: hasPermission('Acessar Configurações') },
-            { id: 'status', label: 'Status da Fila', show: hasPermission('Acessar Configurações') },
-            { id: 'motivos_suspensao', label: 'Suspensões', show: hasPermission('Acessar Configurações') },
-            { id: 'prioridades', label: 'Prioridades', show: hasPermission('Acessar Configurações') },
-            { id: 'clinicas', label: 'Clínicas AIH', show: hasPermission('Acessar Configurações') },
-            { id: 'caraterInternacao', label: 'Caráter AIH', show: hasPermission('Acessar Configurações') },
+            { id: 'segmentos', label: 'Segmentos', show: hasPermission('Acessar Configurações') },
+            { id: 'origens_lead', label: 'Origens de lead', show: hasPermission('Acessar Configurações') },
             { id: 'categorias_agenda', label: 'Equipes', show: hasPermission('Acessar Configurações') }
-        ],
-        'cadastros_medicos': [
-            { id: 'medicas', label: 'Configurações Médicas', show: hasPermission('Acessar Configurações') }
         ]
     };
 
-    // Organiza as abas de cadastros gerais em blocos rotulados (em vez de uma
-    // única fileira que rola na horizontal).
+    // Abas de cadastros em blocos rotulados (em vez de uma fileira que rola).
     const tabBlocks = [
-        { label: 'Estrutura', desc: 'Unidades, salas e cidades', icon: Building, color: 'text-blue-600', bg: 'bg-blue-50', ids: ['unidades', 'locais', 'cidades'] },
-        { label: 'Cadastros', desc: 'Especialidades, convênios e equipes', icon: Stethoscope, color: 'text-indigo-600', bg: 'bg-indigo-50', ids: ['especialidades', 'convenios', 'anestesias', 'categorias_agenda'] },
-        { label: 'Fila', desc: 'Status, prioridades e suspensões', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50', ids: ['status', 'prioridades', 'motivos_suspensao'] },
-        { label: 'Faturamento (AIH)', desc: 'Clínicas e caráter', icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50', ids: ['clinicas', 'caraterInternacao'] },
+        { label: 'Comercial', desc: 'Segmentos de mercado e origens dos leads', icon: Building, color: 'text-blue-600', bg: 'bg-blue-50', ids: ['segmentos', 'origens_lead'] },
+        { label: 'Equipe', desc: 'Equipes internas (agenda e compromissos)', icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50', ids: ['categorias_agenda'] },
     ];
 
     const getActiveGroup = (section) => {
@@ -2109,41 +1035,15 @@ const Settings = () => {
                         avulsas (logs, usuários...) mantêm o painel. */}
                     <div className={`w-full animate-in fade-in slide-in-from-bottom-4 duration-500 ${activeBlock !== null ? '' : 'bg-white/60 backdrop-blur-2xl border border-white rounded-[2.5rem] shadow-xl shadow-slate-300/40 p-6 md:p-10 min-h-[700px]'}`}>
                         
-                        {activeSection === 'importacao' && (
-                            <div className="bg-white/60 rounded-3xl border border-white/40 shadow-sm p-10 flex flex-col items-center justify-center min-h-[400px] group cursor-pointer hover:border-blue-400 hover:shadow-md transition-all text-center" onClick={() => navigate('/importar-dados')}>
-                                <div className="p-5 bg-blue-50 text-blue-600 rounded-full group-hover:scale-110 transition-transform mb-6"><FileSpreadsheet size={48} /></div>
-                                <h3 className="font-black text-2xl text-slate-800 uppercase tracking-wider">Importação em Lote (CSV)</h3>
-                                <p className="text-slate-500 font-medium mt-2 max-w-md">Importe sua lista de pacientes e cirurgias antigas de uma só vez utilizando nossa planilha padrão.</p>
-                            </div>
-                        )}
-
-
-                        {activeSection === 'especialidades' && <RenderSection title="Especialidades" category="especialidades" placeholder="Nova especialidade..." inputValue={newItem.especialidades} items={data.especialidades} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        {activeSection === 'convenios' && <RenderSection title="Convênios" category="convenios" placeholder="Novo convênio..." inputValue={newItem.convenios} items={data.convenios} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        {activeSection === 'status' && <RenderSection title="Status da Fila" category="status" placeholder="Ex: Aguardando..." inputValue={newItem.status} items={data.status} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        {activeSection === 'locais' && <RenderSection title="Salas Cirúrgicas" category="locais" placeholder="Nova sala..." inputValue={newItem.locais} items={data.locais} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
+                        {activeSection === 'segmentos' && <RenderSection title="Segmentos" category="segmentos" placeholder="Ex: Clínicas, Varejo, Advocacia..." inputValue={newItem.segmentos} items={data.segmentos} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
+                        {activeSection === 'origens_lead' && <RenderSection title="Origens de lead" category="origens_lead" placeholder="Ex: Instagram, Indicação, Google..." inputValue={newItem.origens_lead} items={data.origens_lead} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
                         {activeSection === 'categorias_agenda' && <AgendaCategoriasManager />}
-                        {activeSection === 'cidades' && <RenderSection title="Cidades" category="cidades" placeholder="Nova cidade..." inputValue={newItem.cidades} items={data.cidades} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        {activeSection === 'anestesias' && <RenderSection title="Anestesias" category="anestesias" placeholder="Tipo de anestesia..." inputValue={newItem.anestesias} items={data.anestesias} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        {activeSection === 'prioridades' && <RenderSection title="Prioridades" category="prioridades" placeholder="Classificação..." inputValue={newItem.prioridades} items={data.prioridades} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        {activeSection === 'clinicas' && <RenderSection title="Clínicas AIH" category="clinicas" placeholder="Ex: Cirúrgica..." inputValue={newItem.clinicas} items={data.clinicas} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        {activeSection === 'caraterInternacao' && <RenderSection title="Caráter AIH" category="caraterInternacao" placeholder="Ex: 01 - ELETIVA..." inputValue={newItem.caraterInternacao} items={data.caraterInternacao} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        
-                        {activeSection === 'orientacoes' && <OrientacoesManager />}
-                        {activeSection === 'tempos' && <ProcedureManager />}
-                        {activeSection === 'basesus' && <BaseSUSTab />}
-                        
+
                         {activeSection === 'usuarios' && (hasPermission('Acesso Total (Admin)') || hasPermission('Acessar Usuarios')) && <UserManagement isEmbedded={true} />}
                         {activeSection === 'identidade' && hasPermission('Acesso Total (Admin)') && <IdentidadeVisualTab data={data} setData={setData} />}
                         {activeSection === 'hub' && hasPermission('Acesso Total (Admin)') && (
                             <HubSettingsTab data={data} setData={setData} />
                         )}
-                        {activeSection === 'unidades' && hasPermission('Acesso Total (Admin)') && <UnidadesManager />}
-                        
-                        {activeSection === 'motivos_suspensao' && <MotivosSuspensaoManager />}
-                        
-                        {activeSection === 'medicas' && hasPermission('Acessar Configurações') && <ConfiguracoesMedicasTab />}
-                        {activeSection === 'regras_medicamentos' && (hasPermission('Acessar Configurações') || hasPermission('Gerenciar Regras APA/FA')) && <ConfiguracoesApaTab />}
                         
                         {activeSection === 'logs' && hasPermission('Acesso Total (Admin)') && (
                             <div className="bg-white/60 rounded-2xl border border-white/40 shadow-sm overflow-hidden flex flex-col h-full max-h-[750px]">
@@ -2301,16 +1201,14 @@ const Settings = () => {
                                                 <th className="py-2 px-3 whitespace-nowrap">Data / Hora</th>
                                                 <th className="py-2 px-3 whitespace-nowrap">Usuário</th>
                                                 <th className="py-2 px-3 whitespace-nowrap">Ação</th>
-                                                <th className="py-2 px-3 whitespace-nowrap">Plantão</th>
-                                                <th className="py-2 px-3 whitespace-nowrap">Médico</th>
                                                 <th className="py-2 px-3">Detalhes</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100/70">
                                             {loadingLogs ? (
-                                                <tr><td colSpan="6" className="py-12 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" size={24} /></td></tr>
-                                            ) : logsNaTela.length > 0 ? (
-                                                logsNaTela.map(({ log, plantao }) => {
+                                                <tr><td colSpan="4" className="py-12 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" size={24} /></td></tr>
+                                            ) : logs.length > 0 ? (
+                                                logs.map((log) => {
                                                     const acao = log.action?.toLowerCase() || '';
                                                     const bgColor = acao.includes('delete') || acao.includes('exclu') || acao.includes('removido') ? 'bg-rose-50/40' :
                                                         acao.includes('edit') || acao.includes('atualiz') ? 'bg-amber-50/40' :
@@ -2335,21 +1233,6 @@ const Settings = () => {
                                                             <td className="px-3 py-1.5 whitespace-nowrap text-[10px] font-black uppercase text-slate-500 tracking-wide">
                                                                 {log.action || 'Ação'}
                                                             </td>
-                                                            <td className="px-3 py-1.5 whitespace-nowrap text-[11px] font-black text-slate-700 tabular-nums">
-                                                                {plantao.dataPlantao || <span className="text-slate-300">—</span>}
-                                                            </td>
-                                                            <td className="px-3 py-1.5 text-[11px] font-bold text-slate-700">
-                                                                {plantao.medico ? (
-                                                                    <div className="max-w-[170px]">
-                                                                        <div className="truncate" title={plantao.medico}>{plantao.medico}</div>
-                                                                        {plantao.medicoAnterior && (
-                                                                            <div className="text-[10px] font-black text-rose-500 truncate" title={plantao.medicoAnterior}>
-                                                                                saiu: {plantao.medicoAnterior}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                ) : <span className="text-slate-300">—</span>}
-                                                            </td>
                                                             {/* Detalhe cortado em 2 linhas: é o que fazia cada log ocupar
                                                                 meia tela. O clique na linha abre o texto inteiro. */}
                                                             <td className="px-3 py-1.5 border-l border-slate-100 min-w-[320px]">
@@ -2361,15 +1244,15 @@ const Settings = () => {
                                                     );
                                                 })
                                             ) : (
-                                                <tr><td colSpan="6" className="py-12 text-center text-xs font-bold text-slate-500 uppercase tracking-widest">Nenhum log encontrado.</td></tr>
+                                                <tr><td colSpan="4" className="py-12 text-center text-xs font-bold text-slate-500 uppercase tracking-widest">Nenhum log encontrado.</td></tr>
                                             )}
                                             {carregandoMaisLogs && (
-                                                <tr><td colSpan="6" className="py-4 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" size={18} /></td></tr>
+                                                <tr><td colSpan="4" className="py-4 text-center"><Loader2 className="animate-spin mx-auto text-blue-500" size={18} /></td></tr>
                                             )}
                                             {/* A rolagem já puxa sozinha, mas o botão é o controle explícito:
                                                 o usuário vê quanto falta e não fica dependendo do gesto. */}
                                             {!loadingLogs && !carregandoMaisLogs && logs.length > 0 && logs.length < totalLogs && (
-                                                <tr><td colSpan="6" className="py-3 text-center">
+                                                <tr><td colSpan="4" className="py-3 text-center">
                                                     <button
                                                         onClick={carregarMaisLogs}
                                                         className="bg-white/90 border border-slate-200 text-slate-600 h-8 px-5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-blue-600 transition shadow-sm"
@@ -2379,7 +1262,7 @@ const Settings = () => {
                                                 </td></tr>
                                             )}
                                             {!loadingLogs && !carregandoMaisLogs && logs.length > 0 && logs.length >= totalLogs && (
-                                                <tr><td colSpan="6" className="py-3 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                <tr><td colSpan="4" className="py-3 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                                     Fim da lista — {totalLogs.toLocaleString('pt-BR')} registro(s) no filtro
                                                 </td></tr>
                                             )}

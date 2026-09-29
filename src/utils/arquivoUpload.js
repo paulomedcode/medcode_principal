@@ -24,7 +24,7 @@ export const TIPOS_DOCUMENTO = [
     'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
 ];
 
-// Word/Excel aparecem em anexo de cirurgia (guia, laudo exportado).
+// Word/Excel aparecem em anexo de contrato, briefing e proposta.
 export const TIPOS_DOCUMENTO_AMPLO = [
     ...TIPOS_DOCUMENTO,
     'application/msword',

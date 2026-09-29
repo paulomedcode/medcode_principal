@@ -11,13 +11,26 @@
  * depender da que falhou.
  *
  * USO
- *   set -a && . ~/.medcode-secrets.env && set +a
  *   node scripts/aplicar-migrations.mjs            # aplica o que falta
  *   node scripts/aplicar-migrations.mjs --conferir # só lista o que falta
+ *
+ * Sem as variáveis no ambiente (uso local), lê ~/.medcode-secrets.env. No CI
+ * elas vêm dos secrets do GitHub e o arquivo não existe.
  */
 import fs from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+if (!process.env.SUPABASE_ACCESS_TOKEN) {
+    try {
+        for (const linha of readFileSync(path.join(os.homedir(), '.medcode-secrets.env'), 'utf8').split('\n')) {
+            const m = linha.match(/^\s*([A-Z_]+)\s*=\s*(.*)\s*$/);
+            if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+        }
+    } catch { /* sem arquivo: cai nas mensagens abaixo */ }
+}
 
 const REF = process.env.SUPABASE_PROJECT_REF;
 const TOKEN = process.env.SUPABASE_ACCESS_TOKEN;

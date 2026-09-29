@@ -69,7 +69,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
     startDate: '',
     endDate: ''
   });
-  const [search, setSearch] = useState('');  // busca livre (descrição, valor, data, categoria, conta, método, médico, nº doc…)
+  const [search, setSearch] = useState('');  // busca livre (descrição, valor, data, categoria, conta, método, nº doc…)
   // Filtros adicionais aplicados em memória (não recarregam a query).
   const [xFilters, setXFilters] = useState({ categoryId: '', costCenterId: '', method: '', party: '', minVal: '', maxVal: '' });
   const xActive = xFilters.categoryId || xFilters.costCenterId || xFilters.method || xFilters.party || xFilters.minVal || xFilters.maxVal;
@@ -207,7 +207,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
       const pendVal = t.status === 'PAGO' ? 0 : absVal - Math.abs(Number(t.paid_amount) || 0);
       const hay = normTxt([
         t.description, t.finance_categories?.name, t.finance_accounts?.name,
-        t.finance_parties?.name, t.users?.name, t.finance_cost_centers?.name,
+        t.finance_parties?.name, t.finance_cost_centers?.name,
         paymentMethodLabel(t.payment_method), t.doc_number, t.reference_month, t.status,
         dateBR, t.transaction_date, amountBR, String(t.amount),
         grossVal != null ? grossVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '',
@@ -218,7 +218,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
       return hay.includes(q);
     })
     // Ordena pelo VENCIMENTO (data mostrada), mais recente primeiro — mantém a lista
-    // coerente com a coluna exibida (o repasse vai pela data de vencimento, não a de lançamento).
+    // coerente com a coluna exibida (a conta a pagar vai pela data de vencimento, não a de lançamento).
     .sort((a, b) => String(b.due_date || b.transaction_date || '').localeCompare(String(a.due_date || a.transaction_date || '')));
   }, [transactions, search, xFilters, filters.basis]);
 

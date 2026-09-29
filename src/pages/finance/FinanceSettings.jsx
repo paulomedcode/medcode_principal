@@ -30,7 +30,7 @@ const CATEGORY_ICONS = [
   { key: 'DollarSign', Comp: DollarSign, label: 'Dinheiro' },
   { key: 'Activity', Comp: Activity, label: 'Atividade' },
   { key: 'ShieldCheck', Comp: ShieldCheck, label: 'Escudo' },
-  { key: 'Users', Comp: Users, label: 'Médicos' },
+  { key: 'Users', Comp: Users, label: 'Pessoas' },
   { key: 'Percent', Comp: Percent, label: 'Imposto' },
   { key: 'Briefcase', Comp: Briefcase, label: 'Maleta' },
 ];
@@ -61,19 +61,6 @@ export default function FinanceSettings() {
   const [selectedServiceIds, setSelectedServiceIds] = useState([]);
   const [servicePageSize, setServicePageSize] = useState(20);
   const [servicePage, setServicePage] = useState(1);
-
-  // States para Médicos
-  const [doctors, setDoctors] = useState([]);
-  const [selectedDoctorId, setSelectedDoctorId] = useState('');
-  const [doctorSearch, setDoctorSearch] = useState('');
-  const [doctorCfg, setDoctorCfg] = useState({}); // doctor_id -> true se tem dados bancários/PIX
-  const [doctorSettingsForm, setDoctorSettingsForm] = useState({
-    admin_fee_rate: 10.00,
-    bank_name: '',
-    bank_agency: '',
-    bank_account: '',
-    pix_key: ''
-  });
 
   // States para Categorias
   const [categories, setCategories] = useState([]);
@@ -112,31 +99,6 @@ export default function FinanceSettings() {
       if (activeTab === 'services') {
         const data = await financeService.getServices();
         setServices(data || []);
-      } else if (activeTab === 'doctors') {
-        // Carrega usuários que são médicos ou administradores
-        const { data: usersData, error } = await supabase
-          .from('users')
-          .select('id, name, role')
-          .order('name');
-        if (error) throw error;
-        
-        // Filtra para médicos (ou perfil adequado)
-        const medicos = usersData.filter(u => ['Médico', 'Médico Coordenador', 'Administrador'].includes(u.role));
-        setDoctors(medicos);
-
-        // Mapa de quem já tem dados de pagamento (banco ou PIX) -> selo configurado/pendente.
-        const { data: cfgRows } = await supabase
-          .from('finance_doctor_settings')
-          .select('doctor_id, bank_name, bank_account, pix_key');
-        const cfg = {};
-        (cfgRows || []).forEach(r => { cfg[r.doctor_id] = !!(r.bank_name || r.bank_account || r.pix_key); });
-        setDoctorCfg(cfg);
-
-        if (medicos.length > 0) {
-          const firstDocId = medicos[0].id;
-          setSelectedDoctorId(firstDocId);
-          await loadDoctorSettings(firstDocId);
-        }
       } else if (activeTab === 'categories') {
         const cats = await financeService.getCategories();
         setCategories(cats || []);
@@ -277,48 +239,6 @@ export default function FinanceSettings() {
     }
   };
 
-  // --- LÓGICA DE CONFIGURAÇÃO DE MÉDICOS ---
-  const loadDoctorSettings = async (docId) => {
-    try {
-      const settings = await financeService.getDoctorSettings(docId);
-      if (settings) {
-        setDoctorSettingsForm({
-          admin_fee_rate: settings.admin_fee_rate,
-          bank_name: settings.bank_name || '',
-          bank_agency: settings.bank_agency || '',
-          bank_account: settings.bank_account || '',
-          pix_key: settings.pix_key || ''
-        });
-      } else {
-        setDoctorSettingsForm({
-          admin_fee_rate: 10.00,
-          bank_name: '',
-          bank_agency: '',
-          bank_account: '',
-          pix_key: ''
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error('Erro ao carregar configurações do médico.');
-    }
-  };
-
-  const handleSaveDoctorSettings = async (e) => {
-    e.preventDefault();
-    if (!selectedDoctorId) return toast.error('Nenhum médico selecionado');
-    try {
-      await financeService.updateDoctorSettings(selectedDoctorId, doctorSettingsForm);
-      const configured = !!(doctorSettingsForm.bank_name || doctorSettingsForm.bank_account || doctorSettingsForm.pix_key);
-      setDoctorCfg(prev => ({ ...prev, [selectedDoctorId]: configured }));
-      toast.success('Configurações salvas com sucesso!');
-    } catch (error) {
-      console.error(error);
-      toast.error('Erro ao salvar as configurações.');
-    }
-  };
-
-  // --- LÓGICA DE CATEGORIAS ---
   const handleSaveCategory = async (e) => {
     e.preventDefault();
     if (!categoryForm.name.trim()) return toast.error('Nome da categoria é obrigatório');
@@ -741,7 +661,7 @@ export default function FinanceSettings() {
 
   // Impressão do cadastro da aba ativa (estilo planilha).
   const TAB_TITLES = {
-    services: 'Serviços Ofertados', doctors: 'Regras de Médicos', parties: 'Pagadores / Fornecedores',
+    services: 'Serviços Ofertados', parties: 'Pagadores / Fornecedores',
     categories: 'Plano de Contas (Categorias DRE)', costcenters: 'Centros de Custo', bankaccounts: 'Contas Bancárias',
   };
   const printActiveTab = () => {
@@ -768,10 +688,6 @@ export default function FinanceSettings() {
       columns = [{ header: 'Conta' }, { header: 'Banco' }, { header: 'Agência' }, { header: 'Conta nº' }, { header: 'Saldo atual (R$)', align: 'right' }];
       rows = bankAccounts.map(a => [a.name || '—', a.bank_name || '—', a.agency || '—', a.account_number || '—', fmtBRL(a.current_balance).replace('R$ ', '')]);
       totalLabel = 'Total de Contas';
-    } else {
-      columns = [{ header: 'Médico' }, { header: 'Dados de pagamento' }];
-      rows = doctors.map(d => [d.name || '—', doctorCfg[d.id] ? 'Configurado' : 'Pendente']);
-      totalLabel = 'Total de Médicos';
     }
     if (!rows.length) return toast.error('Nada para imprimir nesta aba.');
     printReport({ ...base, columns, rows, totalLabel });
@@ -787,7 +703,7 @@ export default function FinanceSettings() {
             <Settings className="text-[#0071e3]" size={18} />
             Configurações Financeiras
           </h1>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">Parâmetros, Serviços e Repasse do ERP</p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">Serviços, cadastros, plano de contas e contas bancárias</p>
         </div>
         <button onClick={printActiveTab} title="Imprimir o cadastro desta aba"
           className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[10px] uppercase tracking-wide shadow-sm flex items-center gap-1.5 transition-all shrink-0">
@@ -802,12 +718,6 @@ export default function FinanceSettings() {
           className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'services' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
         >
           Serviços Ofertados
-        </button>
-        <button 
-          onClick={() => setActiveTab('doctors')}
-          className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'doctors' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
-        >
-          Regras de Médicos
         </button>
         <button
           onClick={() => setActiveTab('parties')}
@@ -859,7 +769,7 @@ export default function FinanceSettings() {
                   value={serviceForm.name} 
                   onChange={e => setServiceForm({ ...serviceForm, name: e.target.value })} 
                   className={baseInputStyle}
-                  placeholder="Ex: Plantão Extra 12h"
+                  placeholder="Ex: Landing Page, Agente de IA"
                 />
               </div>
               
@@ -1042,168 +952,6 @@ export default function FinanceSettings() {
         </div>
       )}
 
-      {/* Tab Content: DOCTORS */}
-      {!loading && activeTab === 'doctors' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-          {/* Seletor Lateral */}
-          <div className="lg:col-span-4 bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-4 shadow-sm flex flex-col max-h-[70vh]">
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                <UserCheck size={16} /> Profissionais
-              </h3>
-              {(() => {
-                const pend = doctors.filter(d => !doctorCfg[d.id]).length;
-                return pend > 0 ? (
-                  <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">{pend} sem dados</span>
-                ) : doctors.length > 0 ? (
-                  <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">Tudo ok</span>
-                ) : null;
-              })()}
-            </div>
-
-            <div className="relative mb-3">
-              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={doctorSearch}
-                onChange={e => setDoctorSearch(e.target.value)}
-                placeholder="Buscar profissional..."
-                className={`${baseInputStyle} h-9 pl-8 text-xs`}
-              />
-            </div>
-
-            <div className="overflow-y-auto flex-1 custom-scrollbar space-y-1 pr-1 -mx-1">
-              {(() => {
-                const q = doctorSearch.trim().toLowerCase();
-                const list = doctors.filter(d => !q || (d.name || '').toLowerCase().includes(q));
-                if (list.length === 0) return (
-                  <div className="flex flex-col items-center justify-center text-center py-12 gap-2">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 grid place-items-center text-slate-300"><Users size={22} /></div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Nenhum profissional</p>
-                  </div>
-                );
-                return list.map(d => {
-                  const active = selectedDoctorId === d.id;
-                  const ok = !!doctorCfg[d.id];
-                  return (
-                    <button
-                      key={d.id}
-                      onClick={() => { setSelectedDoctorId(d.id); loadDoctorSettings(d.id); }}
-                      className={`w-full text-left px-2.5 py-2 rounded-xl transition-all border flex items-center gap-2.5 ${active ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'border-transparent hover:bg-slate-100/80'}`}
-                    >
-                      <div className={`shrink-0 grid place-items-center h-8 w-8 rounded-lg text-[10px] font-semibold ${monoColor(d.name)}`}>{initialsOf(d.name)}</div>
-                      <div className="min-w-0 flex-1">
-                        <div className={`text-xs font-bold truncate ${active ? 'text-indigo-700' : 'text-slate-700'}`}>{d.name}</div>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[8px] font-semibold uppercase tracking-wide px-1 py-0.5 rounded bg-slate-200/60 text-slate-500">{d.role === 'Administrador' ? 'ADM' : 'MED'}</span>
-                          <span className={`inline-flex items-center gap-1 text-[8px] font-semibold uppercase tracking-wide ${ok ? 'text-emerald-600' : 'text-amber-500'}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-emerald-500' : 'bg-amber-400'}`} />
-                            {ok ? 'Configurado' : 'Pendente'}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                });
-              })()}
-            </div>
-          </div>
-
-          {/* Formulário de Configuração */}
-          <div className="lg:col-span-8 bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-4 shadow-sm">
-            <h3 className="text-[10px] font-semibold text-[#0071e3] uppercase tracking-widest mb-4 flex items-center gap-2">
-              <DollarSign size={16} /> Parâmetros de Rateio & Dados Bancários
-            </h3>
-
-            {selectedDoctorId ? (
-              <form onSubmit={handleSaveDoctorSettings} className="space-y-4">
-                
-                {/* Parâmetros do Repasse */}
-                <div className="bg-[#f5f5f7] border border-black/[.085] p-4 rounded-2xl">
-                  <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                    <Palette size={14} className="text-[#0071e3]" /> Taxas Administrativas
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Retenção de Taxa Administrativa (%)</label>
-                      <div className="relative">
-                        <input 
-                          type="number" 
-                          step="0.01"
-                          value={doctorSettingsForm.admin_fee_rate} 
-                          onChange={e => setDoctorSettingsForm({ ...doctorSettingsForm, admin_fee_rate: parseFloat(e.target.value) || 0 })} 
-                          className={`${baseInputStyle} pr-8`}
-                          placeholder="10.00"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 font-medium mt-1 ml-1">Descontada da PJ no cálculo do repasse do profissional.</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Dados de Pagamento */}
-                <div className="bg-[#f5f5f7] border border-black/[.085] p-4 rounded-2xl">
-                  <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                    <CreditCard size={14} className="text-emerald-500" /> Informações para Pagamento
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Banco</label>
-                      <input 
-                        type="text" 
-                        value={doctorSettingsForm.bank_name} 
-                        onChange={e => setDoctorSettingsForm({ ...doctorSettingsForm, bank_name: e.target.value })} 
-                        className={baseInputStyle}
-                        placeholder="Ex: Itaú Unibanco"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Agência</label>
-                      <input 
-                        type="text" 
-                        value={doctorSettingsForm.bank_agency} 
-                        onChange={e => setDoctorSettingsForm({ ...doctorSettingsForm, bank_agency: e.target.value })} 
-                        className={baseInputStyle}
-                        placeholder="0001"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Conta Corrente / Poupança</label>
-                      <input 
-                        type="text" 
-                        value={doctorSettingsForm.bank_account} 
-                        onChange={e => setDoctorSettingsForm({ ...doctorSettingsForm, bank_account: e.target.value })} 
-                        className={baseInputStyle}
-                        placeholder="12345-6"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Chave PIX</label>
-                      <input 
-                        type="text" 
-                        value={doctorSettingsForm.pix_key} 
-                        onChange={e => setDoctorSettingsForm({ ...doctorSettingsForm, pix_key: e.target.value })} 
-                        className={baseInputStyle}
-                        placeholder="CPF, CNPJ, Celular, E-mail ou Chave Aleatória"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-2">
-                  <button type="submit" className="h-10 px-8 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-bold text-xs uppercase shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center gap-2 transition-all">
-                    <Save size={14} /> Salvar Parâmetros
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="text-center py-12 text-slate-400 text-xs font-bold uppercase">Selecione um médico na lista ao lado para configurar.</div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Tab Content: PARTIES (Pagadores / Fornecedores) */}
       {!loading && activeTab === 'parties' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
@@ -1221,7 +969,7 @@ export default function FinanceSettings() {
                   value={partyForm.name}
                   onChange={e => setPartyForm({ ...partyForm, name: e.target.value })}
                   className={baseInputStyle}
-                  placeholder="Ex: UNIMED, Hospital São Lucas, Fornecedor X"
+                  placeholder="Ex: Empresa X, Fornecedor Y"
                 />
                 <p className="text-[10px] text-slate-400 font-medium mt-1 ml-1">Disponível tanto em contas a pagar quanto a receber.</p>
               </div>
@@ -1573,7 +1321,7 @@ export default function FinanceSettings() {
                     <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome do Centro</label>
                     <input type="text" autoFocus value={ccForm.name}
                       onChange={e => setCcForm({ ...ccForm, name: e.target.value })}
-                      className={baseInputStyle} placeholder="Ex: Centro Cirúrgico, Administrativo, Unidade X" />
+                      className={baseInputStyle} placeholder="Ex: Comercial, Administrativo, Produção" />
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Sigla / Código (opcional)</label>

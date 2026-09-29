@@ -10,7 +10,7 @@ import SearchableSelect from '../../components/finance/SearchableSelect';
 import CurrencyInput from '../../components/finance/CurrencyInput';
 import PartyModal from '../../components/finance/PartyModal';
 import { PAYMENT_METHODS } from '../../components/finance/paymentMethods';
-import { nameScore } from '../../utils/reconcileImport';
+import { nameScore } from '../../utils/similaridade';
 import { prevMonthISO } from '../../utils/date';
 import { printReport } from '../../utils/printReport';
 import { counterpartyName } from '../../utils/financeCounterparty';
@@ -82,7 +82,6 @@ export default function FinanceConciliation() {
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [costCenters, setCostCenters] = useState([]);
-  const [doctors, setDoctors] = useState([]);
   const [parties, setParties] = useState([]);
   const [selectedAccountId, setSelectedAccountId] = useState('');
   const [importedTxs, setImportedTxs] = useState([]);
@@ -135,11 +134,10 @@ export default function FinanceConciliation() {
 
   const loadAccounts = async () => {
     try {
-      const [accs, cats, ccs, docs, pts] = await Promise.all([financeService.getAccounts(), financeService.getCategories(), financeService.getCostCenters(), financeService.getDoctors().catch(() => []), financeService.getParties().catch(() => [])]);
+      const [accs, cats, ccs, pts] = await Promise.all([financeService.getAccounts(), financeService.getCategories(), financeService.getCostCenters(), financeService.getParties().catch(() => [])]);
       setAccounts(accs || []);
       setCategories(cats || []);
       setCostCenters(ccs || []);
-      setDoctors(docs || []);
       setParties(pts || []);
       if (accs?.length) setSelectedAccountId(accs[0].id);
     } catch (e) { console.error(e); toast.error('Erro ao carregar contas.'); }
@@ -1047,7 +1045,7 @@ export default function FinanceConciliation() {
 
       {/* Popup de confirmação de lançamento */}
       {confirmTarget && (
-        <ConfirmLaunch rows={confirmTarget} categories={categories} costCenters={costCenters} accounts={accounts} doctors={doctors} parties={parties} onCreateParty={handleCreateParty} currentAccountId={selectedAccountId} onClose={() => setConfirmTarget(null)} onConfirm={doLaunch} />
+        <ConfirmLaunch rows={confirmTarget} categories={categories} costCenters={costCenters} accounts={accounts} parties={parties} onCreateParty={handleCreateParty} currentAccountId={selectedAccountId} onClose={() => setConfirmTarget(null)} onConfirm={doLaunch} />
       )}
 
       {partyModal && (
@@ -1093,14 +1091,13 @@ const flattenTree = (list) => {
 
 // Modal de lançamento da conciliação: editor por linha (descrição, valor, categoria,
 // método e transferência individuais) + padrões "aplicar a todas".
-function ConfirmLaunch({ rows, categories, costCenters, accounts, doctors, parties, onCreateParty, currentAccountId, onClose, onConfirm }) {
+function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCreateParty, currentAccountId, onClose, onConfirm }) {
   const ccOptions = useMemo(() => flattenTree(costCenters), [costCenters]);
   const catOptionsByType = useMemo(() => ({
     ENTRADA: flattenTree((categories || []).filter(c => c.type === 'ENTRADA')),
     SAIDA: flattenTree((categories || []).filter(c => c.type === 'SAIDA')),
   }), [categories]);
   const accountOptions = (accounts || []).filter(a => a.id !== currentAccountId).map(a => ({ value: a.id, label: a.name }));
-  const doctorOptions = (doctors || []).map(d => ({ value: d.id, label: d.name }));
   const partyOptions = (parties || []).map(p => ({ value: p.id, label: p.name }));
 
   const [defCostCenter, setDefCostCenter] = useState('');
@@ -1108,7 +1105,6 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, doctors, parti
   const [defMethod, setDefMethod] = useState('PIX');
   const [defRefMonth, setDefRefMonth] = useState(prevMonthISO());
   const [defParty, setDefParty] = useState('');
-  const [defDoctor, setDefDoctor] = useState('');
   // Tenta casar a contraparte do extrato (memo/complemento) com um cadastro existente.
   // Ex.: "FULANO DE TAL" → fornecedor "Fulano de Tal". Retorna '' se nada bater bem.
   const suggestPartyId = (text) => {
@@ -1129,7 +1125,7 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, doctors, parti
       id: r.id, date: r.transaction_date, type: amt >= 0 ? 'ENTRADA' : 'SAIDA',
       description: r.description || '', payee, amount: Math.abs(amt).toFixed(2),
       categoryId: '', method: 'PIX', asTransfer: false, counterAccountId: '', splits: null,
-      costCenterId: '', referenceMonth: prevMonthISO(), doctorId: '',
+      costCenterId: '', referenceMonth: prevMonthISO(),
       partyId: guessedParty || '', partySuggested: !!guessedParty,
     };
   }));
@@ -1158,10 +1154,9 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, doctors, parti
     costCenterId: defCostCenter,
     referenceMonth: defRefMonth,
     categoryId: (!it.asTransfer && singleType) ? defCategory : it.categoryId,
-    // Fornecedor/Médico só sobrescrevem quando um padrão foi escolhido (não limpam o que já está na linha).
+    // Fornecedor só sobrescreve quando um padrão foi escolhido (não limpam o que já está na linha).
     partyId: defParty || it.partyId,
     partySuggested: defParty ? false : it.partySuggested,
-    doctorId: defDoctor || it.doctorId,
   })));
 
   const confirm = () => {
@@ -1192,7 +1187,6 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, doctors, parti
       counter_account_id: it.asTransfer ? (it.counterAccountId || null) : null,
       splits: it.splits ? it.splits.map(s => ({ category_id: s.categoryId || null, amount: s.amount })) : null,
       reference_month: it.referenceMonth || null,
-      doctor_id: it.asTransfer ? null : (it.doctorId || null),
       party_id: it.asTransfer ? null : (it.partyId || null),
     })));
   };
@@ -1257,14 +1251,7 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, doctors, parti
                 {PAYMENT_METHODS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
-            {doctorOptions.length > 0 && (
-              <div className="sm:col-span-3">
-                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Médico (opcional)</label>
-                <SearchableSelect options={doctorOptions} value={defDoctor} onChange={setDefDoctor}
-                  allowEmpty emptyLabel="— por linha" searchPlaceholder="Buscar médico…" size="sm" />
-              </div>
-            )}
-            <div className={doctorOptions.length > 0 ? 'sm:col-span-3' : 'sm:col-span-6'}>
+            <div className="sm:col-span-6">
               <button type="button" onClick={applyDefaults}
                 className="w-full h-8 px-2 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg text-[10px] font-semibold uppercase tracking-wide shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-1.5 transition-all">
                 <Check size={12} strokeWidth={3} /> Aplicar a todas</button>
@@ -1368,13 +1355,6 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, doctors, parti
                           placeholder="Selecione…" searchPlaceholder="Buscar fornecedor/pagador…"
                           onCreate={onCreateParty} createLabel="Cadastrar" />
                       </div>
-                      {doctorOptions.length > 0 && (
-                        <div>
-                          <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide ml-0.5 mb-1 block">Médico (opcional)</label>
-                          <SearchableSelect options={doctorOptions} value={it.doctorId} onChange={v => upd(it.id, { doctorId: v })}
-                            allowEmpty emptyLabel="Nenhum" searchPlaceholder="Buscar médico…" />
-                        </div>
-                      )}
                     </div>
 
                     {/* Editor de rateio: divide a linha em 2+ categorias (ex.: principal + juros). */}

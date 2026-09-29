@@ -2,8 +2,7 @@ import { supabase } from '../services/supabase';
 
 // Resolve autor + IP de forma resiliente a token expirado (renovação falhou
 // em aba em 2º plano / celular parado). Sem o cache do AuthContext, quem
-// gravasse a ação viraria "Sistema" — usado pelo logAction e pela assinatura
-// eletrônica da Folha de Ponto (utils/folhaAssinaturas.js).
+// gravasse a ação viraria "Sistema" — usado pelo logAction.
 export const resolveClientIdentity = async () => {
     let ipAddress = 'Desconhecido';
     try {

@@ -3,9 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PermissionProvider } from './contexts/PermissionContext';
-import { UnitProvider } from './contexts/UnitContext';
 import { WhiteLabelProvider, useWhiteLabel } from './contexts/WhiteLabelContext';
-import { UnitGatekeeper } from './components/UnitGatekeeper';
 import PermissionRoute from './components/PermissionRoute';
 import { Topbar } from './components/Topbar';
 import { Loader2 } from 'lucide-react';
@@ -13,46 +11,26 @@ import defaultBgImage from './assets/capa-login.jpg';
 
 // Páginas
 import HomeHub from './pages/HomeHub';
-import Dashboard from './pages/Dashboard';
-import SurgeryQueue from './pages/SurgeryQueue';
 import Settings from './pages/Settings';
-import RegrasApaFa from './pages/RegrasApaFa';
 import UserManagement from './pages/UserManagement';
 import ConfiguracoesHub from './pages/ConfiguracoesHub';
-import AtendimentoHub from './pages/AtendimentoHub';
-import ImportData from './pages/ImportData';
 import Login from './pages/Login';
 import RedefinirSenha, { DesvioDeRecuperacao } from './pages/RedefinirSenha';
-import WeeklyView from './pages/WeeklyView';
-import Aih from './pages/Aih';
-import Apa from './pages/Apa';
-import FichaAnestesica from './pages/FichaAnestesica';
-import Pacientes from './pages/Pacientes';
-import Autorizacoes from './pages/Autorizacoes';
-import Recepcao from './pages/Recepcao';
-import Agenda from './pages/Agenda';
-import Internacao from './pages/Internacao';
-import PEP from './pages/PEP';
-import PEPHub from './pages/PEPHub';
-import Escala from './pages/Escala';
 // Workspace (Compromisso/Notion) carrega o editor BlockNote, que é pesado:
 // lazy-load mantém o bundle das outras telas leve.
 const Workspace = lazy(() => import('./pages/Workspace'));
 
 // Páginas Financeiras
-import MeusRepasses from './pages/MeusRepasses';
 import FinanceDashboard from './pages/finance/FinanceDashboard';
 import FluxoCaixa from './pages/finance/FluxoCaixa';
 import FinanceTransactions from './pages/finance/FinanceTransactions';
 import FinanceConciliation from './pages/finance/FinanceConciliation';
-import FinanceGlosas from './pages/finance/FinanceGlosas';
 import FinanceSettings from './pages/finance/FinanceSettings';
 import AccountsLedger from './pages/finance/AccountsLedger';
 import Quotes from './pages/finance/Quotes';
 import RelatorioDRE from './pages/finance/RelatorioDRE';
 import RelatorioGerencial from './pages/finance/RelatorioGerencial';
 import RelatorioVendas from './pages/finance/RelatorioVendas';
-import AnaliseContratos from './pages/finance/AnaliseContratos';
 
 const AppLayout = ({ children }) => {
   const { currentUser } = useAuth();
@@ -106,11 +84,9 @@ const App = () => {
   return (
     <AuthProvider>
       <PermissionProvider>
-        <UnitProvider>
           <WhiteLabelProvider>
             <BrowserRouter>
               <DesvioDeRecuperacao />
-              <UnitGatekeeper>
                 <AppLayout>
                   <Routes>
                     {/* --- ROTAS PÚBLICAS (Qualquer um acessa) --- */}
@@ -129,60 +105,11 @@ const App = () => {
                       </PermissionRoute>
                     } />
 
-                    <Route path="/dashboard" element={
-                      <PermissionRoute requiredPermission="Acessar Relatórios">
-                        <Dashboard />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/fila" element={
-                      <PermissionRoute requiredPermission="Visualizar Fila">
-                        <SurgeryQueue />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/pacientes" element={
-                      <PermissionRoute requiredPermission="Visualizar Pacientes">
-                        <Pacientes />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/semana" element={
-                      <PermissionRoute requiredPermission="Visualizar Mapa/Agenda">
-                        <WeeklyView />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/aih" element={
-                      <PermissionRoute requiredPermission="Visualizar Atendimentos">
-                        <Aih />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/apa" element={
-                      <PermissionRoute requiredPermission="Visualizar Atendimentos">
-                        <Apa />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/ficha-anestesica" element={
-                      <PermissionRoute requiredPermission="Visualizar Atendimentos">
-                        <FichaAnestesica />
-                      </PermissionRoute>
-                    } />
-
                     {/* Cadastro de usuários tem porta própria: quem cuida das pessoas
                         não precisa das Configurações inteiras. */}
                     <Route path="/usuarios" element={
                       <PermissionRoute requiredPermission="Acessar Usuarios">
                         <UserManagement />
-                      </PermissionRoute>
-                    } />
-
-                    {/* Porta própria das regras clínicas: não passa pelas Configurações. */}
-                    <Route path="/regras-apa-fa" element={
-                      <PermissionRoute requiredPermission="Gerenciar Regras APA/FA">
-                        <RegrasApaFa />
                       </PermissionRoute>
                     } />
 
@@ -198,75 +125,11 @@ const App = () => {
                       </PermissionRoute>
                     } />
 
-                    <Route path="/importar-dados" element={
-                      <PermissionRoute requiredPermission="Acesso Total (Admin)">
-                        <ImportData />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/atendimento" element={
-                      <PermissionRoute requiredPermission="Acessar Atendimento">
-                        <AtendimentoHub />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/autorizacoes" element={
-                      <PermissionRoute requiredPermission="Acessar Autorizações">
-                        <Autorizacoes />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/recepcao" element={
-                      <PermissionRoute requiredPermission="Acessar Recepção">
-                        <Recepcao />
-                      </PermissionRoute>
-                    } />
-
-                    {/* Agenda de consultas: mora no Atendimento, não no Mapa Cirúrgico. */}
-                    <Route path="/agenda" element={
-                      <PermissionRoute requiredPermission="Acessar Atendimento">
-                        <Agenda />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/internacao" element={
-                      <PermissionRoute requiredPermission="Acessar Atendimento">
-                        <Internacao />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/escala" element={
-                      <PermissionRoute requiredPermission="Acessar Escala">
-                        <Escala />
-                      </PermissionRoute>
-                    } />
-
                     <Route path="/compromissos" element={
                       <PermissionRoute requiredPermission="Acessar Compromissos">
                         <Suspense fallback={<div className="h-[calc(100vh-64px)] flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" size={36} /></div>}>
                           <Workspace />
                         </Suspense>
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/pep" element={
-                      <PermissionRoute requiredPermission="Visualizar Atendimentos">
-                        <PEP />
-                      </PermissionRoute>
-                    } />
-
-                    <Route path="/pep-hub" element={
-                      <PermissionRoute requiredPermission="Visualizar Atendimentos">
-                        <PEPHub />
-                      </PermissionRoute>
-                    } />
-
-                    {/* Meus Repasses: a folha assinada e o pagamento dela, do lado do
-                        médico. Rota e permissão próprias, fora de /finance de
-                        propósito — o módulo Financeiro é o caixa da empresa. */}
-                    <Route path="/meus-repasses" element={
-                      <PermissionRoute requiredPermission="Acessar Meus Repasses">
-                        <MeusRepasses />
                       </PermissionRoute>
                     } />
 
@@ -313,19 +176,6 @@ const App = () => {
                       </PermissionRoute>
                     } />
 
-                    {/* Repasses agora vive só na Escala (botão "Repasses" na barra
-                        de ferramentas), lendo escala_plantoes e gerando conta a pagar
-                        PENDENTE. A rota antiga saiu junto com o menu: ela abria a
-                        tela que lia o blob legado settings.escala e gerava a SAIDA já
-                        como PAGO, pulando contas a pagar. A página segue no repositório
-                        (pages/finance/FinanceRepasse.jsx), apenas desligada. */}
-
-                    <Route path="/finance/glosas" element={
-                      <PermissionRoute requiredPermission="Acessar Financeiro">
-                        <FinanceGlosas />
-                      </PermissionRoute>
-                    } />
-
                     <Route path="/finance/relatorios/dre" element={
                       <PermissionRoute requiredPermission="Acessar Financeiro">
                         <RelatorioDRE />
@@ -350,12 +200,6 @@ const App = () => {
                       </PermissionRoute>
                     } />
 
-                    <Route path="/finance/relatorios/contratos" element={
-                      <PermissionRoute requiredPermission="Acessar Financeiro">
-                        <AnaliseContratos />
-                      </PermissionRoute>
-                    } />
-
                     <Route path="/finance/configuracoes" element={
                       <PermissionRoute requiredPermission="Editar Financeiro">
                         <FinanceSettings />
@@ -368,10 +212,8 @@ const App = () => {
                   </Routes>
                 </AppLayout>
                 <Toaster position="top-right" containerStyle={{ zIndex: 999999 }} />
-              </UnitGatekeeper>
             </BrowserRouter>
           </WhiteLabelProvider>
-        </UnitProvider>
       </PermissionProvider>
     </AuthProvider>
   );

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useWhiteLabel } from '../contexts/WhiteLabelContext';
 import { usePermission } from '../contexts/PermissionContext';
-import { Settings, User, Users, FileText, Palette, LayoutDashboard, UploadCloud, FileSpreadsheet, Activity, ChevronRight, ArrowLeft, Stethoscope, Pill } from 'lucide-react';
+import { Settings, Users, Palette, LayoutDashboard, Activity, ChevronRight, ArrowLeft, Building2 } from 'lucide-react';
 
 const ConfiguracoesHub = () => {
     const { theme } = useWhiteLabel();
@@ -10,10 +10,10 @@ const ConfiguracoesHub = () => {
 
     const modules = [
         {
-            path: '/configuracoes-painel?tab=especialidades',
-            icon: User,
+            path: '/configuracoes-painel?tab=segmentos',
+            icon: Building2,
             title: 'Cadastros Gerais',
-            description: 'Especialidades, convênios, cidades, etc.',
+            description: 'Segmentos, origens de lead e equipes',
             show: hasPermission('Acessar Configurações')
         },
         {
@@ -22,13 +22,6 @@ const ConfiguracoesHub = () => {
             title: 'Gestão de Acessos',
             description: 'Gerenciar usuários e permissões do sistema',
             show: hasPermission('Acesso Total (Admin)') || hasPermission('Acessar Usuarios')
-        },
-        {
-            path: '/configuracoes-painel?tab=orientacoes',
-            icon: FileText,
-            title: 'Textos de Orientação',
-            description: 'Documentos e textos de ajuda',
-            show: hasPermission('Acessar Configurações')
         },
         {
             path: '/configuracoes-painel?tab=identidade',
@@ -41,36 +34,8 @@ const ConfiguracoesHub = () => {
             path: '/configuracoes-painel?tab=hub',
             icon: LayoutDashboard,
             title: 'Tela Inicial',
-            description: 'Layout e widgets da tela inicial (por perfil ou usuário)',
+            description: 'Mensagem e atalhos da tela inicial',
             show: hasPermission('Acesso Total (Admin)')
-        },
-        {
-            path: '/configuracoes-painel?tab=importacao',
-            icon: UploadCloud,
-            title: 'Importação CSV',
-            description: 'Importar dados em massa para o sistema',
-            show: hasPermission('Acessar Configurações')
-        },
-        {
-            path: '/configuracoes-painel?tab=medicas',
-            icon: Stethoscope,
-            title: 'Configurações Médicas',
-            description: 'Receituário, atestados e medicamentos padrão',
-            show: hasPermission('Acessar Configurações')
-        },
-        {
-            path: '/configuracoes-painel?tab=regras_medicamentos',
-            icon: Pill,
-            title: 'APA e Ficha Anestésica',
-            description: 'Conduta de medicamentos, laudos padrão e descrições do ato',
-            show: hasPermission('Acessar Configurações') || hasPermission('Gerenciar Regras APA/FA')
-        },
-        {
-            path: '/configuracoes-painel?tab=basesus',
-            icon: FileSpreadsheet,
-            title: 'Tabela SIGTAP',
-            description: 'Atualizar base SUS',
-            show: hasPermission('Acessar Configurações')
         },
         {
             path: '/configuracoes-painel?tab=logs',
