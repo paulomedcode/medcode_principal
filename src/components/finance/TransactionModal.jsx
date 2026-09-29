@@ -766,9 +766,9 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
               </label>
               <SearchableSelect
                 options={parties
-                  .filter(p => formData.type === 'ENTRADA'
-                    ? ['CLIENTE', 'AMBOS'].includes(p.kind)
-                    : ['FORNECEDOR', 'AMBOS'].includes(p.kind))
+                  .filter(p => p.id === formData.party_id || (formData.type === 'ENTRADA'
+                    ? ['CLIENTE', 'LEAD', 'AMBOS'].includes(p.kind)
+                    : ['FORNECEDOR', 'AMBOS'].includes(p.kind)))
                   .map(p => ({ value: p.id, label: p.name }))}
                 value={formData.party_id}
                 onChange={v => setFormData({ ...formData, party_id: v })}
@@ -1264,7 +1264,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
       {/* Cadastro rápido de fornecedor/cliente a partir do combobox de Origem/Destino */}
       {partyModal && (
-        <PartyModal initialName={partyModal.name} onSave={savePartyModal} onCancel={cancelPartyModal} />
+        <PartyModal initialName={partyModal.name} defaultKind={formData.type === 'ENTRADA' ? 'CLIENTE' : 'FORNECEDOR'} onSave={savePartyModal} onCancel={cancelPartyModal} />
       )}
     </div>
   );

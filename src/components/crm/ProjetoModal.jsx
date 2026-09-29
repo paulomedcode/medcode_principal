@@ -7,6 +7,7 @@ import CurrencyInput from '../finance/CurrencyInput';
 import SearchableSelect from '../finance/SearchableSelect';
 import { Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
 import { useUsuarios } from './dados';
+import useCadastroRapido from './useCadastroRapido';
 
 /**
  * Cadastro/edição de projeto. O caminho normal é nascer de uma oportunidade
@@ -22,6 +23,9 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
     }));
     const [salvando, setSalvando] = useState(false);
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
+    const { pedir, janela } = useCadastroRapido({
+        onCriada: (row) => setEmpresas((l) => [...l, row].sort((a, b) => a.name.localeCompare(b.name))),
+    });
 
     useEffect(() => { listarEmpresas().then(setEmpresas).catch(() => {}); }, []);
 
@@ -45,7 +49,7 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
         }
     };
 
-    return (
+    return (<>
         <Janela titulo={projeto?.id ? 'Editar projeto' : 'Novo projeto'} icone={FolderKanban} onClose={onClose}
             rodape={<>
                 <button onClick={onClose} className={btnSecundario}>Cancelar</button>
@@ -59,7 +63,8 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
                 </Campo>
                 <Campo label="Cliente">
                     <SearchableSelect options={empresas.filter((p) => p.kind !== 'FORNECEDOR' || p.id === form.party_id).map((p) => ({ value: p.id, label: p.name }))}
-                        value={form.party_id} onChange={(v) => set({ party_id: v })} placeholder="Selecione…" searchPlaceholder="Buscar empresa…" />
+                        value={form.party_id} onChange={(v) => set({ party_id: v })} placeholder="Selecione…" searchPlaceholder="Digite o nome do cliente…"
+                        onCreate={(nome) => pedir(nome, 'CLIENTE')} createLabel="Cadastrar cliente" />
                 </Campo>
                 <Campo label="Serviço">
                     <select value={form.servico} onChange={(e) => set({ servico: e.target.value })} className={`${inputCls} cursor-pointer`}>
@@ -99,5 +104,6 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
                 )}
             </form>
         </Janela>
-    );
+        {janela}
+    </>);
 }

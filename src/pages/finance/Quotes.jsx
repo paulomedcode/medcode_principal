@@ -8,6 +8,8 @@ import toast from 'react-hot-toast';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { usePermission } from '../../contexts/PermissionContext';
 import CurrencyInput from '../../components/finance/CurrencyInput';
+import SearchableSelect from '../../components/finance/SearchableSelect';
+import useCadastroRapido from '../../components/crm/useCadastroRapido';
 
 const fmt = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 const fmtDate = (s) => { if (!s) return '—'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
@@ -198,8 +200,12 @@ export default function Quotes() {
 }
 
 // ---- Modal de criação/edição de orçamento (com itens) ----
-export function QuoteModal({ quote, services, parties, onClose, onSaved, oportunidade = null }) {
+export function QuoteModal({ quote, services, parties: partiesIniciais, onClose, onSaved, oportunidade = null }) {
   const isEdit = !!quote;
+  const [parties, setParties] = useState(partiesIniciais || []);
+  const { pedir, janela } = useCadastroRapido({
+    onCriada: (row) => setParties((l) => [...l, row].sort((a, b) => a.name.localeCompare(b.name))),
+  });
   const [saving, setSaving] = useState(false);
   const [partyId, setPartyId] = useState(quote?.party_id || oportunidade?.party_id || '');
   const [title, setTitle] = useState(quote?.title || oportunidade?.titulo || '');
@@ -247,7 +253,7 @@ export function QuoteModal({ quote, services, parties, onClose, onSaved, oportun
     finally { setSaving(false); }
   };
 
-  return (
+  return (<>
     <div className="fixed inset-0 z-[11000] flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/25 backdrop-blur-sm animate-in fade-in" onClick={onClose}></div>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden border border-black/[.06] max-h-[90vh]">
@@ -260,10 +266,9 @@ export function QuoteModal({ quote, services, parties, onClose, onSaved, oportun
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="md:col-span-2">
               <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Cliente</label>
-              <select value={partyId} onChange={e => setPartyId(e.target.value)} className={`${inputCls} cursor-pointer`}>
-                <option value="">Selecione...</option>
-                {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
+              <SearchableSelect options={parties.map(p => ({ value: p.id, label: `${p.name}${p.kind === 'LEAD' ? ' · lead' : ''}` }))}
+                value={partyId} onChange={setPartyId} placeholder="Selecione…" searchPlaceholder="Digite o nome do cliente…"
+                onCreate={(nome) => pedir(nome, 'LEAD')} createLabel="Cadastrar cliente" />
             </div>
             <div>
               <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Validade</label>
@@ -331,7 +336,8 @@ export function QuoteModal({ quote, services, parties, onClose, onSaved, oportun
         </div>
       </div>
     </div>
-  );
+    {janela}
+  </>);
 }
 
 // ---- Modal de aprovação (gera conta a receber) ----

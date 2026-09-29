@@ -7,7 +7,7 @@ import { SERVICOS, servicoPorId, fmtBRL } from '../../config/servicos';
 import { useAuth } from '../../contexts/AuthContext';
 import CurrencyInput from '../finance/CurrencyInput';
 import SearchableSelect from '../finance/SearchableSelect';
-import EmpresaModal from './EmpresaModal';
+import useCadastroRapido from './useCadastroRapido';
 import { Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
 import { useUsuarios, useListasGerais } from './dados';
 
@@ -26,8 +26,10 @@ export function OportunidadeModal({ oportunidade, etapas, empresas, partyIdFixo,
     }));
     const [contatos, setContatos] = useState([]);
     const [salvando, setSalvando] = useState(false);
-    const [novaEmpresa, setNovaEmpresa] = useState(null);
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
+    const { pedir, janela } = useCadastroRapido({
+        onCriada: (row) => { onEmpresaCriada?.(row); set({ contato_id: '' }); },
+    });
 
     useEffect(() => {
         if (!form.party_id) { setContatos([]); return; }
@@ -81,7 +83,7 @@ export function OportunidadeModal({ oportunidade, etapas, empresas, partyIdFixo,
                             <SearchableSelect options={opcoesEmpresa} value={form.party_id}
                                 onChange={(v) => set({ party_id: v, contato_id: '' })}
                                 placeholder="Selecione…" searchPlaceholder="Buscar empresa…"
-                                onCreate={(nome) => new Promise((resolve) => setNovaEmpresa({ name: nome, resolve }))} createLabel="Cadastrar" />
+                                onCreate={(nome) => pedir(nome, 'LEAD')} createLabel="Cadastrar" />
                         )}
                     </Campo>
                     <Campo label="Contato">
@@ -127,16 +129,7 @@ export function OportunidadeModal({ oportunidade, etapas, empresas, partyIdFixo,
                 </form>
             </Janela>
 
-            {novaEmpresa && (
-                <EmpresaModal empresa={null} kindInicial="LEAD" nomeInicial={novaEmpresa.name}
-                    onClose={() => { novaEmpresa.resolve(null); setNovaEmpresa(null); }}
-                    onSaved={(row) => {
-                        onEmpresaCriada?.(row);
-                        set({ party_id: row.id, contato_id: '' });
-                        novaEmpresa.resolve(row.id);
-                        setNovaEmpresa(null);
-                    }} />
-            )}
+            {janela}
         </>
     );
 }

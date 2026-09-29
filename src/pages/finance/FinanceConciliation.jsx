@@ -1049,7 +1049,7 @@ export default function FinanceConciliation() {
       )}
 
       {partyModal && (
-        <PartyModal initialName={partyModal.name} onSave={savePartyModal} onCancel={cancelPartyModal} />
+        <PartyModal initialName={partyModal.name} defaultKind="AMBOS" onSave={savePartyModal} onCancel={cancelPartyModal} />
       )}
 
       <ConfirmDialog
