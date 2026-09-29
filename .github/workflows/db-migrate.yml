@@ -1,13 +1,14 @@
-name: Aplicar migrations nos bancos (todos os hospitais)
+name: Aplicar migrations no banco
 
-# Aplica as migrations de supabase/migrations/ em TODOS os bancos dos hospitais.
+# Aplica as migrations de supabase/migrations/ no banco do MedCode.
 # Dispara automaticamente quando uma migration nova entra na main.
-# Cada banco aplica apenas o que ainda não foi aplicado (idempotente).
+# Só aplica o que ainda não foi aplicado (idempotente).
 #
-# Para adicionar um hospital novo: acrescente o identificador na lista "db" da
-# matrix abaixo e cadastre o secret DB_URL_<IDENTIFICADOR> no GitHub
-# (Settings -> Secrets and variables -> Actions). O valor é a connection string
-# "Session pooler" do projeto Supabase (compatível com IPv4 do runner).
+# Usa a Management API do Supabase (scripts/aplicar-migrations.mjs), então
+# precisa só do token de acesso — não da senha do banco. Secrets do repo
+# (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_ACCESS_TOKEN          token da conta Supabase (sbp_...)
+#   SUPABASE_PROJECT_REF_MEDCODE   ref do projeto
 
 on:
   push:
@@ -19,39 +20,27 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        db: [MEDCODE]
-    name: ${{ matrix.db }}
+    name: Aplicar migrations pendentes
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: Instalar Supabase CLI
-        uses: supabase/setup-cli@v1
+      - uses: actions/setup-node@v4
         with:
-          version: 2.106.0
+          node-version: 20
 
       - name: Aplicar migrations pendentes
         env:
-          DB_URL: ${{ secrets[format('DB_URL_{0}', matrix.db)] }}
-        run: |
-          if [ -z "$DB_URL" ]; then
-            echo "::error::Secret DB_URL_${{ matrix.db }} não está configurado. Pulando."
-            exit 1
-          fi
-          supabase db push --db-url "$DB_URL"
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF_MEDCODE }}
+        run: node scripts/aplicar-migrations.mjs
 
   # -------------------------------------------------------------------------
   # Depois de aplicar, confere se a blindagem continua de pé.
   #
-  # Ligar RLS nas 52 tabelas foi um evento; mantê-lo ligado é um hábito, e
-  # hábito some — basta uma migration criar tabela e esquecer o `enable row
+  # Ligar RLS em todas as tabelas foi um evento; mantê-lo ligado é um hábito,
+  # e hábito some — basta uma migration criar tabela e esquecer o `enable row
   # level security`. Ela nasce aberta ao anônimo e ninguém percebe.
-  #
-  # Só roda se o secret SUPABASE_ACCESS_TOKEN existir; sem ele o job avisa e
-  # passa, para não travar deploy por falta de configuração.
   # -------------------------------------------------------------------------
   conferir-blindagem:
     runs-on: ubuntu-latest
@@ -70,20 +59,10 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF_MEDCODE }}
-        run: |
-          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
-            echo "::warning::SUPABASE_ACCESS_TOKEN não configurado — checagem de RLS pulada."
-            exit 0
-          fi
-          node scripts/checar-rls.mjs
+        run: node scripts/checar-rls.mjs
 
       - name: Catálogo de permissões do banco igual ao do código
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF_MEDCODE }}
-        run: |
-          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
-            echo "::warning::SUPABASE_ACCESS_TOKEN não configurado — checagem do catálogo pulada."
-            exit 0
-          fi
-          node scripts/gerar-catalogo-permissoes.mjs --conferir
+        run: node scripts/gerar-catalogo-permissoes.mjs --conferir
