@@ -11,14 +11,12 @@ import { supabase } from '../services/supabase';
 import { tarefasAtribuidas } from '../services/notificacoes';
 import { concluirLembrete } from '../services/concluirLembrete';
 import {
-    proximosPassos, concluirProximoPasso, listarProjetos, listarEtapas, listarOportunidades, listarEmpresas,
+    proximosPassos, concluirProximoPasso, listarProjetos, listarEtapas, listarOportunidades,
     progressoDasEntregas, atividadesRecentes,
 } from '../services/crm';
 import { resumoServicos, statusProjeto, tipoAtividade, fmtBRL, fmtData } from '../config/servicos';
 import { todayISO } from '../utils/date';
-import EmpresaModal from '../components/crm/EmpresaModal';
-import ProjetoModal from '../components/crm/ProjetoModal';
-import { OportunidadeModal } from '../components/crm/OportunidadeModal';
+import { useOpcoesNovo, abrirNovo } from '../components/novo';
 
 /*
  * TELA INICIAL — "Central do dia".
@@ -88,7 +86,6 @@ export default function HomeHub() {
     const [aba, setAba] = useState('hoje');
     const [concluindo, setConcluindo] = useState(null);
     const [novoAberto, setNovoAberto] = useState(false);
-    const [criar, setCriar] = useState(null); // 'lead' | 'oportunidade' | 'projeto'
     const novoRef = useRef(null);
 
     const carregar = useCallback(async () => {
@@ -218,25 +215,17 @@ export default function HomeHub() {
     const primeiroNome = (currentUser?.name || 'Olá').split(' ')[0];
     const nomeFmt = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
 
-    const opcoesNovo = [
-        pode.editarClientes && { id: 'lead', rotulo: 'Lead / Cliente', icone: Building2 },
-        pode.editarVendas && { id: 'oportunidade', rotulo: 'Oportunidade', icone: Target },
-        pode.editarProjetos && { id: 'projeto', rotulo: 'Projeto', icone: FolderKanban },
-        pode.compromissos && { id: 'tarefa', rotulo: 'Tarefa', icone: ClipboardList },
-        hasPermission('Editar Financeiro') && { id: 'lancamento', rotulo: 'Lançamento', icone: DollarSign },
-    ].filter(Boolean);
+    const opcoesNovo = useOpcoesNovo();
 
     const escolherNovo = (id) => {
         setNovoAberto(false);
-        if (id === 'tarefa') return navigate('/compromissos');
-        if (id === 'lancamento') return navigate('/finance/transacoes');
-        setCriar(id);
+        abrirNovo(id);
     };
 
     const lista = grupos[aba] || [];
 
     return (
-        <div className="h-full w-full overflow-y-auto font-sans px-4 pb-8 pt-[84px] md:px-8 md:pt-[96px]">
+        <div className="md:h-full w-full md:overflow-y-auto font-sans px-4 pb-8 pt-[84px] md:px-8 md:pt-[96px]">
             <div className="max-w-[1500px] mx-auto space-y-5">
 
                 {/* Cabeçalho */}
@@ -428,22 +417,7 @@ export default function HomeHub() {
                     </div>
                 </>)}
             </div>
-
-            {criar === 'lead' && <EmpresaModal onClose={() => setCriar(null)} onSaved={(row) => { setCriar(null); navigate(`/clientes/${row.id}`); }} />}
-            {criar === 'projeto' && <ProjetoModal onClose={() => setCriar(null)} onSaved={(row) => { setCriar(null); navigate(`/projetos/${row.id}`); }} />}
-            {criar === 'oportunidade' && <NovaOportunidade onClose={() => setCriar(null)} onSaved={() => { setCriar(null); navigate('/vendas'); }} />}
         </div>
     );
 }
 
-/** A OportunidadeModal precisa das etapas e empresas — carrega aqui antes de abrir. */
-function NovaOportunidade({ onClose, onSaved }) {
-    const [dados, setDados] = useState(null);
-    useEffect(() => {
-        Promise.all([listarEtapas(), listarEmpresas()]).then(([etapas, empresas]) => setDados({ etapas, empresas }))
-            .catch((e) => { console.error(e); toast.error('Não foi possível abrir.'); onClose(); });
-    }, [onClose]);
-    if (!dados) return null;
-    return <OportunidadeModal etapas={dados.etapas} empresas={dados.empresas} onClose={onClose} onSaved={onSaved}
-        onEmpresaCriada={(row) => setDados((x) => ({ ...x, empresas: [...x.empresas, row] }))} />;
-}

@@ -9,9 +9,10 @@ import {
     Lock, X, Save, ChevronDown, Menu,
     ArrowRightLeft, ArrowUpCircle, ArrowDownCircle, Bell, FileSignature,
     Volume2, VolumeX, CalendarClock, UserPlus, Sun, Moon, AtSign, CheckCheck,
-    Home, Building2, Target, FolderKanban, DollarSign, ClipboardList, Search
+    Home, Search, ChevronRight, UserCog
 } from 'lucide-react';
-import { PERMISSION_MODULES } from '../config/permissions';
+import { useModulosNav } from './navegacao';
+import Gaveta from './ui/Gaveta';
 import { supabase } from '../services/supabase';
 import toast from 'react-hot-toast';
 import { formatNameStandard } from '../utils/nameFormatter';
@@ -27,7 +28,8 @@ export const Topbar = () => {
 
     const [activeDropdown, setActiveDropdown] = useState(null);
     const dropdownRef = useRef(null);
-    const [mobileNavOpen, setMobileNavOpen] = useState(false);  // menu hambúrguer (telas estreitas)
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);  // menu hambúrguer (tablet)
+    const [maisAberto, setMaisAberto] = useState(false);        // "Mais" do celular
     const mobileNavRef = useRef(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [newPassword, setNewPassword] = useState('');
@@ -51,8 +53,8 @@ export const Topbar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Fecha o menu hambúrguer ao trocar de página.
-    useEffect(() => { setMobileNavOpen(false); }, [location.pathname]);
+    // Fecha o menu hambúrguer e o "Mais" ao trocar de página.
+    useEffect(() => { setMobileNavOpen(false); setMaisAberto(false); }, [location.pathname]);
 
     // Clicar no aviso abre a tarefa (ou a página da menção) já aberta na tela —
     // e é ESSE gesto que tira o aviso da lista. Ver Workspace.jsx (?abrir=).
@@ -90,19 +92,8 @@ export const Topbar = () => {
     const isFinance = location.pathname.startsWith('/finance');
 
     // Navegação entre módulos, visível em todas as telas (antes só se trocava
-    // de módulo voltando à tela inicial). Sai do catálogo de permissões: quem
-    // não abre o módulo não vê o item.
-    const ICONES_MODULO = { painel: LayoutDashboard, clientes: Building2, vendas: Target, projetos: FolderKanban, financeiro: DollarSign, compromissos: ClipboardList };
-    const modulosNav = [
-        { id: 'inicio', label: 'Início', path: '/home', icon: Home, prefixos: ['/home'] },
-        ...PERMISSION_MODULES
-            .filter(m => ICONES_MODULO[m.id] && hasPermission(m.accessKey))
-            .map(m => ({
-                id: m.id, label: m.label, path: m.route, icon: ICONES_MODULO[m.id],
-                prefixos: m.id === 'financeiro' ? ['/finance'] : m.id === 'vendas' ? ['/vendas'] : [m.route],
-            })),
-    ];
-    const moduloAtivo = (m) => m.prefixos.some(pf => location.pathname === pf || location.pathname.startsWith(`${pf}/`));
+    // de módulo voltando à tela inicial).
+    const { modulos: modulosNav, ativo: moduloAtivo } = useModulosNav();
     const abrirBusca = () => window.dispatchEvent(new CustomEvent('medcode:busca'));
 
     // Menu superior do módulo Financeiro (aparece somente dentro de /finance).
@@ -141,7 +132,7 @@ export const Topbar = () => {
 
                 {/* MENU HAMBÚRGUER — telas estreitas (< lg), onde o menu horizontal some */}
                 {(
-                    <div className="relative lg:hidden ml-2" ref={mobileNavRef}>
+                    <div className="relative hidden md:block lg:hidden ml-2" ref={mobileNavRef}>
                         <button onClick={() => setMobileNavOpen(o => !o)} title="Menu"
                             className="p-2 rounded-xl text-slate-700 hover:bg-white/70 border border-transparent hover:border-white/30 transition-all">
                             <Menu size={20} />
@@ -285,7 +276,7 @@ export const Topbar = () => {
                     <button
                         title={temaEscuro ? 'Tema claro' : 'Tema escuro'}
                         onClick={alternarTema}
-                        className="p-1.5 sm:p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-600 hover:bg-white/70 hover:border-white/30 hover:text-blue-600"
+                        className="hidden md:block p-1.5 sm:p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-600 hover:bg-white/70 hover:border-white/30 hover:text-blue-600"
                     >
                         {temaEscuro ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
@@ -307,7 +298,7 @@ export const Topbar = () => {
 
                         {/* DROPDOWN DE NOTIFICAÇÕES */}
                         {showNotifications && (
-                            <div className="absolute right-0 top-full mt-2 w-[330px] bg-white border border-slate-200/80 rounded-2xl shadow-[0_20px_50px_-12px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                            <div className="fixed inset-x-3 top-16 md:absolute md:inset-x-auto md:right-0 md:top-full mt-2 md:w-[330px] bg-white border border-slate-200/80 rounded-2xl shadow-[0_20px_50px_-12px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
                                 <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-200/70 flex items-center justify-between">
                                     <span className="text-sm font-bold text-slate-800">Notificações ({notificacoes.length})</span>
                                     <div className="flex items-center gap-1">
@@ -372,14 +363,73 @@ export const Topbar = () => {
                         )}
                     </div>
 
-                    <button title="Meu Perfil" onClick={() => setIsProfileOpen(true)} className="p-1.5 sm:p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-800 hover:bg-white/70 hover:border-white/30">
+                    <button title="Meu Perfil" onClick={() => setIsProfileOpen(true)} className="hidden md:block p-1.5 sm:p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-800 hover:bg-white/70 hover:border-white/30">
                         <User size={16} />
                     </button>
-                    <button title="Sair" onClick={handleLogout} className="p-1.5 sm:p-2 rounded-xl transition-all duration-300 text-slate-800 hover:bg-rose-500/80 hover:text-white">
+                    <button title="Sair" onClick={handleLogout} className="hidden md:block p-1.5 sm:p-2 rounded-xl transition-all duration-300 text-slate-800 hover:bg-rose-500/80 hover:text-white">
                         <LogOut size={16} />
+                    </button>
+                    {/* Celular: o resto mora no "Mais" */}
+                    <button title="Mais" aria-label="Mais opções" onClick={() => setMaisAberto(true)} className="md:hidden p-2 rounded-xl text-slate-700 active:bg-white/70">
+                        <Menu size={20} />
                     </button>
                 </div>
             </header>
+
+            {/* "MAIS" DO CELULAR: módulos, financeiro, ajustes, tema, perfil e sair */}
+            <Gaveta aberta={maisAberto} onClose={() => setMaisAberto(false)} titulo="Menu">
+                <div className="grid grid-cols-3 gap-2">
+                    {modulosNav.map(m => {
+                        const Icon = m.icon;
+                        const on = moduloAtivo(m);
+                        return (
+                            <Link key={m.id} to={m.path}
+                                className={`h-20 rounded-2xl flex flex-col items-center justify-center gap-1.5 text-[11.5px] font-bold ${on ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-700 active:bg-slate-100'}`}>
+                                <Icon size={20} /> {m.label}
+                            </Link>
+                        );
+                    })}
+                </div>
+
+                {hasPermission('Acessar Financeiro') && (
+                    <div className="mt-4">
+                        <p className="px-1 pb-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Financeiro</p>
+                        <div className="bg-slate-50 rounded-2xl divide-y divide-white overflow-hidden">
+                            {[...financeMenu[0].items, ...financeMenu[1].items].map(s => (
+                                <Link key={s.path} to={s.path}
+                                    className={`flex items-center gap-3 px-4 h-12 text-[13px] font-semibold ${location.pathname === s.path ? 'text-indigo-700 bg-indigo-50' : 'text-slate-700 active:bg-slate-100'}`}>
+                                    <s.icon size={16} className="text-slate-400" /> <span className="flex-1">{s.label}</span> <ChevronRight size={15} className="text-slate-300" />
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="mt-4 bg-slate-50 rounded-2xl divide-y divide-white overflow-hidden">
+                    {hasPermission('Acessar Configurações') && (
+                        <Link to="/configuracoes" className="flex items-center gap-3 px-4 h-12 text-[13px] font-semibold text-slate-700 active:bg-slate-100">
+                            <Settings size={16} className="text-slate-400" /> <span className="flex-1">Configurações</span> <ChevronRight size={15} className="text-slate-300" />
+                        </Link>
+                    )}
+                    {hasPermission('Acessar Usuarios') && (
+                        <Link to="/usuarios" className="flex items-center gap-3 px-4 h-12 text-[13px] font-semibold text-slate-700 active:bg-slate-100">
+                            <UserCog size={16} className="text-slate-400" /> <span className="flex-1">Usuários</span> <ChevronRight size={15} className="text-slate-300" />
+                        </Link>
+                    )}
+                    <button onClick={() => { setMaisAberto(false); setIsProfileOpen(true); }} className="w-full flex items-center gap-3 px-4 h-12 text-[13px] font-semibold text-slate-700 active:bg-slate-100 text-left">
+                        <User size={16} className="text-slate-400" /> <span className="flex-1">Meu perfil e senha</span> <ChevronRight size={15} className="text-slate-300" />
+                    </button>
+                    <button onClick={alternarTema} className="w-full flex items-center gap-3 px-4 h-12 text-[13px] font-semibold text-slate-700 active:bg-slate-100 text-left">
+                        {temaEscuro ? <Sun size={16} className="text-slate-400" /> : <Moon size={16} className="text-slate-400" />}
+                        <span className="flex-1">{temaEscuro ? 'Tema claro' : 'Tema escuro'}</span>
+                    </button>
+                </div>
+
+                <button onClick={handleLogout} className="mt-4 w-full h-12 rounded-2xl bg-rose-50 text-rose-600 text-[13px] font-bold flex items-center justify-center gap-2 active:bg-rose-100">
+                    <LogOut size={16} /> Sair da conta
+                </button>
+                {currentUser?.email && <p className="mt-2 text-center text-[11px] font-semibold text-slate-400">{currentUser.email}</p>}
+            </Gaveta>
 
             {/* MODAL DE PERFIL ORIGINAL INTACTO */}
             {isProfileOpen && (

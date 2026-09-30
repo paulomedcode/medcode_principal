@@ -7,6 +7,8 @@ import { WhiteLabelProvider, useWhiteLabel } from './contexts/WhiteLabelContext'
 import PermissionRoute from './components/PermissionRoute';
 import { Topbar } from './components/Topbar';
 import BuscaGlobal from './components/BuscaGlobal';
+import BarraInferior from './components/BarraInferior';
+import NovoGlobal from './components/NovoGlobal';
 import { Loader2 } from 'lucide-react';
 import defaultBgImage from './assets/capa-login.jpg';
 
@@ -60,7 +62,7 @@ const AppLayout = ({ children }) => {
 
   return (
     <div
-      className="flex flex-col h-screen relative isolate overflow-hidden text-slate-800"
+      className="flex flex-col min-h-dvh md:h-screen relative isolate md:overflow-hidden text-slate-800"
       style={{
           backgroundImage: `url(${theme.bgImage || defaultBgImage})`,
           backgroundSize: 'cover',
@@ -80,9 +82,14 @@ const AppLayout = ({ children }) => {
         </div>
       )}
       {mostraTopbar && <BuscaGlobal />}
-      <main className={`flex-1 overflow-y-auto ${mostraTopbar && !isHome ? 'pt-[64px]' : ''}`}>
+      {mostraTopbar && <NovoGlobal />}
+      {/* Celular: a página inteira rola (a barra do Safari recolhe e tocar no
+          relógio volta ao topo) e sobra espaço embaixo para a barra inferior.
+          Computador: rola só o <main>, com a barra superior parada. */}
+      <main className={`flex-1 md:overflow-y-auto ${mostraTopbar && !isHome ? 'pt-[64px]' : ''} ${mostraTopbar ? 'pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0' : ''}`}>
         {children}
       </main>
+      {mostraTopbar && <BarraInferior />}
     </div>
   );
 };

@@ -87,6 +87,11 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
     }
   }, [searchParams]);
 
+  // "＋ Lançamento" da barra inferior (celular) chega com ?novo=1.
+  useEffect(() => {
+    if (searchParams.get('novo') && canEdit) { setSelectedTxId(null); setIsTxModalOpen(true); }
+  }, [searchParams, canEdit]);
+
   useEffect(() => {
     loadInitialData();
   }, [filters]);

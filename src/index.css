@@ -94,3 +94,16 @@ html.tema-escuro .preserve-color {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
 }
+/* Celular: gaveta que sobe de baixo (filtros, "Mais", "Novo") e a barra
+   inferior, que respeita a área do gesto de início do iPhone. */
+@keyframes mc-sobe {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+@keyframes mc-esmaece {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.mc-gaveta { animation: mc-sobe 220ms cubic-bezier(.2, .8, .2, 1); }
+.mc-veu { animation: mc-esmaece 180ms ease-out; }
+.pb-seguro { padding-bottom: env(safe-area-inset-bottom); }
