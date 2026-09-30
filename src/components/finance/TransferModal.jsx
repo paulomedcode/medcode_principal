@@ -4,6 +4,7 @@ import { X, Loader2, ArrowRight, Repeat2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { todayISO } from '../../utils/date';
 import CurrencyInput from './CurrencyInput';
+import useTravaRolagem from '../../hooks/useTravaRolagem';
 
 /**
  * Modal de transferência entre contas (ex.: pagar fatura do cartão = banco → cartão).
@@ -28,6 +29,7 @@ export default function TransferModal({ open, accounts = [], onClose, onDone }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  useTravaRolagem(open);
   if (!open) return null;
 
   const ccOptions = (() => {
@@ -58,9 +60,9 @@ export default function TransferModal({ open, accounts = [], onClose, onDone }) 
   const labelCls = 'text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block';
 
   return (
-    <div className="fixed inset-0 z-[11000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[11000] flex items-stretch md:items-center justify-center md:p-4">
       <div className="fixed inset-0 bg-black/25 backdrop-blur-sm animate-in fade-in" onClick={onClose}></div>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative z-10 animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col overflow-hidden border border-black/[.06]">
+      <div className="bg-white md:rounded-2xl shadow-2xl w-full max-w-md relative z-10 animate-in zoom-in-95 duration-200 h-dvh md:h-auto max-h-dvh md:max-h-[90vh] flex flex-col overflow-hidden md:border border-black/[.06]">
         <div className="p-4 border-b border-black/[.06] flex items-center justify-between shrink-0">
           <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2"><Repeat2 size={16} className="text-[#0071e3]" /> Nova transferência</h3>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 bg-slate-50 hover:bg-rose-50 rounded-xl transition-colors"><X size={18} /></button>

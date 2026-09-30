@@ -15,7 +15,7 @@ import { OportunidadeModal, GanharModal, PerderModal } from '../../components/cr
 import Atividades from '../../components/crm/Atividades';
 import { QuoteModal } from '../finance/Quotes';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { PAGINA, CARD, Etiqueta, Carregando, Janela, inputCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
+import { PAGINA, CARD, FAIXA_KPI, FiltrosCelular, Etiqueta, Carregando, Janela, inputCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
 import { useUsuarios } from '../../components/crm/dados';
 
 const hoje = () => { const d = new Date(); const p = (x) => String(x).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
@@ -23,7 +23,7 @@ const diasAtras = (n) => { const d = new Date(); d.setDate(d.getDate() - n); ret
 const iniciais = (nome) => String(nome || '').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
 
 const Kpi = ({ rotulo, valor, detalhe, tom = 'text-slate-800' }) => (
-    <div className={`${CARD} px-4 py-3 min-w-[150px] flex-1`}>
+    <div className={`${CARD} px-4 py-3 min-w-[150px] shrink-0 md:shrink md:flex-1`}>
         <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest">{rotulo}</p>
         <p className={`text-lg font-bold tabular-nums ${tom}`}>{valor}</p>
         {detalhe && <p className="text-[10.5px] font-semibold text-slate-400">{detalhe}</p>}
@@ -47,6 +47,7 @@ export default function Funil() {
     const [fResp, setFResp] = useState('');
     const [arrastando, setArrastando] = useState(null);
     const [sobre, setSobre] = useState(null);
+    const [etapaCel, setEtapaCel] = useState(null);     // celular: etapa mostrada
 
     const [editar, setEditar] = useState(undefined);   // undefined fechado, null nova, obj edição
     const [aberta, setAberta] = useState(null);         // painel lateral
@@ -130,8 +131,7 @@ export default function Funil() {
         };
     }, [filtradas, etapas]);
 
-    const soltar = async (etapa) => {
-        const op = arrastando;
+    const soltar = async (etapa, op = arrastando) => {
         setArrastando(null); setSobre(null);
         if (!op || !podeEditar || op.etapa_id === etapa.id) return;
         if (etapa.tipo === 'GANHO') { if (op.ganho_em) return toast.error('Essa oportunidade já foi ganha.'); return setGanhar(op); }
@@ -140,6 +140,7 @@ export default function Funil() {
         const destino = porEtapa[etapa.id] || [];
         const posicao = destino.length ? Math.max(...destino.map((o) => Number(o.posicao) || 0)) + 1 : 0;
         setOps((l) => l.map((o) => (o.id === op.id ? { ...o, etapa_id: etapa.id, posicao, perdido_em: null } : o)));
+        setAberta((x) => (x?.id === op.id ? { ...x, etapa_id: etapa.id, posicao, perdido_em: null } : x));
         try {
             if (op.perdido_em) await reabrirOportunidade(op, etapa.id);
             await moverOportunidade(op.id, etapa.id, posicao);
@@ -148,6 +149,40 @@ export default function Funil() {
             toast.error('Não foi possível mover.');
             carregar();
         }
+    };
+
+    // Cartão da oportunidade — o mesmo no quadro (computador) e na lista por etapa (celular).
+    const renderCartao = (o, etapa) => {
+        const fechada = etapa.tipo !== 'ABERTA';
+        const s = resumoServicos(o);
+        const atrasada = !fechada && o.previsao_fechamento && o.previsao_fechamento < hoje();
+        return (
+            <div key={o.id}
+                draggable={podeEditar}
+                onDragStart={(e) => { setArrastando(o); e.dataTransfer.effectAllowed = 'move'; }}
+                onDragEnd={() => { setArrastando(null); setSobre(null); }}
+                onClick={() => setAberta(o)}
+                className={`bg-white rounded-xl border border-black/[.06] shadow-sm p-2.5 cursor-pointer hover:shadow-md hover:border-[#0071e3]/30 transition-all ${arrastando?.id === o.id ? 'opacity-40' : ''}`}>
+                <div className="flex items-start gap-1.5">
+                    <span className="text-sm leading-none mt-0.5">{s.emoji}</span>
+                    <p className="text-[12px] font-bold text-slate-800 leading-snug flex-1 line-clamp-2">{o.titulo}</p>
+                </div>
+                <p className="text-[10.5px] font-semibold text-slate-500 mt-1 truncate flex items-center gap-1"><Building2 size={10} />{o.empresa?.name}</p>
+                <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[12px] font-bold text-slate-800 tabular-nums">{fmtBRL(o.valor)}</span>
+                    {Number(o.valor_recorrente) > 0 && <span className="text-[10px] font-bold text-violet-600">+{fmtBRL(o.valor_recorrente)}/mês</span>}
+                    <span className="ml-auto flex items-center gap-1">
+                        {o.previsao_fechamento && !fechada && (
+                            <span className={`text-[9.5px] font-bold ${atrasada ? 'text-rose-600' : 'text-slate-400'}`} title="Previsão de fechamento">{fmtData(o.previsao_fechamento).slice(0, 5)}</span>
+                        )}
+                        {o.responsavel?.name && (
+                            <span title={o.responsavel.name} className="w-5 h-5 rounded-full bg-slate-100 text-[8.5px] font-bold text-slate-500 flex items-center justify-center">{iniciais(o.responsavel.name)}</span>
+                        )}
+                    </span>
+                </div>
+                {etapa.tipo === 'PERDIDO' && o.motivo_perda && <p className="text-[10px] font-semibold text-rose-500 mt-1 truncate">{o.motivo_perda}</p>}
+            </div>
+        );
     };
 
     const aposMudar = async (manterAberta = true) => {
@@ -161,27 +196,29 @@ export default function Funil() {
                 <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
                     <Target size={18} className="text-[#0071e3]" /> Funil de Vendas
                 </h1>
-                <div className="relative">
+                <div className="relative flex-1 md:flex-none min-w-[140px]">
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar…"
-                        className="h-8 pl-8 pr-3 w-44 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none focus:border-[#0071e3]" />
+                        className="h-9 md:h-8 pl-8 pr-3 w-full md:w-44 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none focus:border-[#0071e3]" />
                 </div>
-                <select value={fServico} onChange={(e) => setFServico(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
-                    <option value="">Todos os serviços</option>
-                    {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
-                </select>
-                <select value={fResp} onChange={(e) => setFResp(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
-                    <option value="">Todos os responsáveis</option>
-                    {usuarios.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-                </select>
-                <div className="ml-auto flex items-center gap-2">
-                    <button onClick={() => navigate('/vendas/propostas')} className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold uppercase text-slate-600 hover:text-[#0071e3] flex items-center gap-1.5"><FileText size={13} /> Propostas</button>
+                <FiltrosCelular ativos={(fServico ? 1 : 0) + (fResp ? 1 : 0)}>
+                    <select value={fServico} onChange={(e) => setFServico(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
+                        <option value="">Todos os serviços</option>
+                        {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
+                    </select>
+                    <select value={fResp} onChange={(e) => setFResp(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
+                        <option value="">Todos os responsáveis</option>
+                        {usuarios.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                    </select>
+                </FiltrosCelular>
+                <div className="md:ml-auto flex items-center gap-2">
+                    <button onClick={() => navigate('/vendas/propostas')} title="Propostas" className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold uppercase text-slate-600 hover:text-[#0071e3] flex items-center gap-1.5"><FileText size={13} /> <span className="hidden md:inline">Propostas</span></button>
                     {podeConfigurar && <button onClick={() => setConfigurar(true)} title="Etapas do funil" className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-slate-500 hover:text-[#0071e3]"><Settings2 size={15} /></button>}
-                    {podeEditar && <button onClick={() => setEditar(null)} className={btnPrimario}><Plus size={15} /> Nova oportunidade</button>}
+                    {podeEditar && <button onClick={() => setEditar(null)} className={`${btnPrimario} hidden md:flex`}><Plus size={15} /> Nova oportunidade</button>}
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-3 mb-3">
+            <div className={FAIXA_KPI}>
                 <Kpi rotulo="Em negociação" valor={fmtBRL(kpis.abertoValor)} detalhe={`${kpis.abertoQtd} oportunidade(s)`} />
                 <Kpi rotulo="Previsão ponderada" valor={fmtBRL(kpis.ponderado)} detalhe="valor × chance da etapa" tom="text-indigo-700" />
                 <Kpi rotulo="Mensalidades em jogo" valor={fmtBRL(kpis.mensalAberto)} detalhe="recorrente das abertas" tom="text-violet-700" />
@@ -189,8 +226,40 @@ export default function Funil() {
                 <Kpi rotulo="Conversão (90 dias)" valor={kpis.conversao == null ? '—' : `${kpis.conversao}%`} detalhe="ganhas ÷ fechadas" />
             </div>
 
-            {carregando ? <Carregando /> : (
-                <div className="flex gap-3 overflow-x-auto pb-4 items-start">
+            {carregando ? <Carregando /> : (<>
+                {/* Celular: uma etapa por vez, escolhida nas abas. Mudar de etapa
+                    é pelo "Mover para…" da oportunidade (arrastar não serve no dedo). */}
+                {(() => {
+                    const atual = etapas.find((e) => e.id === etapaCel) || primeiraAberta || etapas[0];
+                    if (!atual) return null;
+                    const lista = porEtapa[atual.id] || [];
+                    const total = lista.reduce((acc, o) => acc + Number(o.valor || 0), 0);
+                    return (
+                        <div className="md:hidden">
+                            <div className="flex gap-1.5 overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
+                                {etapas.map((e) => {
+                                    const on = e.id === atual.id;
+                                    return (
+                                        <button key={e.id} onClick={() => setEtapaCel(e.id)}
+                                            className={`shrink-0 h-9 pl-2.5 pr-3 rounded-full text-[12px] font-bold flex items-center gap-1.5 border ${on ? 'bg-slate-800 border-slate-800 text-white' : 'bg-white border-black/[.085] text-slate-600'}`}>
+                                            <span className="w-2 h-2 rounded-full" style={{ background: e.cor }} />
+                                            {e.nome}
+                                            <span className={`text-[11px] ${on ? 'text-white/70' : 'text-slate-400'}`}>{(porEtapa[e.id] || []).length}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <p className="text-[11.5px] font-semibold text-slate-500 tabular-nums mb-2">
+                                {fmtBRL(total)}{atual.tipo === 'ABERTA' ? ` · ${atual.probabilidade}% de chance` : ' · últimos 30 dias'}
+                            </p>
+                            <div className="space-y-2">
+                                {lista.length === 0 && <p className="py-8 text-center text-[12px] font-semibold text-slate-400">Nada nesta etapa.</p>}
+                                {lista.map((o) => renderCartao(o, atual))}
+                            </div>
+                        </div>
+                    );
+                })()}
+                <div className="hidden md:flex gap-3 overflow-x-auto pb-4 items-start">
                     {etapas.map((etapa) => {
                         const lista = porEtapa[etapa.id] || [];
                         const total = lista.reduce((s, o) => s + Number(o.valor || 0), 0);
@@ -213,37 +282,7 @@ export default function Funil() {
                                     </p>
                                 </div>
                                 <div className="space-y-2 min-h-[40px]">
-                                    {lista.map((o) => {
-                                        const s = resumoServicos(o);
-                                        const atrasada = !fechada && o.previsao_fechamento && o.previsao_fechamento < hoje();
-                                        return (
-                                            <div key={o.id}
-                                                draggable={podeEditar}
-                                                onDragStart={(e) => { setArrastando(o); e.dataTransfer.effectAllowed = 'move'; }}
-                                                onDragEnd={() => { setArrastando(null); setSobre(null); }}
-                                                onClick={() => setAberta(o)}
-                                                className={`bg-white rounded-xl border border-black/[.06] shadow-sm p-2.5 cursor-pointer hover:shadow-md hover:border-[#0071e3]/30 transition-all ${arrastando?.id === o.id ? 'opacity-40' : ''}`}>
-                                                <div className="flex items-start gap-1.5">
-                                                    <span className="text-sm leading-none mt-0.5">{s.emoji}</span>
-                                                    <p className="text-[12px] font-bold text-slate-800 leading-snug flex-1 line-clamp-2">{o.titulo}</p>
-                                                </div>
-                                                <p className="text-[10.5px] font-semibold text-slate-500 mt-1 truncate flex items-center gap-1"><Building2 size={10} />{o.empresa?.name}</p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <span className="text-[12px] font-bold text-slate-800 tabular-nums">{fmtBRL(o.valor)}</span>
-                                                    {Number(o.valor_recorrente) > 0 && <span className="text-[10px] font-bold text-violet-600">+{fmtBRL(o.valor_recorrente)}/mês</span>}
-                                                    <span className="ml-auto flex items-center gap-1">
-                                                        {o.previsao_fechamento && !fechada && (
-                                                            <span className={`text-[9.5px] font-bold ${atrasada ? 'text-rose-600' : 'text-slate-400'}`} title="Previsão de fechamento">{fmtData(o.previsao_fechamento).slice(0, 5)}</span>
-                                                        )}
-                                                        {o.responsavel?.name && (
-                                                            <span title={o.responsavel.name} className="w-5 h-5 rounded-full bg-slate-100 text-[8.5px] font-bold text-slate-500 flex items-center justify-center">{iniciais(o.responsavel.name)}</span>
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                {etapa.tipo === 'PERDIDO' && o.motivo_perda && <p className="text-[10px] font-semibold text-rose-500 mt-1 truncate">{o.motivo_perda}</p>}
-                                            </div>
-                                        );
-                                    })}
+                                    {lista.map((o) => renderCartao(o, etapa))}
                                     {etapa.id === primeiraAberta?.id && podeEditar && (
                                         <button onClick={() => setEditar(null)} className="w-full py-2 text-[10.5px] font-bold text-slate-400 hover:text-[#0071e3] hover:bg-white/60 rounded-xl flex items-center justify-center gap-1"><Plus size={12} /> Adicionar</button>
                                     )}
@@ -252,11 +291,12 @@ export default function Funil() {
                         );
                     })}
                 </div>
-            )}
+            </>)}
 
             {aberta && (
                 <PainelOportunidade
                     op={aberta} etapas={etapas} podeEditar={podeEditar}
+                    onMover={(etapa) => soltar(etapa, aberta)}
                     onClose={() => setAberta(null)}
                     onEditar={() => setEditar(aberta)}
                     onGanhar={() => setGanhar(aberta)}
@@ -301,7 +341,7 @@ export default function Funil() {
 }
 
 /** Painel lateral com a oportunidade: dados, propostas, ações e histórico. */
-function PainelOportunidade({ op, etapas, podeEditar, onClose, onEditar, onGanhar, onPerder, onReabrir, onExcluir }) {
+function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar, onGanhar, onPerder, onReabrir, onExcluir }) {
     const navigate = useNavigate();
     const { hasPermission } = usePermission();
     const [propostas, setPropostas] = useState([]);
@@ -373,6 +413,17 @@ function PainelOportunidade({ op, etapas, podeEditar, onClose, onEditar, onGanha
                             <button onClick={onEditar} className="h-9 px-3 bg-white border border-black/[.085] text-slate-600 rounded-lg font-bold text-[11px] uppercase flex items-center gap-1.5 hover:text-[#0071e3]"><Edit2 size={13} /> Editar</button>
                             {!op.ganho_em && <button onClick={onExcluir} className="h-9 px-3 bg-white border border-black/[.085] text-slate-400 rounded-lg hover:text-rose-600 ml-auto"><Trash2 size={14} /></button>}
                         </div>
+                    )}
+
+                    {/* Celular: mudar de etapa sem arrastar */}
+                    {podeEditar && !op.ganho_em && (
+                        <label className="md:hidden flex items-center gap-2">
+                            <span className="text-[11px] font-bold text-slate-500 uppercase shrink-0">Mover para</span>
+                            <select value={op.etapa_id} onChange={(e) => { const et = etapas.find((x) => x.id === e.target.value); if (et) onMover(et); }}
+                                className={`${inputCls} h-11 text-sm cursor-pointer`}>
+                                {etapas.map((e) => <option key={e.id} value={e.id}>{e.nome}{e.tipo === 'GANHO' ? ' (ganhar)' : e.tipo === 'PERDIDO' ? ' (perder)' : ''}</option>)}
+                            </select>
+                        </label>
                     )}
 
                     {op.ganho_em && projeto?.oportunidade_id === op.id && (

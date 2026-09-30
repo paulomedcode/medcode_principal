@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { todayISO } from '../../utils/date';
 import { PAYMENT_METHODS } from './paymentMethods';
 import CurrencyInput from './CurrencyInput';
+import useTravaRolagem from '../../hooks/useTravaRolagem';
 
 const fmt = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 const fmtDate = (s) => { if (!s) return ''; const [y, m, d] = s.split('-'); return `${d}/${m}/${y.slice(2)}`; };
@@ -52,6 +53,7 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
 
   useEffect(() => { if (row) load(); }, [row, load]);
 
+  useTravaRolagem(!!row);
   if (!row) return null;
 
   const submit = async () => {
@@ -94,9 +96,9 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
   const inputCls = 'w-full h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[13px] font-medium text-[#1d1d1f] outline-none focus:border-[#0071e3] transition-colors';
 
   return (
-    <div className="fixed inset-0 z-[11000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[11000] flex items-stretch md:items-center justify-center md:p-4">
       <div className="fixed inset-0 bg-black/25 backdrop-blur-sm animate-in fade-in" onClick={onClose}></div>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative z-10 animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col overflow-hidden ring-1 ring-black/5">
+      <div className="bg-white md:rounded-2xl shadow-2xl w-full max-w-md relative z-10 animate-in zoom-in-95 duration-200 h-dvh md:h-auto max-h-dvh md:max-h-[90vh] flex flex-col overflow-hidden ring-1 ring-black/5">
         <div className="px-5 py-4 border-b border-black/[.085] flex items-center justify-between shrink-0">
           <div className="min-w-0">
             <h3 className="text-[15px] font-semibold text-[#1d1d1f] tracking-[-.01em] flex items-center gap-2"><Banknote size={16} className="text-[#248a3d]" /> {L.title}</h3>

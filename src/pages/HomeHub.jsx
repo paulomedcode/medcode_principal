@@ -52,9 +52,9 @@ const TIPO_ITEM = {
 };
 
 const Chip = ({ rotulo, valor, detalhe, tom = 'text-slate-900', alerta, onClick }) => (
-    <button onClick={onClick} className={`${VIDRO} !rounded-2xl px-4 py-3 text-left flex-1 min-w-[160px] hover:bg-white/90 transition-colors`}>
-        <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest">{rotulo}</p>
-        <p className={`text-xl font-bold tabular-nums tracking-tight ${tom}`}>{valor}</p>
+    <button onClick={onClick} className={`${VIDRO} !rounded-2xl px-3.5 py-2.5 md:px-4 md:py-3 text-left flex-1 min-w-0 md:min-w-[160px] hover:bg-white/90 transition-colors`}>
+        <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest truncate">{rotulo}</p>
+        <p className={`text-lg md:text-xl font-bold tabular-nums tracking-tight ${tom}`}>{valor}</p>
         {detalhe && <p className={`text-[10.5px] font-semibold ${alerta ? 'text-rose-500' : 'text-slate-400'}`}>{detalhe}</p>}
     </button>
 );
@@ -241,7 +241,8 @@ export default function HomeHub() {
                             </p>
                         )}
                     </div>
-                    <div className="ml-auto flex items-center gap-2">
+                    {/* No celular a busca está na barra de cima e o ＋ na de baixo */}
+                    <div className="ml-auto hidden md:flex items-center gap-2">
                         <button onClick={() => window.dispatchEvent(new CustomEvent('medcode:busca'))}
                             className="h-11 pl-3 pr-2 w-64 max-w-[50vw] bg-white/80 backdrop-blur border border-white rounded-2xl shadow-sm flex items-center gap-2 text-[13px] font-semibold text-slate-400 hover:text-slate-600">
                             <Search size={16} /> <span className="flex-1 text-left">Buscar…</span>
@@ -274,7 +275,7 @@ export default function HomeHub() {
 
                     {/* Números */}
                     {kpi && (pode.financeiro || pode.vendas || veCrm) && (
-                        <div className="flex flex-wrap gap-3">
+                        <div className="grid grid-cols-2 gap-2.5 md:flex md:flex-wrap md:gap-3">
                             {pode.financeiro && <Chip rotulo="A receber · 7 dias" valor={fmtBRL(kpi.receber)} detalhe={kpi.vencido > 0 ? `${fmtBRL(kpi.vencido)} vencido` : 'nada vencido'} alerta={kpi.vencido > 0} onClick={() => navigate('/finance/contas-receber')} />}
                             {pode.vendas && <Chip rotulo="Em negociação" valor={fmtBRL(kpi.negociacao)} detalhe={`${kpi.qtdAbertas} oportunidade(s)`} onClick={() => navigate('/vendas')} />}
                             {veCrm && <Chip rotulo="Projetos em curso" valor={d.ativos.length} detalhe={kpi.atrasados ? `${kpi.atrasados} atrasado(s)` : 'nenhum atrasado'} alerta={kpi.atrasados > 0} onClick={() => navigate('/projetos')} />}
@@ -284,7 +285,7 @@ export default function HomeHub() {
 
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
                         {/* Meu dia */}
-                        <section className={`${VIDRO} p-5 xl:col-span-2 min-h-[380px] flex flex-col`}>
+                        <section className={`${VIDRO} p-5 xl:col-span-2 md:min-h-[380px] flex flex-col`}>
                             <div className="flex flex-wrap items-center gap-2 mb-4">
                                 <h2 className="text-lg font-black text-slate-800 mr-2">Meu dia</h2>
                                 {[
@@ -366,7 +367,7 @@ export default function HomeHub() {
                                                             <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                                                                 <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all" style={{ width: `${pct ?? 0}%` }} />
                                                             </div>
-                                                            <span className="text-[10px] font-bold text-slate-400 tabular-nums w-16 text-right">{pct == null ? statusProjeto(p.status).label : `${pr.feitas}/${pr.total}`}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400 tabular-nums text-right whitespace-nowrap md:whitespace-normal md:w-16">{pct == null ? statusProjeto(p.status).label : `${pr.feitas}/${pr.total}`}</span>
                                                         </div>
                                                         <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5 truncate">{p.empresa?.name}{Number(p.valor_recorrente) > 0 && <><Repeat size={9} className="inline mx-1 -mt-0.5 text-violet-400" />{fmtBRL(p.valor_recorrente)}/mês</>}</p>
                                                     </li>
@@ -380,7 +381,7 @@ export default function HomeHub() {
                             {pode.vendas && kpi && (
                                 <section className={`${VIDRO} p-5`}>
                                     <Titulo icone={Target} acao={<button onClick={() => navigate('/vendas')} className="text-[10px] font-bold text-indigo-600 uppercase">Abrir funil</button>}>Funil</Titulo>
-                                    <div className="flex gap-1.5">
+                                    <div className="grid grid-cols-2 gap-1.5 md:flex">
                                         {kpi.funil.map((e) => (
                                             <button key={e.id} onClick={() => navigate('/vendas')} title={`${e.nome}: ${e.qtd} · ${fmtBRL(e.valor)}`}
                                                 className="flex-1 min-w-0 rounded-xl bg-white/70 hover:bg-white p-2 text-left border-t-[3px]" style={{ borderTopColor: e.cor }}>

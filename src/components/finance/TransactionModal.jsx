@@ -12,6 +12,7 @@ import SearchableSelect from './SearchableSelect';
 import PartyModal from './PartyModal';
 import { counterpartyLabel } from '../../utils/financeCounterparty';
 import { WITHHOLD_DEFAULT_PCT, WITHHOLD_AME_PCT, isAmeParty } from '../../utils/financeTaxes';
+import useTravaRolagem from '../../hooks/useTravaRolagem';
 
 export default function TransactionModal({ isOpen, onClose, onSave, transactionId = null, presetType = null }) {
   const [loading, setLoading] = useState(false);
@@ -518,17 +519,18 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
     }
   };
 
+  useTravaRolagem(isOpen);
   if (!isOpen) return null;
 
   const baseInputStyle = "w-full h-10 px-3 bg-white border border-black/[.085] rounded-lg text-[13px] font-medium text-[#1d1d1f] outline-none focus:border-[#0071e3] transition-colors";
 
   return (
-    <div className="fixed inset-0 z-[11000] flex items-start justify-center p-4 pt-[76px]">
+    <div className="fixed inset-0 z-[11000] flex items-stretch md:items-start justify-center md:p-4 md:pt-[76px]">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/25 backdrop-blur-sm transition-opacity animate-in fade-in" onClick={onClose}></div>
 
       {/* Container do Modal — abre abaixo da topbar (pt no wrapper) e cabe na viewport */}
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden ring-1 ring-black/5 max-h-[calc(100dvh-92px)]">
+      <div className="bg-white md:rounded-2xl shadow-2xl w-full max-w-xl flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden ring-1 ring-black/5 h-dvh md:h-auto max-h-dvh md:max-h-[calc(100dvh-92px)]">
 
         {/* Header */}
         <div className="px-5 py-4 border-b border-black/[.085] flex items-center justify-between bg-white shrink-0">

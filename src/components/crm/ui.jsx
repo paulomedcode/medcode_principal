@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Loader2, SlidersHorizontal } from 'lucide-react';
 import { SERVICOS } from '../../config/servicos';
 import Gaveta from '../ui/Gaveta';
+import useTravaRolagem from '../../hooks/useTravaRolagem';
 
 // Peças visuais do CRM/Vendas/Projetos — mesmo estilo das telas do financeiro.
 
@@ -94,10 +95,12 @@ export const Janela = ({ titulo, icone: Icone, onClose, children, rodape, largur
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, [onClose]);
+    useTravaRolagem();
+    // Celular: ocupa a tela toda (sem margens nem rolagem da página por trás).
     return (
-        <div className="fixed inset-0 z-[11000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[11000] flex items-stretch md:items-center justify-center md:p-4">
             <div className="fixed inset-0 bg-black/25 backdrop-blur-sm animate-in fade-in" onClick={onClose} />
-            <div className={`bg-white rounded-2xl shadow-2xl w-full ${largura} flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden border border-black/[.06] max-h-[90vh]`}>
+            <div className={`bg-white md:rounded-2xl shadow-2xl w-full ${largura} flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden md:border border-black/[.06] h-dvh md:h-auto max-h-dvh md:max-h-[90vh]`}>
                 <div className="p-4 border-b border-black/[.06] flex items-center justify-between shrink-0">
                     <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
                         {Icone && <Icone size={16} className="text-[#0071e3]" />} {titulo}
@@ -105,7 +108,7 @@ export const Janela = ({ titulo, icone: Icone, onClose, children, rodape, largur
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 bg-slate-50 rounded-lg"><X size={16} /></button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/40">{children}</div>
-                {rodape && <div className="p-4 border-t border-black/[.06] flex items-center justify-end gap-2 shrink-0 bg-white">{rodape}</div>}
+                {rodape && <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4 border-t border-black/[.06] flex items-center justify-end gap-2 shrink-0 bg-white">{rodape}</div>}
             </div>
         </div>
     );

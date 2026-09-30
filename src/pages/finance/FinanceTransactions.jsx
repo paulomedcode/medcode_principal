@@ -522,15 +522,16 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
 
         <div className="flex gap-2 flex-wrap">
           {/* "Nova Conta" movido para Configurações › Contas Bancárias */}
+          {/* Imprimir e exportar ficam para o computador */}
           {viewMode === 'extract' && (
-            <>
+            <div className="hidden md:contents">
               <button onClick={handlePrint} title="Imprimir a lista atual (respeita os filtros)" className={cup.btn}>
                 <Printer size={14} /> Imprimir
               </button>
               <button onClick={handleExport} title="Exportar a lista atual para Excel (.xlsx)" className={cup.btn}>
                 <Download size={14} /> Exportar
               </button>
-            </>
+            </div>
           )}
           {canEdit && (
             <>
@@ -546,8 +547,8 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
       </div>
 
       {/* Saldos das contas — card único com células separadas por fio-de-cabelo */}
-      <div className="mb-3 grid grid-cols-2 lg:grid-cols-5 gap-px bg-black/[.085] border border-black/[.085] rounded-xl overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,.04)]">
-        <div className="bg-white px-4 py-3 min-w-0">
+      <div className="mb-3 flex overflow-x-auto no-scrollbar md:grid md:overflow-hidden grid-cols-2 lg:grid-cols-5 gap-px bg-black/[.085] border border-black/[.085] rounded-xl shadow-[0_1px_2px_rgba(0,0,0,.04)]">
+        <div className="bg-white px-4 py-3 min-w-0 shrink-0 w-[46%] md:w-auto">
           <span className={cup.label}>Consolidado</span>
           <span className={`text-[16px] font-semibold tabular-nums tracking-[-.01em] leading-tight block mt-1 ${totalConsolidatedBalance < 0 ? cup.neg : cup.text}`}>
             R$ {totalConsolidatedBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -557,7 +558,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
           )}
         </div>
         {accounts.map(acc => (
-          <div key={acc.id} className="bg-white px-4 py-3 min-w-0" title={`${acc.bank_name || 'Banco'} · Ag ${acc.agency || '-'} CC ${acc.account_number || '-'}`}>
+          <div key={acc.id} className="bg-white px-4 py-3 min-w-0 shrink-0 w-[46%] md:w-auto" title={`${acc.bank_name || 'Banco'} · Ag ${acc.agency || '-'} CC ${acc.account_number || '-'}`}>
             <span className={`${cup.label} block truncate`}>{acc.name || acc.bank_name}</span>
             <span className={`text-[16px] font-semibold tabular-nums tracking-[-.01em] leading-tight block mt-1 ${acc.current_balance < 0 ? cup.neg : cup.text}`}>
               R$ {acc.current_balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -593,7 +594,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
             <>
               <span className="hidden lg:block w-px h-6 bg-black/[.085] mx-0.5" />
 
-              <div className="flex items-center gap-1.5 px-2.5 bg-white border border-black/[.085] rounded-lg h-9 w-[200px] xl:w-[240px] focus-within:border-[#0071e3] transition-colors">
+              <div className="flex items-center gap-1.5 px-2.5 bg-white border border-black/[.085] rounded-lg h-9 w-full md:w-[200px] xl:w-[240px] focus-within:border-[#0071e3] transition-colors">
                 <Search size={14} className="text-[#86868b] shrink-0" />
                 <input value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Buscar descrição, valor…"

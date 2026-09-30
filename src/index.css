@@ -107,3 +107,13 @@ html.tema-escuro .preserve-color {
 .mc-gaveta { animation: mc-sobe 220ms cubic-bezier(.2, .8, .2, 1); }
 .mc-veu { animation: mc-esmaece 180ms ease-out; }
 .pb-seguro { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Celular: campo com letra menor que 16px faz o iPhone dar zoom ao tocar nele
+   (e a tela fica "torta" depois). */
+@media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
