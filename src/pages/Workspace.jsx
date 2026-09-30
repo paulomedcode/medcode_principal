@@ -92,13 +92,18 @@ export default function Workspace() {
   const [dropHint, setDropHint] = useState(null); // { id, mode: 'before'|'after'|'inside' }
   const [categorias, setCategorias] = useState([]);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  // Barra lateral recolhível — a preferência fica no aparelho.
+  // Barra lateral recolhível — a preferência fica no aparelho. No celular ela
+  // abre por cima da página (não cabe ao lado) e fecha ao escolher uma página.
+  const ehCelular = () => window.matchMedia('(max-width: 767px)').matches;
   const [sidebarAberta, setSidebarAberta] = useState(() => {
+    if (ehCelular()) return false;
     try { return localStorage.getItem('ws-sidebar') !== '0'; } catch { return true; }
   });
   useEffect(() => {
+    if (ehCelular()) return;
     try { localStorage.setItem('ws-sidebar', sidebarAberta ? '1' : '0'); } catch { /* ignore */ }
   }, [sidebarAberta]);
+  useEffect(() => { if (ehCelular()) setSidebarAberta(false); }, [selectedId]);
 
   const databaseIds = useMemo(() => new Set(pages.filter((p) => p.type === 'database').map((p) => p.id)), [pages]);
   const tree = useMemo(() => ws.buildTree(pages, { databaseIds }), [pages, databaseIds]);
@@ -497,7 +502,7 @@ export default function Workspace() {
   }
 
   return (
-    <div className="h-[calc(100vh-64px)] flex">
+    <div className="h-[calc(100dvh-8rem-env(safe-area-inset-bottom))] md:h-[calc(100vh-64px)] flex relative">
       {/* Barra recolhida: só um trilho fino com os atalhos essenciais.
           A árvore ocupava 270px permanentes para mostrar 2 nomes — agora o
           espaço vai para o conteúdo, que é o que importa. */}
@@ -520,8 +525,11 @@ export default function Workspace() {
         </div>
       )}
 
+      {/* Celular: véu por trás da barra aberta — tocar fora fecha */}
+      {sidebarAberta && <div className="md:hidden absolute inset-0 z-20 bg-black/20" onClick={() => setSidebarAberta(false)} />}
+
       {/* SIDEBAR / ÁRVORE */}
-      <aside className={`${sidebarAberta ? 'w-[248px]' : 'w-0 overflow-hidden border-r-0'} shrink-0 bg-white/70 dark:bg-slate-900/50 backdrop-blur-xl border-r border-slate-200/70 dark:border-slate-700/60 flex flex-col transition-[width] duration-200`}>
+      <aside className={`${sidebarAberta ? 'w-[85%] max-w-[300px] md:max-w-none md:w-[248px] absolute md:static inset-y-0 left-0 z-30 shadow-2xl md:shadow-none bg-white md:bg-white/70' : 'w-0 overflow-hidden border-r-0 bg-white/70'} shrink-0 dark:bg-slate-900/50 backdrop-blur-xl border-r border-slate-200/70 dark:border-slate-700/60 flex flex-col transition-[width] duration-200`}>
         <div className="px-2.5 py-2.5 flex items-center gap-0.5 border-b border-slate-200/60 dark:border-slate-700/60">
           <button onClick={() => navigate('/home')} title="Início" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-800 transition-colors">
             <ArrowLeft size={16} />

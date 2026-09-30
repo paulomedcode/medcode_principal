@@ -25,7 +25,7 @@ const Numero = ({ rotulo, valor, detalhe, tom = 'text-slate-900', onClick }) => 
     <button onClick={onClick} disabled={!onClick}
         className={`${CARD} px-4 py-3.5 text-left flex-1 min-w-[170px] ${onClick ? 'hover:border-[#0071e3]/40 cursor-pointer' : 'cursor-default'}`}>
         <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest">{rotulo}</p>
-        <p className={`text-2xl font-bold tabular-nums tracking-tight mt-0.5 ${tom}`}>{valor}</p>
+        <p className={`text-xl md:text-2xl font-bold tabular-nums tracking-tight mt-0.5 ${tom}`}>{valor}</p>
         {detalhe && <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">{detalhe}</p>}
     </button>
 );
