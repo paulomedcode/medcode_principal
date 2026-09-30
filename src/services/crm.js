@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { logAction } from '../utils/logger';
 import * as ws from './workspace';
-import { servicosDe } from '../config/servicos';
+import { servicosDe, resumoServicos } from '../config/servicos';
 
 /*
  * CRM, funil e projetos. Tabelas em supabase/migrations/20260929140000_crm_vendas_projetos.sql.
@@ -296,7 +296,7 @@ export async function criarPaginaDeEntregas(projeto, { userId = null } = {}) {
         icon: servicos[0].emoji, createdBy: userId,
     });
 
-    const fases = [...new Set(servicos.flatMap((s) => s.fases))].map((f, i) => opt(f, CORES_FASE[i % CORES_FASE.length]));
+    const fases = resumoServicos(projeto).fases.map((f, i) => opt(f, CORES_FASE[i % CORES_FASE.length]));
     const status = [opt('A fazer', 'gray'), opt('Fazendo', 'blue'), opt('Concluído', 'green')];
     const props = [];
     const specs = [

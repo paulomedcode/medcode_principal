@@ -123,10 +123,14 @@ export const servicosDe = (item) => idsServicos(item).map(servicoPorId);
 export const rotuloServicos = (item, { emoji = false } = {}) =>
     servicosDe(item).map((s) => (emoji ? `${s.emoji} ${s.label}` : s.label)).join(' + ');
 
-/** Para listas e cartões: { emoji: '🌐🤖', label: 'Site + Agente de IA' }. */
+/**
+ * Para listas e cartões: { emoji: '🌐🤖', label: 'Site + Agente de IA', fases }.
+ * `fases` soma as de todos os serviços, sem repetir (igual ao quadro de entregas).
+ */
 export const resumoServicos = (item) => ({
     emoji: servicosDe(item).map((s) => s.emoji).join(''),
     label: rotuloServicos(item),
+    fases: [...new Set(servicosDe(item).flatMap((s) => s.fases))],
 });
 
 /** A oportunidade/projeto inclui este serviço? */
