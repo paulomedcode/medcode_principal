@@ -232,7 +232,7 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
         <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
           <FileBarChart2 size={14} className="text-[#0071e3]" /> Relatórios Personalizados
         </h3>
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-1.5">
           <div className="flex bg-slate-100/70 rounded-md p-0.5">
             <button onClick={() => setView('resumo')} className={`px-2.5 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 transition-all ${view === 'resumo' ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><ListTree size={12} /> Resumo</button>
             <button onClick={() => setView('detalhe')} className={`px-2.5 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 transition-all ${view === 'detalhe' ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><Rows3 size={12} /> Detalhado</button>

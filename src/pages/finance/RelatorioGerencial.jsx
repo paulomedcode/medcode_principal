@@ -103,7 +103,7 @@ export default function RelatorioGerencial() {
           <LayoutDashboard size={18} className="text-[#0071e3]" /> Relatório Gerencial <span className="text-slate-400">· {label}</span>
         </h1>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="w-52 sm:w-60">
+          <div className="w-full sm:w-60">
             <SearchableSelect
               options={[{ value: '', label: 'Centro de custo: todos' }, ...ccOptions.map(cc => ({ value: cc, label: cc }))]}
               value={ccFilter} onChange={setCcFilter}

@@ -79,12 +79,12 @@ export default function FinancePeriodBar({ onChange, showBasis = false }) {
   const modeBtn = (mode, label) => segBtn(period.mode === mode, () => setPeriod({ ...period, mode }), label);
 
   return (
-    <div className="flex items-center gap-2 px-2 bg-white border border-black/[.085] rounded-lg h-9 shadow-[0_1px_2px_rgba(0,0,0,.04)] w-fit">
-      <CalendarDays size={14} className="text-[#86868b]" />
+    <div className="flex flex-wrap md:flex-nowrap items-center gap-2 px-2 py-1.5 md:py-0 bg-white border border-black/[.085] rounded-lg md:h-9 shadow-[0_1px_2px_rgba(0,0,0,.04)] w-full md:w-fit">
+      <CalendarDays size={14} className="text-[#86868b] hidden md:block" />
       <div className="flex items-center gap-0.5 bg-black/[.045] rounded-[8px] p-0.5">
         {modeBtn('day', 'Dia')}{modeBtn('month', 'Mês')}{modeBtn('year', 'Ano')}{modeBtn('range', 'Período')}
       </div>
-      <div className="h-5 w-px bg-black/[.085]" />
+      <div className="h-5 w-px bg-black/[.085] hidden md:block" />
       <button onClick={() => setPeriod(shiftPeriod(period, -1))} title="Anterior"
         className="p-1 rounded-md text-[#86868b] hover:text-[#0071e3] hover:bg-black/[.04] transition-colors">
         <ChevronLeft size={15} />
@@ -117,7 +117,7 @@ export default function FinancePeriodBar({ onChange, showBasis = false }) {
       </button>
       {showBasis && (
         <>
-          <div className="h-5 w-px bg-black/[.085]" />
+          <div className="h-5 w-px bg-black/[.085] hidden md:block" />
           <div className="flex items-center gap-0.5 bg-black/[.045] rounded-[8px] p-0.5">
             {segBtn(basis === 'date', () => setBasis('date'), 'Data', 'Filtra pela data do lançamento (regime de caixa)')}
             {segBtn(basis === 'reference', () => setBasis('reference'), 'Competência', 'Filtra pelo mês de referência (competência); lançamentos sem competência entram pela data')}

@@ -6,7 +6,7 @@ import { listarEmpresas } from '../../services/crm';
 import { tipoEmpresa } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import EmpresaModal from '../../components/crm/EmpresaModal';
-import { PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario } from '../../components/crm/ui';
+import { PAGINA, CARD, CHIPS, Etiqueta, Carregando, Vazio, btnPrimario } from '../../components/crm/ui';
 
 const FILTROS = [
     { id: '', label: 'Todos' },
@@ -61,29 +61,56 @@ export default function Clientes() {
                 <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
                     <Building2 size={18} className="text-[#0071e3]" /> Clientes
                 </h1>
-                <div className="flex items-center gap-1 bg-slate-100/70 rounded-lg p-0.5">
+                <div className={`${CHIPS} order-last md:order-none w-full md:w-auto`}>
                     {FILTROS.map((f) => (
                         <button key={f.id} onClick={() => setFiltro(f.id)}
-                            className={`px-3 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${filtro === f.id ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+                            className={`shrink-0 px-3 h-8 md:h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${filtro === f.id ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
                             {f.label} <span className="opacity-70">{contagem[f.id]}</span>
                         </button>
                     ))}
                 </div>
-                <div className="relative">
+                <div className="relative w-full md:w-auto">
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar nome, CNPJ, cidade…"
-                        className="h-8 pl-8 pr-3 w-56 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none focus:border-[#0071e3]" />
+                        className="h-10 md:h-8 pl-8 pr-3 w-full md:w-56 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none focus:border-[#0071e3]" />
                 </div>
                 {podeEditar && (
-                    <button onClick={() => setNova(true)} className={`${btnPrimario} ml-auto`}><Plus size={15} /> Nova empresa</button>
+                    <button onClick={() => setNova(true)} className={`${btnPrimario} ml-auto hidden md:flex`}><Plus size={15} /> Nova empresa</button>
                 )}
             </div>
 
             <div className={`${CARD} overflow-hidden`}>
                 {carregando ? <Carregando /> : lista.length === 0 ? (
                     <Vazio>{empresas.length === 0 ? 'Nenhuma empresa cadastrada ainda' : 'Nada encontrado com esse filtro'}</Vazio>
-                ) : (
-                    <div className="overflow-x-auto">
+                ) : (<>
+                    {/* Celular: um cartão por empresa, com ligar e WhatsApp à mão */}
+                    <div className="md:hidden divide-y divide-black/[.055]">
+                        {lista.map((e) => {
+                            const t = tipoEmpresa(e.kind);
+                            const fone = String(e.telefone || '').replace(/\D/g, '');
+                            return (
+                                <div key={e.id} className="flex items-center gap-2 px-4 py-3">
+                                    <button type="button" onClick={() => navigate(`/clientes/${e.id}`)} className="flex-1 min-w-0 text-left">
+                                        <span className="block text-[14px] font-bold text-slate-800 truncate">{e.name}</span>
+                                        <span className="mt-1 flex items-center gap-2 min-w-0">
+                                            <Etiqueta className={t.cor}>{t.label}</Etiqueta>
+                                            <span className="text-[11.5px] font-semibold text-slate-400 truncate">
+                                                {[e.segmento, [e.cidade, e.uf].filter(Boolean).join('/')].filter(Boolean).join(' · ')}
+                                            </span>
+                                        </span>
+                                    </button>
+                                    {fone && (
+                                        <a href={`tel:${fone}`} aria-label={`Ligar para ${e.name}`}
+                                            className="w-10 h-10 shrink-0 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center active:bg-slate-200">
+                                            <Phone size={16} />
+                                        </a>
+                                    )}
+                                    <ChevronRight size={16} className="text-slate-300 shrink-0" />
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/70 text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
@@ -122,7 +149,7 @@ export default function Clientes() {
                             </tbody>
                         </table>
                     </div>
-                )}
+                </>)}
             </div>
 
             {nova && (

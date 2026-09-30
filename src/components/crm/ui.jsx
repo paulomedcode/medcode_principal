@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Loader2, SlidersHorizontal } from 'lucide-react';
 import { SERVICOS } from '../../config/servicos';
+import Gaveta from '../ui/Gaveta';
 
 // Peças visuais do CRM/Vendas/Projetos — mesmo estilo das telas do financeiro.
 
@@ -44,6 +45,37 @@ export const ServicosPicker = ({ value = [], onChange }) => {
                 );
             })}
         </div>
+    );
+};
+
+// ---------------------------------------------------------------------------
+// Celular (< md). No computador estas peças se comportam como antes.
+// ---------------------------------------------------------------------------
+
+/** Linha de abas/chips: quebra linha no computador, rola de lado no celular. */
+export const CHIPS = 'flex items-center gap-1 bg-slate-100/70 rounded-lg p-0.5 flex-nowrap overflow-x-auto no-scrollbar max-w-full md:flex-wrap md:overflow-visible';
+
+/** Faixa de números: rola de lado no celular em vez de empilhar cards. */
+export const FAIXA_KPI = 'flex gap-3 mb-3 flex-nowrap overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-5 sm:px-5 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible';
+
+/**
+ * Filtros secundários. Computador: ficam na linha, como sempre. Celular: um
+ * botão "Filtros" abre uma gaveta com eles (em vez de ocupar meia tela).
+ */
+export const FiltrosCelular = ({ ativos = 0, children }) => {
+    const [aberto, setAberto] = useState(false);
+    return (
+        <>
+            <div className="hidden md:contents">{children}</div>
+            <button type="button" onClick={() => setAberto(true)}
+                className={`md:hidden h-9 px-3 shrink-0 rounded-lg border text-xs font-bold flex items-center gap-1.5 ${ativos ? 'bg-[#0071e3]/10 border-[#0071e3]/30 text-[#0071e3]' : 'bg-white border-black/[.085] text-slate-600'}`}>
+                <SlidersHorizontal size={14} /> Filtros{ativos ? ` (${ativos})` : ''}
+            </button>
+            <Gaveta aberta={aberto} onClose={() => setAberto(false)} titulo="Filtros"
+                rodape={<button type="button" onClick={() => setAberto(false)} className={`${btnPrimario} w-full justify-center h-11`}>Ver resultados</button>}>
+                <div className="flex flex-col gap-3 [&_select]:w-full [&_select]:h-11 [&_select]:text-sm [&>*]:w-full">{children}</div>
+            </Gaveta>
+        </>
     );
 };
 

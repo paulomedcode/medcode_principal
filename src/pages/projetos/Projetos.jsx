@@ -7,7 +7,7 @@ import { SERVICOS, STATUS_PROJETO, resumoServicos, temServico, statusProjeto, fm
 import { usePermission } from '../../contexts/PermissionContext';
 import { todayISO as hoje } from '../../utils/date';
 import ProjetoModal from '../../components/crm/ProjetoModal';
-import { PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario } from '../../components/crm/ui';
+import { PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario, CHIPS, FAIXA_KPI, FiltrosCelular } from '../../components/crm/ui';
 
 const ATIVOS = ['PLANEJAMENTO', 'EM_ANDAMENTO', 'EM_REVISAO', 'PAUSADO'];
 
@@ -54,34 +54,36 @@ export default function Projetos() {
                 <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
                     <FolderKanban size={18} className="text-[#0071e3]" /> Projetos
                 </h1>
-                <div className="flex items-center gap-1 bg-slate-100/70 rounded-lg p-0.5 flex-wrap">
+                <div className={`${CHIPS} order-last md:order-none w-full md:w-auto`}>
                     {[{ id: 'ATIVOS', label: 'Em curso' }, ...STATUS_PROJETO, { id: '', label: 'Todos' }].map((s) => (
                         <button key={s.id || 'todos'} onClick={() => setFiltro(s.id)}
-                            className={`px-2.5 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${filtro === s.id ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+                            className={`shrink-0 px-2.5 h-8 md:h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${filtro === s.id ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
                             {s.label}
                         </button>
                     ))}
                 </div>
-                <select value={fServico} onChange={(e) => setFServico(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
-                    <option value="">Todos os serviços</option>
-                    {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
-                </select>
-                <div className="relative">
+                <FiltrosCelular ativos={fServico ? 1 : 0}>
+                    <select value={fServico} onChange={(e) => setFServico(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
+                        <option value="">Todos os serviços</option>
+                        {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
+                    </select>
+                </FiltrosCelular>
+                <div className="relative flex-1 md:flex-none">
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar…"
-                        className="h-8 pl-8 pr-3 w-44 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none focus:border-[#0071e3]" />
+                        className="h-9 md:h-8 pl-8 pr-3 w-full md:w-44 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none focus:border-[#0071e3]" />
                 </div>
-                {podeEditar && <button onClick={() => setNovo(true)} className={`${btnPrimario} ml-auto`}><Plus size={15} /> Novo projeto</button>}
+                {podeEditar && <button onClick={() => setNovo(true)} className={`${btnPrimario} ml-auto hidden md:flex`}><Plus size={15} /> Novo projeto</button>}
             </div>
 
-            <div className="flex flex-wrap gap-3 mb-3">
+            <div className={FAIXA_KPI}>
                 {[
                     ['Em curso', resumo.ativos, 'text-slate-800'],
                     ['Atrasados', resumo.atrasados, resumo.atrasados ? 'text-rose-600' : 'text-slate-800'],
                     ['Carteira em curso', fmtBRL(resumo.carteira), 'text-indigo-700'],
                     ['Receita recorrente (MRR)', fmtBRL(resumo.mrr), 'text-violet-700'],
                 ].map(([r, v, tom]) => (
-                    <div key={r} className={`${CARD} px-4 py-3 min-w-[150px] flex-1`}>
+                    <div key={r} className={`${CARD} px-4 py-3 min-w-[150px] shrink-0 md:shrink md:flex-1`}>
                         <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest">{r}</p>
                         <p className={`text-lg font-bold tabular-nums ${tom}`}>{v}</p>
                     </div>
@@ -91,8 +93,37 @@ export default function Projetos() {
             <div className={`${CARD} overflow-hidden`}>
                 {carregando ? <Carregando /> : lista.length === 0 ? (
                     <Vazio>{projetos.length === 0 ? 'Nenhum projeto ainda — eles nascem quando uma oportunidade é ganha' : 'Nada com esse filtro'}</Vazio>
-                ) : (
-                    <div className="overflow-x-auto">
+                ) : (<>
+                    {/* Celular: cartão por projeto — nome, cliente, status e prazo */}
+                    <div className="md:hidden divide-y divide-black/[.055]">
+                        {lista.map((p) => {
+                            const s = resumoServicos(p);
+                            const st = statusProjeto(p.status);
+                            const atrasado = ATIVOS.includes(p.status) && p.prazo && p.prazo < hoje();
+                            return (
+                                <button key={p.id} type="button" onClick={() => navigate(`/projetos/${p.id}`)} className="w-full text-left px-4 py-3 flex items-start gap-3 active:bg-slate-50">
+                                    <span className="text-lg leading-none mt-0.5 shrink-0">{s.emoji}</span>
+                                    <span className="flex-1 min-w-0">
+                                        <span className="block text-[14px] font-bold text-slate-800 truncate">{p.nome}</span>
+                                        <span className="block text-[12px] font-semibold text-slate-500 truncate">{p.empresa?.name}</span>
+                                        <span className="mt-1.5 flex items-center gap-2">
+                                            <Etiqueta className={st.cor}>{st.label}</Etiqueta>
+                                            {p.prazo && (
+                                                <span className={`text-[11.5px] font-semibold tabular-nums whitespace-nowrap ${atrasado ? 'text-rose-600' : 'text-slate-500'}`}>
+                                                    {atrasado && <AlertTriangle size={11} className="inline mr-0.5 -mt-0.5" />}{fmtData(p.prazo)}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </span>
+                                    <span className="text-right shrink-0">
+                                        <span className="block text-[13px] font-bold text-slate-800 tabular-nums">{fmtBRL(p.valor_contratado)}</span>
+                                        {Number(p.valor_recorrente) > 0 && <span className="block text-[11px] font-semibold text-violet-700 tabular-nums">{fmtBRL(p.valor_recorrente)}/mês</span>}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/70 text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
@@ -132,7 +163,7 @@ export default function Projetos() {
                             </tbody>
                         </table>
                     </div>
-                )}
+                </>)}
             </div>
 
             {novo && <ProjetoModal onClose={() => setNovo(false)} onSaved={(row) => { setNovo(false); navigate(`/projetos/${row.id}`); }} />}

@@ -551,7 +551,7 @@ export default function AccountsLedger({ type }) {
         type="button"
         onClick={() => statusKey && setFStatus(active ? 'all' : statusKey)}
         title={statusKey ? 'Clique para filtrar por esta situação' : undefined}
-        className={`flex-1 px-4 py-3 text-left transition-colors ${statusKey ? 'cursor-pointer hover:bg-black/[.02]' : 'cursor-default'} ${active ? 'bg-[#0071e3]/[.06]' : 'bg-white'} ${isTotal ? 'border-l-2 border-black/[.12]' : ''}`}
+        className={`flex-1 px-4 py-3 text-left transition-colors ${statusKey ? 'cursor-pointer hover:bg-black/[.02]' : 'cursor-default'} ${active ? 'bg-[#0071e3]/[.06]' : 'bg-white'} ${isTotal ? 'col-span-2 md:border-l-2 border-black/[.12]' : ''}`}
       >
         <div className={`${cup.label} ${active ? 'text-[#0071e3]' : ''}`}>{label} (R$)</div>
         <div className={`text-[16px] font-semibold tabular-nums tracking-[-.01em] mt-1 ${color}`}>{value}</div>
@@ -671,7 +671,7 @@ export default function AccountsLedger({ type }) {
       </div>
 
       {/* Faixa de totais */}
-      <div className="bg-black/[.085] border border-black/[.085] rounded-xl flex items-stretch gap-px mb-3 overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,.04)]">
+      <div className="bg-black/[.085] border border-black/[.085] rounded-xl grid grid-cols-2 md:flex items-stretch gap-px mb-3 overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,.04)]">
         {/* Um único vermelho — o que exige ação hoje. "Vencem hoje" é atenção
             (âmbar), não alarme: dois vermelhos lado a lado anulavam um ao outro. */}
         <Kpi label="Vencidos" value={fmt(totals.vencidos)} color="text-[#d70015]" statusKey="overdue" />
@@ -755,8 +755,52 @@ export default function AccountsLedger({ type }) {
       <div className={`${cup.card} overflow-hidden`}>
         {loading ? (
           <div className="flex items-center justify-center py-16"><Loader2 size={30} className="text-[#0071e3] animate-spin" /></div>
-        ) : (
-          <div className="overflow-x-auto">
+        ) : (<>
+          {/* Celular: cartões com o que decide o dia — quem, quanto, quando e a
+              situação — e o botão de baixa à mão. Tocar abre para editar. */}
+          <div className="md:hidden divide-y divide-black/[.055] px-4">
+            {filtered.length === 0 ? (
+              <p className={`py-10 text-center text-[11.5px] font-medium ${cup.muted}`}>Nenhum lançamento neste período</p>
+            ) : filtered.map(r => {
+              const cp = counterpartyName(r);
+              const pend = r.status === 'PAGO' ? 0 : (parseFloat(r.amount) - parseFloat(r.paid_amount || 0));
+              const travado = !!r.imported_transaction_id;
+              return (
+                <div key={r.id} className="py-3 flex items-start gap-3">
+                  <button type="button" disabled={!canEdit || travado} onClick={() => openEdit(r.id)} className="flex-1 min-w-0 text-left">
+                    <span className="block truncate text-[13.5px] font-semibold text-[#1d1d1f]">
+                      {cp || r.description || '—'}
+                      {r.installment_total > 1 && <span className={`ml-1.5 text-[10px] font-medium ${cup.muted}`}>{r.installment_number}/{r.installment_total}</span>}
+                    </span>
+                    {cp && r.description && r.description !== cp && <span className={`block text-[11.5px] ${cup.muted} truncate`}>{r.description}</span>}
+                    <span className={`mt-1 flex items-center gap-2 text-[11px] ${cup.muted} tabular-nums`}>
+                      vence {fmtDate(r.due_date)}
+                      {statusBadge(r)}
+                      {travado && <Link2 size={11} className="text-[#248a3d]" />}
+                      {Array.isArray(r.attachments) && r.attachments.length > 0 && <Paperclip size={11} className="text-[#0071e3]" />}
+                    </span>
+                  </button>
+                  <div className="text-right shrink-0">
+                    <div className={`text-[14px] font-bold ${cup.text} tabular-nums`}>R$ {fmt(r.amount)}</div>
+                    {pend > 0.004 && r.status === 'PARCIAL' && <div className={`text-[10.5px] font-semibold tabular-nums ${cup.warn}`}>falta {fmt(pend)}</div>}
+                    {canEdit && !travado && r.status !== 'PAGO' && (
+                      <button type="button" onClick={() => openBaixa(r)}
+                        className="mt-1.5 h-8 px-3 rounded-lg bg-[#248a3d]/10 text-[#248a3d] text-[11px] font-bold inline-flex items-center gap-1 active:bg-[#248a3d]/20">
+                        <CheckCircle2 size={12} /> {isPay ? 'Pagar' : 'Receber'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {filtered.length > 0 && (
+              <div className={`py-3 text-[12px] ${cup.muted} tabular-nums`}>
+                <div>{filtered.length} lançamento(s){hasActiveFilters ? ' (filtrado)' : ''}</div>
+                <div className="mt-0.5">Total <b className={cup.text}>R$ {fmt(filteredTotals.total)}</b> · falta <b className={cup.warn}>R$ {fmt(filteredTotals.remaining)}</b></div>
+              </div>
+            )}
+          </div>
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className={`border-b ${cup.hairline}`}>
@@ -950,7 +994,7 @@ export default function AccountsLedger({ type }) {
               )}
             </table>
           </div>
-        )}
+        </>)}
         {selectedTotals.count > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2 mt-2 tabular-nums bg-[#7c3aed]/[.07] border border-[#7c3aed]/25 rounded-xl shadow-sm">
             <div className="flex items-center gap-4 flex-wrap">

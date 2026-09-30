@@ -274,7 +274,7 @@ export default function RelatorioDRE() {
         <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
           <FileText size={18} className="text-[#0071e3]" /> Demonstração do Resultado do Exercício <span className="text-slate-400">· {label}</span>
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
           <button onClick={toggleAll} disabled={loading || dre.expandableIds.length === 0} title={allOpen ? 'Recolher tudo' : 'Expandir tudo (abre categorias e lançamentos)'}
             className="h-9 px-3 inline-flex items-center gap-1.5 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
             {allOpen ? <ListTree size={14} /> : <Rows3 size={14} />} {allOpen ? 'Recolher' : 'Expandir tudo'}
@@ -283,7 +283,7 @@ export default function RelatorioDRE() {
             className="h-9 px-3 inline-flex items-center gap-1.5 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
             <Printer size={14} /> Imprimir
           </button>
-          <div className="w-52 sm:w-60">
+          <div className="w-full sm:w-60">
             <SearchableSelect options={ccOptions} value={ccFilter} onChange={setCcFilter}
               placeholder="Centro de custo: todos" searchPlaceholder="Buscar centro de custo…" />
           </div>

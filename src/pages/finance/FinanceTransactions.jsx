@@ -712,7 +712,53 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
                 </div>
               </div>
             )}
-            <div className="overflow-x-auto">
+            {/* Celular: cada lançamento é um cartão (a tabela de 11 colunas
+                deixava valor e status fora da tela). Tocar abre para editar. */}
+            <div className="md:hidden divide-y divide-black/[.055]">
+              {shownTx.length === 0 ? (
+                <p className={`text-center py-12 ${cup.muted} text-[11.5px] font-medium`}>{(search || xActive) ? 'Nenhum lançamento bate com os filtros.' : 'Nenhum lançamento financeiro encontrado.'}</p>
+              ) : shownTx.map(t => {
+                const cp = counterpartyName(t);
+                const pend = t.status === 'PAGO' ? 0 : (parseFloat(t.amount) || 0) - (parseFloat(t.paid_amount) || 0);
+                const travado = isReconciled(t);
+                const podeMexer = canEdit && !travado;
+                return (
+                  <div key={t.id} className="py-3 flex items-start gap-3">
+                    <button type="button" disabled={!podeMexer} onClick={() => handleEditTransaction(t)} className="flex-1 min-w-0 text-left">
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        {t.transfer_group_id && <Repeat2 size={12} className="text-[#0071e3] shrink-0" />}
+                        <span className="truncate text-[13.5px] font-semibold text-[#1d1d1f]">{cp || t.description || '—'}</span>
+                        {t.installment_total > 1 && <span className={`shrink-0 text-[10px] font-medium ${cup.muted}`}>{t.installment_number}/{t.installment_total}</span>}
+                      </span>
+                      {t.description && (cp ? t.description !== cp : false) && (
+                        <span className={`block text-[11.5px] ${cup.muted} truncate`}>{t.description}</span>
+                      )}
+                      <span className={`mt-1 flex items-center gap-2 text-[11px] ${cup.muted} tabular-nums`}>
+                        {formatDateBR(t.due_date || t.transaction_date)}
+                        <Dot tone={t.status === 'PAGO' ? 'ok' : t.status === 'PARCIAL' ? 'warn' : t.status === 'LANCADO' ? 'info' : 'neutral'}>
+                          {t.status === 'PAGO' ? 'Pago' : t.status === 'PARCIAL' ? 'Parcial' : t.status === 'LANCADO' ? 'Lançada' : 'Pendente'}
+                        </Dot>
+                        {travado && <Lock size={10} className="text-[#0071e3]" />}
+                        {Array.isArray(t.attachments) && t.attachments.length > 0 && <Paperclip size={11} className="text-[#0071e3]" />}
+                      </span>
+                    </button>
+                    <div className="text-right shrink-0">
+                      <div className={`text-[14px] font-bold tabular-nums ${t.type === 'ENTRADA' ? cup.pos : cup.neg}`}>
+                        {t.type === 'ENTRADA' ? '+' : '−'} {fmtBRL(t.amount)}
+                      </div>
+                      {pend > 0.004 && t.status === 'PARCIAL' && <div className={`text-[10.5px] font-semibold tabular-nums ${cup.warn}`}>falta {fmtBRL(pend)}</div>}
+                      {podeMexer && !t.transfer_group_id && t.status !== 'PAGO' && (
+                        <button type="button" onClick={() => setBaixaTx(t)}
+                          className="mt-1.5 h-8 px-3 rounded-lg bg-[#248a3d]/10 text-[#248a3d] text-[11px] font-bold inline-flex items-center gap-1 active:bg-[#248a3d]/20">
+                          <CheckCircle size={12} /> Baixar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className={`border-b ${cup.hairline}`}>
