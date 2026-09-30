@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import {
     obterProjeto, salvarProjeto, excluirProjeto, financeiroDoProjeto, mensalidadesDoProjeto, criarPaginaDeEntregas,
 } from '../../services/crm';
-import { STATUS_PROJETO, servicoPorId, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
+import { STATUS_PROJETO, resumoServicos, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { todayISO } from '../../utils/date';
@@ -90,7 +90,7 @@ export default function ProjetoDetalhe() {
     if (carregando) return <div className={PAGINA}><Carregando /></div>;
     if (!projeto) return <div className={PAGINA}><p className="text-sm font-semibold text-slate-500">Projeto não encontrado.</p></div>;
 
-    const s = servicoPorId(projeto.servico);
+    const s = resumoServicos(projeto);
     const st = statusProjeto(projeto.status);
     const atrasado = projeto.prazo && projeto.prazo < todayISO() && !['CONCLUIDO', 'CANCELADO'].includes(projeto.status);
     const hoje = todayISO();
@@ -120,7 +120,7 @@ export default function ProjetoDetalhe() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="space-y-4">
                     <div className={`${CARD} p-4 grid grid-cols-2 gap-3 text-[11px]`}>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Serviço</p><p className="font-semibold text-slate-700">{s.label}</p></div>
+                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Serviços</p><p className="font-semibold text-slate-700">{s.label}</p></div>
                         <div><p className="font-bold text-slate-400 uppercase text-[9px]">Responsável</p><p className="font-semibold text-slate-700">{projeto.responsavel?.name || '—'}</p></div>
                         <div><p className="font-bold text-slate-400 uppercase text-[9px]">Início</p><p className="font-semibold text-slate-700">{fmtData(projeto.data_inicio)}</p></div>
                         <div><p className="font-bold text-slate-400 uppercase text-[9px]">Prazo</p><p className={`font-semibold ${atrasado ? 'text-rose-600' : 'text-slate-700'}`}>{fmtData(projeto.prazo)}{atrasado ? ' · atrasado' : ''}</p></div>

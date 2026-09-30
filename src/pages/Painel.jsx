@@ -5,7 +5,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import toast from 'react-hot-toast';
 import { supabase } from '../services/supabase';
 import { listarEtapas, listarOportunidades, listarProjetos, proximosPassos } from '../services/crm';
-import { SERVICOS, servicoPorId, fmtBRL, fmtData } from '../config/servicos';
+import { SERVICOS, idsServicos, resumoServicos, fmtBRL, fmtData } from '../config/servicos';
 import { usePermission } from '../contexts/PermissionContext';
 import { todayISO } from '../utils/date';
 import { PAGINA, CARD, Carregando } from '../components/crm/ui';
@@ -129,10 +129,12 @@ export default function Painel() {
         });
 
         // Receita contratada por serviço, projetos iniciados nos últimos 12 meses.
+        // Projeto com vários serviços conta em cada um, com o valor dividido
+        // igualmente entre eles (a soma das barras continua sendo o total).
         const umAno = addDias(hoje, -365);
         const porServico = SERVICOS.map((s) => {
-            const l = d.projetos.filter((p) => p.servico === s.id && p.status !== 'CANCELADO' && (p.data_inicio || p.created_at?.slice(0, 10) || '') >= umAno);
-            return { ...s, valor: l.reduce((acc, p) => acc + Number(p.valor_contratado || 0), 0), qtd: l.length };
+            const l = d.projetos.filter((p) => idsServicos(p).includes(s.id) && p.status !== 'CANCELADO' && (p.data_inicio || p.created_at?.slice(0, 10) || '') >= umAno);
+            return { ...s, valor: l.reduce((acc, p) => acc + Number(p.valor_contratado || 0) / idsServicos(p).length, 0), qtd: l.length };
         }).filter((s) => s.qtd > 0).sort((a, b) => b.valor - a.valor);
 
         const margem = d.projetos.map((p) => {
@@ -239,7 +241,7 @@ export default function Painel() {
                                 <tbody className="divide-y divide-black/[.05]">
                                     {k.margem.map((p) => (
                                         <tr key={p.id} onClick={() => navigate(`/projetos/${p.id}`)} className="cursor-pointer hover:bg-slate-50">
-                                            <td className="py-1.5 pr-2"><span className="mr-1">{servicoPorId(p.servico).emoji}</span><span className="font-semibold text-slate-700">{p.nome}</span><span className="text-slate-400"> · {p.empresa?.name}</span></td>
+                                            <td className="py-1.5 pr-2"><span className="mr-1">{resumoServicos(p).emoji}</span><span className="font-semibold text-slate-700">{p.nome}</span><span className="text-slate-400"> · {p.empresa?.name}</span></td>
                                             <td className="py-1.5 text-right font-semibold text-slate-700 tabular-nums">{fmtBRL(p.receita)}</td>
                                             <td className="py-1.5 text-right font-semibold text-slate-500 tabular-nums">{fmtBRL(p.custo)}</td>
                                             <td className={`py-1.5 text-right font-bold tabular-nums ${p.margem < 0 ? 'text-rose-600' : 'text-slate-800'}`}>

@@ -3,12 +3,12 @@ import { Target, Loader2, Save, Trophy, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { salvarOportunidade, listarContatos, ganharOportunidade, perderOportunidade } from '../../services/crm';
 import { financeService } from '../../services/financeService';
-import { SERVICOS, servicoPorId, fmtBRL } from '../../config/servicos';
+import { idsServicos, servicosDe, fmtBRL } from '../../config/servicos';
 import { useAuth } from '../../contexts/AuthContext';
 import CurrencyInput from '../finance/CurrencyInput';
 import SearchableSelect from '../finance/SearchableSelect';
 import useCadastroRapido from './useCadastroRapido';
-import { Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
+import { Janela, Campo, ServicosPicker, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
 import { useUsuarios, useListasGerais } from './dados';
 
 const hojeMais = (dias = 0) => { const d = new Date(); d.setDate(d.getDate() + dias); const p = (x) => String(x).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
@@ -20,9 +20,10 @@ export function OportunidadeModal({ oportunidade, etapas, empresas, partyIdFixo,
     const { origens_lead } = useListasGerais();
     const abertas = etapas.filter((e) => e.tipo === 'ABERTA');
     const [form, setForm] = useState(() => ({
-        titulo: '', party_id: partyIdFixo || '', contato_id: '', servico: 'SITE', valor: 0, valor_recorrente: 0,
+        titulo: '', party_id: partyIdFixo || '', contato_id: '', valor: 0, valor_recorrente: 0,
         etapa_id: abertas[0]?.id || '', responsavel_id: currentUser?.id || '', origem: '', previsao_fechamento: '', notas: '',
         ...(oportunidade || {}),
+        servicos: idsServicos(oportunidade),
     }));
     const [contatos, setContatos] = useState([]);
     const [salvando, setSalvando] = useState(false);
@@ -92,10 +93,8 @@ export function OportunidadeModal({ oportunidade, etapas, empresas, partyIdFixo,
                             {contatos.map((c) => <option key={c.id} value={c.id}>{c.nome}{c.cargo ? ` (${c.cargo})` : ''}</option>)}
                         </select>
                     </Campo>
-                    <Campo label="Serviço">
-                        <select value={form.servico} onChange={(e) => set({ servico: e.target.value })} className={`${inputCls} cursor-pointer`}>
-                            {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
-                        </select>
+                    <Campo label="Serviços (pode marcar mais de um)" className="sm:col-span-2">
+                        <ServicosPicker value={form.servicos} onChange={(v) => set({ servicos: v })} />
                     </Campo>
                     <Campo label="Etapa">
                         <select value={form.etapa_id} onChange={(e) => set({ etapa_id: e.target.value })} className={`${inputCls} cursor-pointer`}>
@@ -141,17 +140,19 @@ export function OportunidadeModal({ oportunidade, etapas, empresas, partyIdFixo,
 export function GanharModal({ oportunidade, onClose, onGanha }) {
     const { currentUser } = useAuth();
     const usuarios = useUsuarios();
-    const servico = servicoPorId(oportunidade.servico);
     const [contas, setContas] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [salvando, setSalvando] = useState(false);
     const [form, setForm] = useState({
-        nome: oportunidade.titulo, servico: oportunidade.servico, responsavel_id: oportunidade.responsavel_id || currentUser?.id || '',
+        nome: oportunidade.titulo, servicos: idsServicos(oportunidade), responsavel_id: oportunidade.responsavel_id || currentUser?.id || '',
         data_inicio: hojeMais(0), prazo: '', valor: Number(oportunidade.valor) || 0, parcelas: 1, primeiro_vencimento: hojeMais(7),
         account_id: '', category_id: '', valor_recorrente: Number(oportunidade.valor_recorrente) || 0, inicio_recorrencia: hojeMais(30),
         category_recorrente_id: '', criarEntregas: true,
     });
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
+    const servicos = servicosDe(form);
+    // Categoria sugerida: a do serviço principal (o primeiro que tem categoria).
+    const categoriaSugerida = servicos.find((s) => s.categoria)?.categoria || null;
 
     useEffect(() => {
         Promise.all([financeService.getAccounts(), financeService.getCategories()]).then(([a, c]) => {
@@ -162,11 +163,11 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
             setForm((f) => ({
                 ...f,
                 account_id: f.account_id || a?.[0]?.id || '',
-                category_id: f.category_id || porNome(servico.categoria),
+                category_id: f.category_id || porNome(categoriaSugerida),
                 category_recorrente_id: f.category_recorrente_id || porNome('Mensalidades e Manutenção'),
             }));
         }).catch((e) => { console.error(e); toast.error('Não foi possível carregar contas e categorias.'); });
-    }, [servico.categoria]);
+    }, [categoriaSugerida]);
 
     const parcela = useMemo(() => (form.parcelas > 0 ? (Number(form.valor) || 0) / form.parcelas : 0), [form.valor, form.parcelas]);
     const precisaConta = (Number(form.valor) > 0 || Number(form.valor_recorrente) > 0);
@@ -208,12 +209,10 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
                 <Campo label="Nome do projeto" className="col-span-2">
                     <input value={form.nome} onChange={(e) => set({ nome: e.target.value })} className={inputCls} />
                 </Campo>
-                <Campo label="Serviço">
-                    <select value={form.servico} onChange={(e) => set({ servico: e.target.value })} className={`${inputCls} cursor-pointer`}>
-                        {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
-                    </select>
+                <Campo label="Serviços" className="col-span-2">
+                    <ServicosPicker value={form.servicos} onChange={(v) => set({ servicos: v })} />
                 </Campo>
-                <Campo label="Responsável">
+                <Campo label="Responsável" className="col-span-2">
                     <select value={form.responsavel_id || ''} onChange={(e) => set({ responsavel_id: e.target.value })} className={`${inputCls} cursor-pointer`}>
                         <option value="">—</option>
                         {usuarios.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
@@ -227,7 +226,7 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
                 </Campo>
                 <label className="col-span-2 flex items-center gap-2 text-[11px] font-semibold text-slate-600 cursor-pointer">
                     <input type="checkbox" checked={form.criarEntregas} onChange={(e) => set({ criarEntregas: e.target.checked })} className="rounded" />
-                    Criar a página de entregas em Compromissos, com as fases e tarefas de {servico.label}
+                    Criar a página de entregas em Compromissos, com as fases e tarefas de {servicos.map((s) => s.label).join(' + ')}
                 </label>
             </div>
 

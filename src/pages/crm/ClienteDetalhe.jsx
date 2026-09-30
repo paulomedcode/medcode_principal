@@ -8,7 +8,7 @@ import {
     obterEmpresa, excluirEmpresa, listarContatos, salvarContato, excluirContato, listarOportunidades,
     listarEtapas, listarProjetos, financeiroDaEmpresa, listarEmpresas,
 } from '../../services/crm';
-import { tipoEmpresa, servicoPorId, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
+import { tipoEmpresa, resumoServicos, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import { maskTelefone } from '../../utils/masks';
 import EmpresaModal from '../../components/crm/EmpresaModal';
@@ -212,7 +212,7 @@ export default function ClienteDetalhe() {
                             <ul className="divide-y divide-black/[.05]">
                                 {oportunidades.map((op) => {
                                     const et = etapaDe(op);
-                                    const s = servicoPorId(op.servico);
+                                    const s = resumoServicos(op);
                                     return (
                                         <li key={op.id} onClick={() => navigate(`/vendas?abrir=${op.id}`)} className="py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-50 -mx-2 px-2 rounded-lg">
                                             <span className="text-base">{s.emoji}</span>
@@ -235,7 +235,7 @@ export default function ClienteDetalhe() {
                             <ul className="divide-y divide-black/[.05]">
                                 {projetos.map((p) => {
                                     const st = statusProjeto(p.status);
-                                    const s = servicoPorId(p.servico);
+                                    const s = resumoServicos(p);
                                     return (
                                         <li key={p.id} onClick={() => navigate(`/projetos/${p.id}`)} className="py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-50 -mx-2 px-2 rounded-lg">
                                             <span className="text-base">{s.emoji}</span>

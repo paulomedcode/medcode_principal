@@ -14,7 +14,7 @@ import {
     proximosPassos, concluirProximoPasso, listarProjetos, listarEtapas, listarOportunidades, listarEmpresas,
     progressoDasEntregas, atividadesRecentes,
 } from '../services/crm';
-import { servicoPorId, statusProjeto, tipoAtividade, fmtBRL, fmtData } from '../config/servicos';
+import { resumoServicos, statusProjeto, tipoAtividade, fmtBRL, fmtData } from '../config/servicos';
 import { todayISO } from '../utils/date';
 import EmpresaModal from '../components/crm/EmpresaModal';
 import ProjetoModal from '../components/crm/ProjetoModal';
@@ -367,7 +367,7 @@ export default function HomeHub() {
                                                 return (
                                                     <li key={p.id} onClick={() => navigate(`/projetos/${p.id}`)} className="cursor-pointer group">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-base">{servicoPorId(p.servico).emoji}</span>
+                                                            <span className="text-base">{resumoServicos(p).emoji}</span>
                                                             <span className="text-[12.5px] font-bold text-slate-800 truncate flex-1 group-hover:text-indigo-600">{p.nome}</span>
                                                             <span className={`text-[10.5px] font-bold whitespace-nowrap ${atrasado ? 'text-rose-600' : 'text-slate-400'}`}>
                                                                 {atrasado && <AlertTriangle size={10} className="inline mr-0.5 -mt-0.5" />}{p.prazo ? fmtData(p.prazo).slice(0, 5) : 'sem prazo'}

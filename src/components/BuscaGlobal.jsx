@@ -4,7 +4,7 @@ import { Search, Building2, Target, FolderKanban, CornerDownLeft, Loader2 } from
 import { supabase } from '../services/supabase';
 import { usePermission } from '../contexts/PermissionContext';
 import { PERMISSION_MODULES } from '../config/permissions';
-import { servicoPorId } from '../config/servicos';
+import { rotuloServicos } from '../config/servicos';
 
 /*
  * Busca global — Ctrl/⌘ + K ou a lupa da barra superior (evento
@@ -51,14 +51,14 @@ export default function BuscaGlobal() {
             const veEmpresas = hasPermission('Acessar Clientes') || hasPermission('Acessar Vendas') || hasPermission('Acessar Financeiro');
             const [emp, ops, projs] = await Promise.all([
                 veEmpresas ? supabase.from('finance_parties').select('id, name, nome_fantasia, kind').or(`name.ilike.${like},nome_fantasia.ilike.${like},document.ilike.${like}`).limit(6) : { data: [] },
-                hasPermission('Acessar Vendas') ? supabase.from('crm_oportunidades').select('id, titulo, servico, empresa:finance_parties(name)').ilike('titulo', like).limit(6) : { data: [] },
-                (hasPermission('Acessar Projetos') || hasPermission('Acessar Clientes')) ? supabase.from('projetos').select('id, nome, servico, empresa:finance_parties(name)').ilike('nome', like).limit(6) : { data: [] },
+                hasPermission('Acessar Vendas') ? supabase.from('crm_oportunidades').select('id, titulo, servico, servicos, empresa:finance_parties(name)').ilike('titulo', like).limit(6) : { data: [] },
+                (hasPermission('Acessar Projetos') || hasPermission('Acessar Clientes')) ? supabase.from('projetos').select('id, nome, servico, servicos, empresa:finance_parties(name)').ilike('nome', like).limit(6) : { data: [] },
             ]);
             const podeAbrirCliente = hasPermission('Acessar Clientes');
             setResultados([
                 ...(emp.data || []).map((e) => ({ id: `emp:${e.id}`, tipo: 'Empresa', icone: Building2, titulo: e.name, sub: e.nome_fantasia || (e.kind === 'LEAD' ? 'Lead' : e.kind === 'FORNECEDOR' ? 'Fornecedor' : 'Cliente'), destino: podeAbrirCliente ? `/clientes/${e.id}` : '/finance/transacoes' })),
-                ...(ops.data || []).map((o) => ({ id: `op:${o.id}`, tipo: 'Oportunidade', icone: Target, titulo: o.titulo, sub: `${servicoPorId(o.servico).label} · ${o.empresa?.name || ''}`, destino: `/vendas?abrir=${o.id}` })),
-                ...(projs.data || []).map((p) => ({ id: `proj:${p.id}`, tipo: 'Projeto', icone: FolderKanban, titulo: p.nome, sub: `${servicoPorId(p.servico).label} · ${p.empresa?.name || ''}`, destino: `/projetos/${p.id}` })),
+                ...(ops.data || []).map((o) => ({ id: `op:${o.id}`, tipo: 'Oportunidade', icone: Target, titulo: o.titulo, sub: `${rotuloServicos(o)} · ${o.empresa?.name || ''}`, destino: `/vendas?abrir=${o.id}` })),
+                ...(projs.data || []).map((p) => ({ id: `proj:${p.id}`, tipo: 'Projeto', icone: FolderKanban, titulo: p.nome, sub: `${rotuloServicos(p)} · ${p.empresa?.name || ''}`, destino: `/projetos/${p.id}` })),
             ]);
             setSel(0);
             setBuscando(false);

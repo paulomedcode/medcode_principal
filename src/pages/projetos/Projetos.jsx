@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FolderKanban, Plus, Search, ChevronRight, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { listarProjetos } from '../../services/crm';
-import { SERVICOS, STATUS_PROJETO, servicoPorId, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
+import { SERVICOS, STATUS_PROJETO, resumoServicos, temServico, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import { todayISO as hoje } from '../../utils/date';
 import ProjetoModal from '../../components/crm/ProjetoModal';
@@ -33,7 +33,7 @@ export default function Projetos() {
         const q = busca.trim().toLowerCase();
         return projetos
             .filter((p) => (filtro === 'ATIVOS' ? ATIVOS.includes(p.status) : filtro ? p.status === filtro : true))
-            .filter((p) => !fServico || p.servico === fServico)
+            .filter((p) => !fServico || temServico(p, fServico))
             .filter((p) => !q || `${p.nome} ${p.empresa?.name || ''}`.toLowerCase().includes(q))
             .sort((a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999'));
     }, [projetos, filtro, fServico, busca]);
@@ -108,7 +108,7 @@ export default function Projetos() {
                             </thead>
                             <tbody className="divide-y divide-black/[.055]">
                                 {lista.map((p) => {
-                                    const s = servicoPorId(p.servico);
+                                    const s = resumoServicos(p);
                                     const st = statusProjeto(p.status);
                                     const atrasado = ATIVOS.includes(p.status) && p.prazo && p.prazo < hoje();
                                     return (

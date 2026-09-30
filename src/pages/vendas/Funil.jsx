@@ -9,7 +9,7 @@ import {
     salvarEtapa, excluirEtapa, listarProjetos,
 } from '../../services/crm';
 import { financeService } from '../../services/financeService';
-import { SERVICOS, servicoPorId, fmtBRL, fmtData } from '../../config/servicos';
+import { SERVICOS, resumoServicos, temServico, fmtBRL, fmtData } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import { OportunidadeModal, GanharModal, PerderModal } from '../../components/crm/OportunidadeModal';
 import Atividades from '../../components/crm/Atividades';
@@ -87,7 +87,7 @@ export default function Funil() {
     const filtradas = useMemo(() => {
         const q = busca.trim().toLowerCase();
         return ops.filter((o) => {
-            if (fServico && o.servico !== fServico) return false;
+            if (fServico && !temServico(o, fServico)) return false;
             if (fResp && o.responsavel_id !== fResp) return false;
             if (q && !`${o.titulo} ${o.empresa?.name || ''}`.toLowerCase().includes(q)) return false;
             return true;
@@ -214,7 +214,7 @@ export default function Funil() {
                                 </div>
                                 <div className="space-y-2 min-h-[40px]">
                                     {lista.map((o) => {
-                                        const s = servicoPorId(o.servico);
+                                        const s = resumoServicos(o);
                                         const atrasada = !fechada && o.previsao_fechamento && o.previsao_fechamento < hoje();
                                         return (
                                             <div key={o.id}
@@ -310,7 +310,7 @@ function PainelOportunidade({ op, etapas, podeEditar, onClose, onEditar, onGanha
     const [novaProposta, setNovaProposta] = useState(false);
     const [projeto, setProjeto] = useState(null);
     const etapa = etapas.find((e) => e.id === op.etapa_id);
-    const s = servicoPorId(op.servico);
+    const s = resumoServicos(op);
     const verPropostas = hasPermission('Acessar Vendas') || hasPermission('Acessar Financeiro');
 
     const carregarPropostas = useCallback(() => {
@@ -352,7 +352,7 @@ function PainelOportunidade({ op, etapas, podeEditar, onClose, onEditar, onGanha
                     <div className={`${CARD} p-4 grid grid-cols-2 gap-3 text-[11px]`}>
                         <div><p className="font-bold text-slate-400 uppercase text-[9px]">Etapa</p>
                             {etapa && <Etiqueta className="bg-white border-slate-200 text-slate-600 mt-0.5"><span className="w-1.5 h-1.5 rounded-full" style={{ background: etapa.cor }} />{etapa.nome}</Etiqueta>}</div>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Serviço</p><p className="font-semibold text-slate-700">{s.label}</p></div>
+                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Serviços</p><p className="font-semibold text-slate-700">{s.label}</p></div>
                         <div><p className="font-bold text-slate-400 uppercase text-[9px]">Valor</p><p className="font-bold text-slate-800 text-sm tabular-nums">{fmtBRL(op.valor)}</p></div>
                         <div><p className="font-bold text-slate-400 uppercase text-[9px]">Mensalidade</p><p className="font-bold text-violet-700 text-sm tabular-nums">{Number(op.valor_recorrente) > 0 ? fmtBRL(op.valor_recorrente) : '—'}</p></div>
                         <div><p className="font-bold text-slate-400 uppercase text-[9px]">Previsão</p><p className="font-semibold text-slate-700">{fmtData(op.previsao_fechamento)}</p></div>

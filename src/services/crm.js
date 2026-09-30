@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { logAction } from '../utils/logger';
 import * as ws from './workspace';
-import { servicoPorId } from '../config/servicos';
+import { servicosDe } from '../config/servicos';
 
 /*
  * CRM, funil e projetos. Tabelas em supabase/migrations/20260929140000_crm_vendas_projetos.sql.
@@ -148,7 +148,7 @@ export async function listarOportunidades({ partyId } = {}) {
     return ok(await q);
 }
 
-const CAMPOS_OPORTUNIDADE = ['titulo', 'party_id', 'contato_id', 'servico', 'valor', 'valor_recorrente', 'etapa_id',
+const CAMPOS_OPORTUNIDADE = ['titulo', 'party_id', 'contato_id', 'servicos', 'valor', 'valor_recorrente', 'etapa_id',
     'responsavel_id', 'origem', 'previsao_fechamento', 'notas', 'posicao'];
 
 export async function salvarOportunidade(op) {
@@ -222,7 +222,7 @@ export async function obterProjeto(id) {
     return ok(await supabase.from('projetos').select(SELECT_PROJETO).eq('id', id).maybeSingle());
 }
 
-const CAMPOS_PROJETO = ['nome', 'party_id', 'servico', 'status', 'responsavel_id', 'data_inicio', 'prazo',
+const CAMPOS_PROJETO = ['nome', 'party_id', 'servicos', 'status', 'responsavel_id', 'data_inicio', 'prazo',
     'concluido_em', 'valor_contratado', 'valor_recorrente', 'descricao', 'workspace_page_id'];
 
 export async function salvarProjeto(projeto) {
@@ -267,8 +267,9 @@ export async function financeiroDaEmpresa(partyId) {
 // Página de entregas (módulo Compromissos)
 //
 // Cada projeto ganha um database "Entregas" dentro da pasta "Projetos" do
-// workspace, com as fases do tipo de serviço como colunas do quadro e as
-// tarefas-modelo já cadastradas.
+// workspace, com as fases dos serviços vendidos como colunas do quadro e as
+// tarefas-modelo já cadastradas. Com mais de um serviço, as fases se somam
+// (sem repetir) e cada tarefa leva o emoji do serviço a que pertence.
 // ---------------------------------------------------------------------------
 const PASTA_PROJETOS = 'Projetos';
 
@@ -286,15 +287,16 @@ const CORES_FASE = ['gray', 'blue', 'purple', 'yellow', 'orange', 'green', 'pink
 const opt = (name, color) => ({ id: globalThis.crypto?.randomUUID?.() || `opt-${Math.random().toString(36).slice(2)}`, name, color });
 
 export async function criarPaginaDeEntregas(projeto, { userId = null } = {}) {
-    const servico = servicoPorId(projeto.servico);
+    const servicos = servicosDe(projeto);
+    const varios = servicos.length > 1;
     const pastaId = await pastaDeProjetos(userId);
     const empresa = projeto.empresa?.name ? ` · ${projeto.empresa.name}` : '';
     const db = await ws.createPage({
         parentId: pastaId, type: 'database', title: `${projeto.nome}${empresa}`,
-        icon: servico.emoji, createdBy: userId,
+        icon: servicos[0].emoji, createdBy: userId,
     });
 
-    const fases = servico.fases.map((f, i) => opt(f, CORES_FASE[i % CORES_FASE.length]));
+    const fases = [...new Set(servicos.flatMap((s) => s.fases))].map((f, i) => opt(f, CORES_FASE[i % CORES_FASE.length]));
     const status = [opt('A fazer', 'gray'), opt('Fazendo', 'blue'), opt('Concluído', 'green')];
     const props = [];
     const specs = [
@@ -312,7 +314,8 @@ export async function criarPaginaDeEntregas(projeto, { userId = null } = {}) {
     await ws.createView({ databaseId: db.id, name: 'Tabela', type: 'table', position: 1, config: {} });
     await ws.createView({ databaseId: db.id, name: 'Calendário', type: 'calendar', position: 2, config: { dateProp: pPrazo.id } });
 
-    for (const [titulo, fase] of servico.tarefas) {
+    const tarefas = servicos.flatMap((s) => s.tarefas.map(([titulo, fase]) => [varios ? `${s.emoji} ${titulo}` : titulo, fase]));
+    for (const [titulo, fase] of tarefas) {
         const row = await ws.createRow(db.id, { title: titulo, createdBy: userId });
         await ws.setRowValues(row.id, {
             [pFase.id]: fases.find((f) => f.name === fase)?.id ?? null,

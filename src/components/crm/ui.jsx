@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import { SERVICOS } from '../../config/servicos';
 
 // Peças visuais do CRM/Vendas/Projetos — mesmo estilo das telas do financeiro.
 
@@ -22,6 +23,29 @@ export const Etiqueta = ({ className = '', children, title }) => (
         {children}
     </span>
 );
+
+/** Marca um ou mais serviços. `value` é a lista de ids, na ordem em que foram marcados. */
+export const ServicosPicker = ({ value = [], onChange }) => {
+    const alternar = (id) => {
+        if (value.includes(id)) {
+            if (value.length > 1) onChange(value.filter((v) => v !== id));
+        } else onChange([...value, id]);
+    };
+    return (
+        <div className="flex flex-wrap gap-1.5">
+            {SERVICOS.map((s) => {
+                const ativo = value.includes(s.id);
+                return (
+                    <button key={s.id} type="button" onClick={() => alternar(s.id)} aria-pressed={ativo}
+                        title={ativo && value.length === 1 ? 'Escolha outro antes de desmarcar este' : undefined}
+                        className={`px-2.5 h-8 rounded-lg text-[11px] font-bold border transition-all ${ativo ? 'bg-[#0071e3] border-[#0071e3] text-white shadow-sm' : 'bg-white border-black/[.085] text-slate-600 hover:text-slate-900'}`}>
+                        {s.emoji} {s.label}
+                    </button>
+                );
+            })}
+        </div>
+    );
+};
 
 export const Carregando = () => (
     <div className="flex items-center justify-center py-16"><Loader2 size={28} className="text-[#0071e3] animate-spin" /></div>

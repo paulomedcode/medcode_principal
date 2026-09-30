@@ -1,7 +1,8 @@
 // Tipos de serviço que a MedCode vende — fonte única para CRM, funil e projetos.
 //
-// O `id` é o valor gravado no banco (check em crm_oportunidades.servico e
-// projetos.servico). `categoria` é o nome da categoria de receita que o
+// O `id` é o valor gravado no banco (crm_oportunidades.servicos e
+// projetos.servicos — uma lista, a venda pode juntar vários serviços; o
+// primeiro também fica em `servico`, o principal). `categoria` é o nome da categoria de receita que o
 // "Ganhar oportunidade" sugere para as parcelas. `fases` e `tarefas` montam a
 // página de entregas que nasce com cada projeto (módulo Compromissos).
 
@@ -111,6 +112,25 @@ export const SERVICOS = [
 ];
 
 export const servicoPorId = (id) => SERVICOS.find((s) => s.id === id) || SERVICOS[SERVICOS.length - 1];
+
+/** Ids dos serviços de uma oportunidade/projeto (`servicos`, ou o `servico` antigo). */
+export const idsServicos = (item) => (item?.servicos?.length ? item.servicos : [item?.servico || 'SITE']);
+
+/** Serviços de uma oportunidade/projeto, na ordem escolhida. */
+export const servicosDe = (item) => idsServicos(item).map(servicoPorId);
+
+/** "🌐 Site + 🤖 Agente de IA" */
+export const rotuloServicos = (item, { emoji = false } = {}) =>
+    servicosDe(item).map((s) => (emoji ? `${s.emoji} ${s.label}` : s.label)).join(' + ');
+
+/** Para listas e cartões: { emoji: '🌐🤖', label: 'Site + Agente de IA' }. */
+export const resumoServicos = (item) => ({
+    emoji: servicosDe(item).map((s) => s.emoji).join(''),
+    label: rotuloServicos(item),
+});
+
+/** A oportunidade/projeto inclui este serviço? */
+export const temServico = (item, id) => idsServicos(item).includes(id);
 
 export const STATUS_PROJETO = [
     { id: 'PLANEJAMENTO', label: 'Planejamento', cor: 'bg-slate-100 text-slate-600 border-slate-200' },

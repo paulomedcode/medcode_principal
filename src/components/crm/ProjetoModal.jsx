@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { FolderKanban, Loader2, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { salvarProjeto, listarEmpresas } from '../../services/crm';
-import { SERVICOS, STATUS_PROJETO } from '../../config/servicos';
+import { STATUS_PROJETO, idsServicos } from '../../config/servicos';
 import CurrencyInput from '../finance/CurrencyInput';
 import SearchableSelect from '../finance/SearchableSelect';
-import { Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
+import { Janela, Campo, ServicosPicker, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
 import { useUsuarios } from './dados';
 import useCadastroRapido from './useCadastroRapido';
 
@@ -18,8 +18,9 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
     const usuarios = useUsuarios();
     const [empresas, setEmpresas] = useState([]);
     const [form, setForm] = useState(() => ({
-        nome: '', party_id: '', servico: 'SITE', status: 'PLANEJAMENTO', responsavel_id: '', data_inicio: '', prazo: '',
+        nome: '', party_id: '', status: 'PLANEJAMENTO', responsavel_id: '', data_inicio: '', prazo: '',
         valor_contratado: 0, valor_recorrente: 0, descricao: '', ...(projeto || {}),
+        servicos: idsServicos(projeto),
     }));
     const [salvando, setSalvando] = useState(false);
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
@@ -61,15 +62,13 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
                 <Campo label="Nome do projeto" className="sm:col-span-2">
                     <input autoFocus value={form.nome} onChange={(e) => set({ nome: e.target.value })} className={inputCls} />
                 </Campo>
+                <Campo label="Serviços (pode marcar mais de um)" className="sm:col-span-2">
+                    <ServicosPicker value={form.servicos} onChange={(v) => set({ servicos: v })} />
+                </Campo>
                 <Campo label="Cliente">
                     <SearchableSelect options={empresas.filter((p) => p.kind !== 'FORNECEDOR' || p.id === form.party_id).map((p) => ({ value: p.id, label: p.name }))}
                         value={form.party_id} onChange={(v) => set({ party_id: v })} placeholder="Selecione…" searchPlaceholder="Digite o nome do cliente…"
                         onCreate={(nome) => pedir(nome, 'CLIENTE')} createLabel="Cadastrar cliente" />
-                </Campo>
-                <Campo label="Serviço">
-                    <select value={form.servico} onChange={(e) => set({ servico: e.target.value })} className={`${inputCls} cursor-pointer`}>
-                        {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
-                    </select>
                 </Campo>
                 <Campo label="Status">
                     <select value={form.status} onChange={(e) => set({ status: e.target.value })} className={`${inputCls} cursor-pointer`}>
