@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { logAction } from '../utils/logger';
+import { excluirArquivosDoOrcamento } from './propostas';
 
 // ===== Helpers de recorrência (datas 'YYYY-MM-DD', sem fuso) =====
 const RECURRENCE_HORIZON_MONTHS = 12;
@@ -1327,7 +1328,7 @@ export const financeService = {
   async getQuotes(filters = {}) {
     let query = supabase
       .from('finance_quotes')
-      .select('*, finance_parties(name)')
+      .select('*, finance_parties(name, nome_fantasia, document)')
       .order('created_at', { ascending: false });
     if (filters.status) query = query.eq('status', filters.status);
     if (filters.oportunidadeId) query = query.eq('oportunidade_id', filters.oportunidadeId);
@@ -1339,7 +1340,7 @@ export const financeService = {
   async getQuoteDetails(id) {
     const { data: quote, error } = await supabase
       .from('finance_quotes')
-      .select('*, finance_parties(name)')
+      .select('*, finance_parties(name, nome_fantasia, document)')
       .eq('id', id)
       .single();
     if (error) throw error;
@@ -1369,6 +1370,7 @@ export const financeService = {
   },
 
   async deleteQuote(id) {
+    await excluirArquivosDoOrcamento(id).catch(() => {}); // PDFs da proposta (as linhas saem em cascata)
     const { error } = await supabase.from('finance_quotes').delete().eq('id', id);
     if (error) throw error;
     await logAction('FINANCEIRO - ORÇAMENTO', `Excluiu orçamento ID: ${id}`);

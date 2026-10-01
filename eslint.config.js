@@ -26,4 +26,9 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // Código que roda no Node (função da Vercel, gerador de PDF, config do Vite)
+    files: ['api/**/*.js', 'medcode-proposta/**/*.js', 'vite.config.js'],
+    languageOptions: { globals: globals.node },
+  },
 ])

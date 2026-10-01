@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { financeService } from '../../services/financeService';
 import { prevMonthISO } from '../../utils/date';
 import {
-  Plus, Loader2, Edit2, Trash2, CheckCircle2, XCircle, FileText, X, Save, Trash, ShoppingCart
+  Plus, Loader2, Edit2, Trash2, CheckCircle2, XCircle, FileText, X, Save, Trash, ShoppingCart, FileDown, Eye, Sparkles
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
@@ -10,6 +10,11 @@ import { usePermission } from '../../contexts/PermissionContext';
 import CurrencyInput from '../../components/finance/CurrencyInput';
 import SearchableSelect from '../../components/finance/SearchableSelect';
 import useCadastroRapido from '../../components/crm/useCadastroRapido';
+import PropostaEditor from '../../components/propostas/PropostaEditor';
+import PdfsProposta, { VisualizadorProposta } from '../../components/propostas/PdfsProposta';
+import {
+  propostaCompleta, detalhesVazios, subtotalItens, descontoDe, montarDadosProposta, htmlDaProposta, contatoPrincipal
+} from '../../services/propostas';
 
 const fmt = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 const fmtDate = (s) => { if (!s) return '—'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
@@ -42,6 +47,7 @@ export default function Quotes() {
 
   const [modalQuote, setModalQuote] = useState(undefined); // undefined=fechado, null=novo, obj=edição
   const [approveTarget, setApproveTarget] = useState(null);
+  const [pdfsDe, setPdfsDe] = useState(null); // { quote, gerar }
 
   useEffect(() => { loadAll(); }, []);
 
@@ -128,7 +134,8 @@ export default function Quotes() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/70 text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
-                  <th className="py-2.5 px-4">Cliente</th>
+                  <th className="py-2.5 px-4">Nº</th>
+                  <th className="py-2.5 px-3">Cliente</th>
                   <th className="py-2.5 px-3">Descrição</th>
                   <th className="py-2.5 px-3">Validade</th>
                   <th className="py-2.5 px-3 text-right">Total (R$)</th>
@@ -138,18 +145,22 @@ export default function Quotes() {
               </thead>
               <tbody className="divide-y divide-black/[.055]">
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="py-10 text-center text-[11px] font-bold text-slate-400 uppercase">Nenhum orçamento</td></tr>
+                  <tr><td colSpan={7} className="py-10 text-center text-[11px] font-bold text-slate-400 uppercase">Nenhum orçamento</td></tr>
                 ) : filtered.map(q => {
                   const st = STATUS[q.status] || STATUS.PENDENTE;
                   const pend = q.status === 'PENDENTE';
                   return (
                     <tr key={q.id} className="group hover:bg-[#f5f5f7] transition-colors text-xs">
-                      <td className="py-2.5 px-4 font-bold text-slate-700">{q.finance_parties?.name || '—'}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-400 tabular-nums whitespace-nowrap">{q.numero || '—'}</td>
+                      <td className="py-2.5 px-3 font-bold text-slate-700">{q.finance_parties?.name || '—'}</td>
                       <td className="py-2.5 px-3 font-semibold text-slate-600">{q.title || '—'}</td>
                       <td className="py-2.5 px-3 font-semibold text-slate-500 tabular-nums whitespace-nowrap">{fmtDate(q.valid_until)}</td>
                       <td className="py-2.5 px-3 text-right font-semibold text-slate-800 tabular-nums whitespace-nowrap">{fmt(q.total_amount)}</td>
                       <td className="py-2.5 px-3"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider border ${st.cls}`}>{st.label}</span></td>
                       <td className="py-2.5 px-3">
+                        <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => setPdfsDe({ quote: q })} title="Proposta em PDF"
+                          className="p-1.5 text-violet-500 hover:text-violet-700 hover:bg-violet-50 rounded-lg transition-colors"><FileDown size={15} /></button>
                         {canEdit && (
                           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             {pend && (
@@ -166,6 +177,7 @@ export default function Quotes() {
                               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 size={14} /></button>
                           </div>
                         )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -178,7 +190,16 @@ export default function Quotes() {
 
       {modalQuote !== undefined && (
         <QuoteModal quote={modalQuote} services={services} parties={parties}
-          onClose={() => setModalQuote(undefined)} onSaved={() => { setModalQuote(undefined); reloadQuotes(); }} />
+          onClose={() => setModalQuote(undefined)}
+          onSaved={async (salvo) => {
+            setModalQuote(undefined);
+            await reloadQuotes();
+            if (salvo?.gerarPdf) setPdfsDe({ quote: await financeService.getQuoteDetails(salvo.id), gerar: true });
+          }} />
+      )}
+
+      {pdfsDe && (
+        <PdfsProposta quote={pdfsDe.quote} podeGerar={canEdit} gerarAoAbrir={!!pdfsDe.gerar} onClose={() => setPdfsDe(null)} />
       )}
 
       {approveTarget && (
@@ -211,26 +232,49 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
   const [title, setTitle] = useState(quote?.title || oportunidade?.titulo || '');
   const [validUntil, setValidUntil] = useState(quote?.valid_until || addDays(15));
   const [notes, setNotes] = useState(quote?.notes || '');
+  const [aba, setAba] = useState('orcamento');
+  const [previa, setPrevia] = useState(null); // HTML da pré-visualização
+  const [proposta, setProposta] = useState(() => propostaCompleta(quote?.proposta, { titulo: quote?.title || oportunidade?.titulo || '' }));
+  const novoItem = () => ({ service_id: '', description: '', quantity: 1, unit_price: 0, detalhes: detalhesVazios() });
   const [items, setItems] = useState(
     quote?.items?.length
-      ? quote.items.map(it => ({ service_id: it.service_id || '', description: it.description, quantity: it.quantity, unit_price: it.unit_price }))
-      : [{ service_id: '', description: '', quantity: 1, unit_price: 0 }]
+      ? quote.items.map(it => ({ service_id: it.service_id || '', description: it.description, quantity: it.quantity, unit_price: it.unit_price, detalhes: { ...detalhesVazios(), ...it.detalhes } }))
+      : [novoItem()]
   );
 
-  const total = useMemo(() => items.reduce((a, it) => a + (parseFloat(it.quantity) || 0) * (parseFloat(it.unit_price) || 0), 0), [items]);
+  const subtotal = useMemo(() => subtotalItens(items), [items]);
+  const desconto = descontoDe(proposta);
+  const total = Math.max(0, subtotal - desconto);
+
+  // Saudação da carta: puxa o contato principal da empresa enquanto o campo estiver vazio.
+  useEffect(() => {
+    if (!partyId || proposta.contato) return;
+    let vivo = true;
+    contatoPrincipal(partyId).then((nome) => { if (vivo && nome) setProposta((p) => (p.contato ? p : { ...p, contato: nome })); }).catch(() => {});
+    return () => { vivo = false; };
+  }, [partyId, proposta.contato]);
 
   const setItem = (i, patch) => setItems(items.map((it, idx) => idx === i ? { ...it, ...patch } : it));
+  const setItemDetalhes = (i, patch) => setItems((l) => l.map((it, idx) => idx === i ? { ...it, detalhes: { ...it.detalhes, ...patch } } : it));
   const pickService = (i, serviceId) => {
     const svc = services.find(s => s.id === serviceId);
     setItem(i, svc
-      ? { service_id: serviceId, description: svc.name, unit_price: svc.base_price }
+      ? { service_id: serviceId, description: svc.name, unit_price: svc.base_price, detalhes: { ...detalhesVazios(), ...svc.proposta_padrao } }
       : { service_id: '' });
   };
-  const addItem = () => setItems([...items, { service_id: '', description: '', quantity: 1, unit_price: 0 }]);
+  const addItem = () => setItems([...items, novoItem()]);
   const removeItem = (i) => setItems(items.length > 1 ? items.filter((_, idx) => idx !== i) : items);
 
-  const submit = async (e) => {
-    e.preventDefault();
+  const party = parties.find(p => p.id === partyId);
+  const abrirPrevia = () => {
+    const dados = montarDadosProposta({ numero: quote?.numero || 'MC-' + new Date().getFullYear() + '-···', title, issue_date: quote?.issue_date,
+      valid_until: validUntil, party, items, proposta });
+    if (!dados.servicos.length) return toast.error('Adicione ao menos um item.');
+    setPrevia(htmlDaProposta(dados));
+  };
+
+  const submit = async (e, { gerarPdf = false } = {}) => {
+    e?.preventDefault?.();
     if (!partyId) return toast.error('Selecione o cliente.');
     const valid = items.filter(it => it.description.trim() && parseFloat(it.unit_price) >= 0);
     if (!valid.length) return toast.error('Adicione ao menos um item.');
@@ -241,14 +285,16 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
         description: it.description.trim(),
         quantity: parseFloat(it.quantity) || 1,
         unit_price: parseFloat(it.unit_price) || 0,
-        amount: (parseFloat(it.quantity) || 1) * (parseFloat(it.unit_price) || 0)
+        amount: (parseFloat(it.quantity) || 1) * (parseFloat(it.unit_price) || 0),
+        detalhes: it.detalhes || {}
       }));
       const header = { party_id: partyId, title: title.trim() || null, valid_until: validUntil || null, total_amount: total, notes: notes.trim() || null,
-        ...(oportunidade ? { oportunidade_id: oportunidade.id } : {}) };
+        proposta, ...(oportunidade ? { oportunidade_id: oportunidade.id } : {}) };
+      let id = quote?.id;
       if (isEdit) await financeService.updateQuote(quote.id, header, payloadItems);
-      else await financeService.createQuote({ ...header, status: 'PENDENTE' }, payloadItems);
+      else id = (await financeService.createQuote({ ...header, status: 'PENDENTE' }, payloadItems))?.id;
       toast.success(isEdit ? 'Orçamento atualizado!' : 'Orçamento criado!');
-      onSaved();
+      onSaved({ id, gerarPdf });
     } catch (err) { console.error(err); toast.error('Erro ao salvar orçamento.'); }
     finally { setSaving(false); }
   };
@@ -256,13 +302,26 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
   return (<>
     <div className="fixed inset-0 z-[11000] flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/25 backdrop-blur-sm animate-in fade-in" onClick={onClose}></div>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden border border-black/[.06] max-h-[90vh]">
-        <div className="p-4 border-b border-black/[.06] flex items-center justify-between shrink-0">
-          <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2"><FileText size={16} className="text-[#0071e3]" /> {isEdit ? 'Editar Orçamento' : 'Novo Orçamento'}</h3>
+      <div className={`bg-white rounded-2xl shadow-2xl w-full ${aba === 'proposta' ? 'max-w-4xl' : 'max-w-2xl'} flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden border border-black/[.06] max-h-[90vh] transition-[max-width]`}>
+        <div className="p-4 border-b border-black/[.06] flex items-center gap-3 shrink-0">
+          <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2"><FileText size={16} className="text-[#0071e3]" /> {isEdit ? 'Editar Orçamento' : 'Novo Orçamento'}
+            {quote?.numero && <span className="text-xs font-semibold text-slate-400">{quote.numero}</span>}</h3>
+          <div className="flex items-center gap-1 bg-slate-100/70 rounded-lg p-0.5 ml-auto">
+            {[['orcamento', 'Orçamento'], ['proposta', 'Textos da proposta']].map(([k, l]) => (
+              <button key={k} type="button" onClick={() => setAba(k)}
+                className={`px-3 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${aba === k ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>{l}</button>
+            ))}
+          </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 bg-slate-50 rounded-lg"><X size={16} /></button>
         </div>
 
-        <form onSubmit={submit} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/40">
+        {aba === 'proposta' && (
+          <div className="flex-1 overflow-y-auto p-4 bg-slate-50/40">
+            <PropostaEditor proposta={proposta} onChange={setProposta} items={items} onItemDetalhes={setItemDetalhes} subtotal={subtotal} />
+          </div>
+        )}
+
+        <form onSubmit={submit} className={`flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/40 ${aba === 'orcamento' ? '' : 'hidden'}`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="md:col-span-2">
               <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Cliente</label>
@@ -326,16 +385,26 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
         </form>
 
         <div className="p-4 border-t border-black/[.06] flex items-center justify-between shrink-0 bg-white">
-          <div className="text-sm font-semibold text-slate-800">Total: <span className="text-indigo-700">{fmt(total)}</span></div>
-          <div className="flex gap-2">
+          <div className="text-sm font-semibold text-slate-800">
+            {desconto > 0 && <span className="text-[11px] text-slate-400 mr-2">{fmt(subtotal)} − {fmt(desconto)} =</span>}
+            Total: <span className="text-indigo-700">{fmt(total)}</span>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
             <button onClick={onClose} className="h-9 px-4 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg uppercase">Cancelar</button>
-            <button onClick={submit} disabled={saving} className="h-9 px-5 bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold rounded-lg text-xs uppercase shadow-sm flex items-center gap-2">
+            <button type="button" onClick={abrirPrevia} className="h-9 px-3 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg uppercase flex items-center gap-1.5">
+              <Eye size={14} /> Pré-visualizar
+            </button>
+            <button onClick={submit} disabled={saving} className="h-9 px-4 bg-white border border-black/[.1] hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-xs uppercase shadow-sm flex items-center gap-2">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Salvar
+            </button>
+            <button onClick={(e) => submit(e, { gerarPdf: true })} disabled={saving} className="h-9 px-4 bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold rounded-lg text-xs uppercase shadow-sm flex items-center gap-2">
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Salvar e gerar PDF
             </button>
           </div>
         </div>
       </div>
     </div>
+    {previa && <VisualizadorProposta titulo="Pré-visualização da proposta (não salva)" html={previa} onClose={() => setPrevia(null)} />}
     {janela}
   </>);
 }

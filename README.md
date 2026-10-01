@@ -10,6 +10,7 @@ medida, agentes de IA e consultoria). No ar em https://sistema.medcodedev.com.
 | Painel | `/painel` | MRR, a receber/pagar, funil, vendas por mês, margem por projeto, próximos passos |
 | Clientes | `/clientes` | Cadastro único de empresas (lead, cliente, fornecedor), contatos e histórico |
 | Vendas | `/vendas` | Funil em quadro, propostas, ganhar/perder oportunidade |
+| Orçamentos | `/vendas/propostas` | Orçamento com proposta comercial em PDF (`medcode-proposta/`, gerada em `api/proposta-pdf.js`), versões guardadas no bucket `propostas` |
 | Projetos | `/projetos` | Projetos vendidos, prazos, entregas, parcelas, custos e margem |
 | Financeiro | `/finance/*` | Contas, lançamentos, conciliação OFX, recorrências, DRE e relatórios |
 | Compromissos | `/compromissos` | Páginas e quadros estilo Notion; cada projeto tem o seu quadro de entregas |

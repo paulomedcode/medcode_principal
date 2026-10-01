@@ -1,0 +1,122 @@
+{
+  "numero": "MC-2026-014",
+  "emissao": "2026-09-30",
+  "validadeDias": 15,
+
+  "cliente": {
+    "nome": "Clínica Aurora",
+    "contato": "Dra. Ana",
+    "razaoSocial": "Clínica Aurora Ltda.",
+    "documento": ""
+  },
+
+  "capa": {
+    "titulo": [
+      { "texto": "Atendimento que", "destaque": "não dorme," },
+      { "texto": "gestão que", "destaque": "não trava." }
+    ],
+    "subtitulo": "Site, agente de IA no WhatsApp e sistema de gestão sob medida para a **Clínica Aurora** vender mais e atender melhor, 24 horas por dia."
+  },
+
+  "carta": {
+    "paragrafos": [
+      "Obrigado pela conversa e pela confiança. A partir do diagnóstico que fizemos juntos, preparei esta proposta com um objetivo claro: fazer a sua clínica responder cada paciente em segundos, aparecer no Google para quem está procurando e ter a gestão do dia a dia na palma da mão."
+    ]
+  },
+
+  "cenario": {
+    "problemas": [
+      "Mensagens no WhatsApp sem resposta fora do horário comercial",
+      "Recepção sobrecarregada com dúvidas repetidas (preço, horário, convênio)",
+      "Agenda em planilha, com faltas e conflitos de horário",
+      "Presença digital fraca: pacientes não encontram a clínica no Google"
+    ],
+    "objetivos": [
+      "100% das mensagens respondidas, a qualquer hora",
+      "Agendamentos e confirmações feitos automaticamente",
+      "Página que transforma visita em contato no WhatsApp",
+      "Visão clara de agenda, pacientes e financeiro em um só lugar"
+    ]
+  },
+
+  "solucao": {
+    "titulo": { "texto": "Tudo que seu negócio precisa para", "destaque": "vender no digital." },
+    "introducao": "Três frentes que trabalham juntas: o site atrai, o agente de IA atende e converte, e o sistema organiza tudo o que acontece depois."
+  },
+
+  "servicos": [
+    {
+      "nome": "Agente de IA no WhatsApp",
+      "rotulo": "Atendimento 24h",
+      "descricao": "Um assistente treinado com as informações da sua clínica, que responde como a sua equipe responderia, em segundos.",
+      "entregaveis": [
+        "Responde dúvidas, preços e horários",
+        "Agenda e confirma consultas",
+        "Lembretes automáticos para reduzir faltas",
+        "Transfere para humano quando precisa",
+        "Treinamento com a base de conhecimento da clínica",
+        "Relatório mensal de atendimentos"
+      ],
+      "resumo": "Implantação, treinamento, integração com agenda e 30 dias de ajustes",
+      "prazo": "10 dias",
+      "valor": 2800
+    },
+    {
+      "nome": "Site / Landing Page que vende",
+      "nomeTabela": "Landing Page profissional",
+      "rotulo": "Presença digital",
+      "descricao": "Página rápida, bonita e pensada para converter: cada botão leva o visitante direto para uma conversa no WhatsApp.",
+      "entregaveis": [
+        "Design exclusivo e responsivo",
+        "Otimização para Google (SEO)",
+        "Textos orientados à conversão",
+        "Integração com WhatsApp e Maps",
+        "Pixel/Analytics configurados",
+        "Publicação em domínio próprio"
+      ],
+      "resumo": "Design exclusivo, textos, SEO básico, publicação e integração com WhatsApp",
+      "prazo": "7 dias",
+      "valor": 1500
+    },
+    {
+      "nome": "Sistema sob medida",
+      "nomeTabela": "Sistema de gestão sob medida",
+      "rotulo": "Gestão",
+      "descricao": "Um sistema feito para o seu jeito de trabalhar, acessível pelo computador e pelo celular, sem pagar por funções que você não usa.",
+      "entregaveis": [
+        "Agenda com múltiplos profissionais",
+        "Cadastro e histórico de pacientes",
+        "Controle financeiro e de recebimentos",
+        "Painel com indicadores do mês",
+        "Acesso por usuário e permissões",
+        "Integração com o agente de IA"
+      ],
+      "resumo": "Agenda, pacientes, financeiro e painel de indicadores (web + celular)",
+      "prazo": "25 dias",
+      "valor": 6500
+    }
+  ],
+
+  "investimento": {
+    "desconto": { "rotulo": "Condição especial · pacote completo", "valor": 1100 },
+    "pixDescontoPercentual": 5,
+    "parcelasCartao": 10,
+    "formasPagamento": ["pix", "5050", "cartao"],
+    "suporteMensal": {
+      "descricao": "Ajustes no agente, pequenas melhorias e monitoramento contínuo por",
+      "valor": 390
+    },
+    "custosTerceiros": {
+      "descricao": "Domínio, hospedagem e consumo da API de IA/WhatsApp são pagos direto aos fornecedores. Estimativa atual:",
+      "estimativa": "R$ 80 a R$ 180/mês, conforme o volume de mensagens"
+    }
+  },
+
+  "cronograma": [
+    { "etapa": "Kick-off", "descricao": "Alinhamento e materiais", "inicio": 0, "duracao": 0.4 },
+    { "etapa": "Landing Page", "descricao": "Design, textos e publicação", "inicio": 0.2, "duracao": 1.4 },
+    { "etapa": "Agente de IA", "descricao": "Treino, testes e ativação", "inicio": 0.6, "duracao": 1.8 },
+    { "etapa": "Sistema de gestão", "descricao": "Desenvolvimento em ciclos", "inicio": 1, "duracao": 3.4 },
+    { "etapa": "Treinamento e entrega", "descricao": "Equipe pronta para usar", "inicio": 4.3, "duracao": 0.7 }
+  ]
+}

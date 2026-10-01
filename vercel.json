@@ -1,7 +1,13 @@
 {
+    "functions": {
+        "api/proposta-pdf.js": {
+            "maxDuration": 60,
+            "includeFiles": "medcode-proposta/{fonts,assets}/**"
+        }
+    },
     "rewrites": [
         {
-            "source": "/(.*)",
+            "source": "/((?!api/).*)",
             "destination": "/index.html"
         }
     ]

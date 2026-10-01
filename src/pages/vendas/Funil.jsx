@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-    Target, Plus, Search, Settings2, Trophy, XCircle, Edit2, Trash2, RotateCcw, FileText, CalendarClock, X, Building2, FolderKanban,
+    Target, Plus, Search, Settings2, Trophy, XCircle, Edit2, Trash2, RotateCcw, FileText, FileDown, CalendarClock, X, Building2, FolderKanban,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -14,6 +14,7 @@ import { usePermission } from '../../contexts/PermissionContext';
 import { OportunidadeModal, GanharModal, PerderModal } from '../../components/crm/OportunidadeModal';
 import Atividades from '../../components/crm/Atividades';
 import { QuoteModal } from '../finance/Quotes';
+import PdfsProposta from '../../components/propostas/PdfsProposta';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { PAGINA, CARD, FAIXA_KPI, FiltrosCelular, Etiqueta, Carregando, Janela, inputCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
 import { useUsuarios } from '../../components/crm/dados';
@@ -348,6 +349,7 @@ function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar
     const [servicos, setServicos] = useState([]);
     const [empresas, setEmpresas] = useState([]);
     const [novaProposta, setNovaProposta] = useState(false);
+    const [pdfsDe, setPdfsDe] = useState(null); // { quote, gerar }
     const [projeto, setProjeto] = useState(null);
     const etapa = etapas.find((e) => e.id === op.etapa_id);
     const s = resumoServicos(op);
@@ -444,10 +446,11 @@ function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar
                                 <ul className="divide-y divide-black/[.05]">
                                     {propostas.map((q) => (
                                         <li key={q.id} className="py-2 flex items-center gap-2 text-[11.5px]">
-                                            <span className="font-semibold text-slate-700 flex-1 truncate">{q.title || 'Proposta'}</span>
+                                            <span className="font-semibold text-slate-700 flex-1 truncate">{q.title || 'Proposta'}{q.numero && <span className="text-slate-400 font-semibold"> · {q.numero}</span>}</span>
                                             <span className="text-slate-400 font-semibold">{fmtData(q.valid_until)}</span>
                                             <span className="font-bold text-slate-800 tabular-nums">{fmtBRL(q.total_amount)}</span>
                                             <Etiqueta className={STATUS_PROPOSTA[q.status] || STATUS_PROPOSTA.PENDENTE}>{q.status}</Etiqueta>
+                                            <button onClick={() => setPdfsDe({ quote: q })} title="Proposta em PDF" className="p-1 text-violet-500 hover:text-violet-700 hover:bg-violet-50 rounded-md"><FileDown size={14} /></button>
                                         </li>
                                     ))}
                                 </ul>
@@ -461,8 +464,14 @@ function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar
 
             {novaProposta && (
                 <QuoteModal quote={null} services={servicos} parties={empresas} oportunidade={op}
-                    onClose={() => setNovaProposta(false)} onSaved={() => { setNovaProposta(false); carregarPropostas(); }} />
+                    onClose={() => setNovaProposta(false)}
+                    onSaved={async (salvo) => {
+                        setNovaProposta(false);
+                        carregarPropostas();
+                        if (salvo?.gerarPdf) setPdfsDe({ quote: await financeService.getQuoteDetails(salvo.id), gerar: true });
+                    }} />
             )}
+            {pdfsDe && <PdfsProposta quote={pdfsDe.quote} podeGerar={podeEditar} gerarAoAbrir={!!pdfsDe.gerar} onClose={() => setPdfsDe(null)} />}
         </div>
     );
 }
