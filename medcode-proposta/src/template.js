@@ -15,7 +15,7 @@ export const EMPRESA = {
   responsavel: 'Paulo Nogueira',
   cargo: 'Fundador · MedCode Assessoria',
   iniciais: 'PN',
-  whatsapp: '(15) 98804-1307',
+  whatsapp: '(11) 99164-9612',
   email: 'contato@medcodedev.com',
   site: 'contato.medcodedev.com',
   rodape: 'medcodedev.com',
