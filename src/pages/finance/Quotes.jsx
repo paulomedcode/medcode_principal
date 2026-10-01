@@ -348,16 +348,20 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
             <div className="space-y-2">
               {items.map((it, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-12 md:col-span-3">
+                  <div className="col-span-12 md:col-span-2">
                     {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Serviço</label>}
                     <select value={it.service_id} onChange={e => pickService(i, e.target.value)} className={`${inputCls} cursor-pointer`}>
                       <option value="">Livre</option>
                       {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                   </div>
-                  <div className="col-span-12 md:col-span-4">
+                  <div className="col-span-12 md:col-span-3">
                     {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Descrição</label>}
                     <input type="text" value={it.description} onChange={e => setItem(i, { description: e.target.value })} className={inputCls} placeholder="Descrição do item" />
+                  </div>
+                  <div className="col-span-12 md:col-span-2">
+                    {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Prazo</label>}
+                    <input type="text" value={it.detalhes?.prazo || ''} onChange={e => setItemDetalhes(i, { prazo: e.target.value })} className={inputCls} placeholder="Ex.: 10 dias" />
                   </div>
                   <div className="col-span-4 md:col-span-1">
                     {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Qtd</label>}

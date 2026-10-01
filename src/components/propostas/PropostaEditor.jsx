@@ -143,7 +143,7 @@ export default function PropostaEditor({ proposta, onChange, items, onItemDetalh
                 <p className="text-[10px] text-slate-400 ml-1">Se as duas listas ficarem vazias, o bloco não aparece.</p>
             </Secao>
 
-            <Secao titulo="Solução e serviços" descricao="o que cada item entrega">
+            <Secao titulo="Serviços" descricao="prazo, descrição e entregáveis de cada item" aberta>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Campo label="Título — texto"><input value={p.solucao.titulo?.texto || ''} onChange={(e) => setIn('solucao', { titulo: { ...p.solucao.titulo, texto: e.target.value } })} className={inputCls} /></Campo>
                     <Campo label="Título — destaque"><input value={p.solucao.titulo?.destaque || ''} onChange={(e) => setIn('solucao', { titulo: { ...p.solucao.titulo, destaque: e.target.value } })} className={inputCls} /></Campo>
