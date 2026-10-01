@@ -291,7 +291,7 @@ export function gerarPropostaHTML(dados, opcoes = {}) {
         <div><span>Site</span><b>${esc(EMPRESA.site)}</b></div>
         <div><span>Atendimento</span><b>${esc(EMPRESA.atendimento)}</b></div>
       </div>
-      <div class="legal">${esc(EMPRESA.nome)} ${esc(EMPRESA.sufixo)}<br>CNPJ ${esc(EMPRESA.cnpj)}<br>Documento confidencial</div>
+      <div class="legal">${esc(EMPRESA.nome)} ${esc(EMPRESA.sufixo)}<br>CNPJ ${esc(EMPRESA.cnpj)}<br>Proposta Comercial</div>
     </div>
   </div>
 </section>`);
