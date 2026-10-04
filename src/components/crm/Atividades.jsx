@@ -77,13 +77,13 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
 
     return (
         <div className={`${CARD} p-4 flex flex-col gap-3`}>
-            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{titulo}</h3>
+            <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight">{titulo}</h3>
 
             <form onSubmit={registrar} className="space-y-2 bg-slate-50/70 border border-black/[.05] rounded-xl p-3">
                 <div className="flex flex-wrap gap-1">
                     {TIPOS_ATIVIDADE.filter((t) => t.id !== 'SISTEMA').map((t) => (
                         <button type="button" key={t.id} onClick={() => setForm((f) => ({ ...f, tipo: t.id }))}
-                            className={`px-2.5 h-7 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${form.tipo === t.id ? 'bg-[#0071e3] text-white shadow-sm' : 'bg-white text-slate-500 border border-black/[.06] hover:text-slate-800'}`}>
+                            className={`px-2.5 h-7 rounded-lg text-[12px] font-medium transition-all ${form.tipo === t.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border border-black/[.06] hover:text-slate-800'}`}>
                             {t.emoji} {t.label}
                         </button>
                     ))}
@@ -105,7 +105,7 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                 )}
                 <div className="flex justify-end">
                     <button type="submit" disabled={salvando}
-                        className="h-8 px-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg font-bold text-[10px] uppercase shadow-sm flex items-center gap-1.5 disabled:opacity-60">
+                        className="h-8 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-[12px] shadow-sm flex items-center gap-1.5 disabled:opacity-60">
                         {salvando ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />} Registrar
                     </button>
                 </div>
@@ -133,7 +133,7 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                                         ) : (
                                             <p className="text-[11px] font-semibold text-amber-700 mt-1 flex items-center gap-1.5">
                                                 <CalendarClock size={12} /> {a.proximo_passo || 'Próximo passo'} · {fmtData(a.proximo_passo_em)}
-                                                <button onClick={() => concluir(a)} className="ml-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[9.5px] font-bold uppercase hover:bg-emerald-100">Feito</button>
+                                                <button onClick={() => concluir(a)} className="ml-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-medium hover:bg-emerald-100">Feito</button>
                                             </p>
                                         ))}
                                         <p className="text-[10px] font-medium text-slate-400 mt-1">

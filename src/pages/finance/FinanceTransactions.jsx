@@ -1099,7 +1099,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
             
             <form onSubmit={handleCreateAccount} className="p-4 space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome Identificador</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Nome Identificador</label>
                 <input 
                   type="text" 
                   required
@@ -1111,7 +1111,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
               </div>
               
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome do Banco</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Nome do Banco</label>
                 <input 
                   type="text" 
                   value={accountForm.bank_name} 
@@ -1123,7 +1123,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Agência</label>
+                  <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Agência</label>
                   <input 
                     type="text" 
                     value={accountForm.agency} 
@@ -1133,7 +1133,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Número da Conta</label>
+                  <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Número da Conta</label>
                   <input 
                     type="text" 
                     value={accountForm.account_number} 
@@ -1146,7 +1146,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Saldo Inicial (R$)</label>
+                  <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Saldo Inicial (R$)</label>
                   <CurrencyInput
                     value={accountForm.initial_balance}
                     onChange={v => setAccountForm({ ...accountForm, initial_balance: v })}
@@ -1154,7 +1154,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Data do Saldo Inicial</label>
+                  <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Data do Saldo Inicial</label>
                   <input
                     type="date"
                     value={accountForm.initial_balance_date}

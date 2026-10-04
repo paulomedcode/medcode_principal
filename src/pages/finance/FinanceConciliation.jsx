@@ -684,7 +684,7 @@ export default function FinanceConciliation() {
             <div className="overflow-y-auto flex-1 custom-scrollbar">
               <table className="w-full text-left border-collapse">
                 <thead className="sticky top-0 bg-white z-10">
-                  <tr className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
+                  <tr className="text-[11px] font-medium text-slate-400 border-b border-black/[.06]">
                     <th className="py-2 px-3 w-8"><input type="checkbox" checked={allSelected} onChange={toggleAll} className="accent-indigo-600 cursor-pointer" /></th>
                     <th className="py-2 px-1">Data</th>
                     <th className="py-2 px-2">Descrição</th>

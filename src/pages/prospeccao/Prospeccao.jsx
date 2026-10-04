@@ -14,7 +14,7 @@ import FichaLead from '../../components/prospeccao/FichaLead';
 import ImportarLeads from '../../components/prospeccao/ImportarLeads';
 import { Estrelas, Contatos, NotaGoogle } from '../../components/prospeccao/pecas';
 import {
-    PAGINA, CARD, CHIPS, FAIXA_KPI, FiltrosCelular, Etiqueta, Carregando, Vazio, Janela, Campo, inputCls, btnPrimario, btnSecundario,
+    PAGINA, CARD, CHIPS, FiltrosCelular, Etiqueta, Carregando, Vazio, Janela, Campo, inputCls, btnPrimario, btnSecundario,
 } from '../../components/crm/ui';
 
 const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -23,7 +23,6 @@ const fmtCurta = (s) => { const [, m, d] = String(s).split('-'); return `${d}/${
 
 // Fora da fila de trabalho: descartados e os que já viraram oportunidade.
 const ENCERRADOS = ['DESCARTADO', 'CONVERTIDO'];
-const RESPONDERAM = ['RESPONDEU', 'CONVERTIDO'];
 
 const ORDENS = [
     { id: 'recentes', label: 'Mais recentes' },
@@ -45,15 +44,6 @@ const comparar = {
 };
 
 const LIMITE = 150;   // linhas desenhadas por vez na lista (o resto em "mostrar mais")
-
-const Kpi = ({ rotulo, valor, detalhe, tom = 'text-slate-800', onClick, ativo }) => (
-    <button type="button" onClick={onClick} disabled={!onClick}
-        className={`${CARD} px-4 py-2.5 min-w-[140px] shrink-0 md:shrink md:flex-1 text-left disabled:cursor-default ${ativo ? 'ring-2 ring-[#0071e3]/40' : ''}`}>
-        <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest">{rotulo}</p>
-        <p className={`text-lg font-bold tabular-nums ${tom}`}>{valor}</p>
-        {detalhe && <p className="text-[10.5px] font-semibold text-slate-400">{detalhe}</p>}
-    </button>
-);
 
 /** Etapa do Vendas de um lead convertido (ou só "No Vendas" se não dá para ver). */
 const NoVendas = ({ op }) => (
@@ -184,19 +174,6 @@ export default function Prospeccao() {
         return r.sort(fStatus === 'RETORNO' ? comparar.retorno : comparar[ordem]);
     }, [base, fStatus, ordem]);
 
-    const kpi = useMemo(() => {
-        const abordados = leads.filter((l) => l.status !== 'NOVO').length;
-        const responderam = leads.filter((l) => RESPONDERAM.includes(l.status)).length;
-        return {
-            total: leads.length,
-            aAbordar: leads.filter((l) => l.status === 'NOVO').length,
-            respondeu: leads.filter((l) => l.status === 'RESPONDEU').length,
-            convertidos: leads.filter((l) => l.status === 'CONVERTIDO').length,
-            taxa: abordados ? Math.round((responderam / abordados) * 100) : null,
-            abordados, responderam,
-        };
-    }, [leads]);
-
     const filtrosAtivos = [fCategoria, fCidade, fOrigem, fContato].filter(Boolean).length;
 
     // ------------------------------------------------------------------ ações
@@ -302,20 +279,20 @@ export default function Prospeccao() {
         <div className={PAGINA}>
             {/* Título e ações */}
             <div className="flex flex-wrap items-center gap-3 mb-3">
-                <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
-                    <Radar size={18} className="text-[#0071e3]" /> Prospecção
+                <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                    <Radar size={17} className="text-slate-400" /> Prospecção
                 </h1>
                 <div className="hidden md:flex items-center gap-0.5 bg-slate-100/70 rounded-lg p-0.5">
                     {[{ id: 'lista', icone: <List size={13} />, rot: 'Lista' }, { id: 'quadro', icone: <Columns3 size={13} />, rot: 'Quadro' }].map(({ id, icone, rot }) => (
                         <button key={id} onClick={() => setVisao(id)}
-                            className={`h-7 px-2.5 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 ${visao === id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
+                            className={`h-7 px-2.5 rounded-md text-[12px] font-medium flex items-center gap-1 ${visao === id ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500'}`}>
                             {icone} {rot}
                         </button>
                     ))}
                 </div>
                 {podeEditar && (
                     <div className="ml-auto flex items-center gap-2">
-                        <button onClick={() => setImportar(true)} className="h-9 px-3 rounded-lg bg-white border border-black/[.085] text-slate-700 text-[11px] font-bold uppercase flex items-center gap-1.5 hover:border-[#0071e3]">
+                        <button onClick={() => setImportar(true)} className="h-9 px-3 rounded-lg bg-white border border-black/[.085] text-slate-700 text-[12.5px] font-medium flex items-center gap-1.5 hover:border-[#0071e3]">
                             <Upload size={14} /> Importar
                         </button>
                         <button onClick={() => setNovo(true)} className={btnPrimario}><Plus size={15} /> Novo lead</button>
@@ -323,25 +300,13 @@ export default function Prospeccao() {
                 )}
             </div>
 
-            {/* Números */}
-            <div className={FAIXA_KPI}>
-                <Kpi rotulo="Na lista" valor={kpi.total} detalhe={`${kpi.aAbordar} a abordar`} onClick={() => setFStatus('NOVO')} ativo={fStatus === 'NOVO'} />
-                <Kpi rotulo="Retornar hoje" valor={contagem.RETORNO} detalhe="combinados até hoje" tom={contagem.RETORNO ? 'text-rose-600' : 'text-slate-800'}
-                    onClick={() => setFStatus('RETORNO')} ativo={fStatus === 'RETORNO'} />
-                <Kpi rotulo="Responderam" valor={kpi.respondeu} detalhe="esperando virar oportunidade" tom="text-cyan-700"
-                    onClick={() => setFStatus('RESPONDEU')} ativo={fStatus === 'RESPONDEU'} />
-                <Kpi rotulo="Taxa de resposta" valor={kpi.taxa == null ? '—' : `${kpi.taxa}%`} detalhe={`${kpi.responderam} de ${kpi.abordados} abordados`} />
-                <Kpi rotulo="Viraram oportunidade" valor={kpi.convertidos} detalhe="seguem no Vendas" tom="text-emerald-600"
-                    onClick={() => setFStatus('CONVERTIDO')} ativo={fStatus === 'CONVERTIDO'} />
-            </div>
-
             {/* Status */}
             <div className={`${CHIPS} mb-2`}>
                 {chips.map((c) => (
                     <button key={c.id} onClick={() => setFStatus(c.id)}
-                        className={`shrink-0 px-2.5 h-8 md:h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all ${fStatus === c.id ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
-                        {c.cor && <span className="w-1.5 h-1.5 rounded-full" style={{ background: fStatus === c.id ? '#fff' : c.cor }} />}
-                        {c.label} <span className="opacity-70 tabular-nums">{contagem[c.id] ?? 0}</span>
+                        className={`shrink-0 px-2.5 h-8 md:h-7 rounded-md text-[12px] font-medium flex items-center gap-1.5 transition-all ${fStatus === c.id ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}>
+                        {c.cor && <span className="w-1.5 h-1.5 rounded-full" style={{ background: c.cor }} />}
+                        {c.label} <span className="text-slate-400 font-normal tabular-nums">{contagem[c.id] ?? 0}</span>
                     </button>
                 ))}
             </div>
@@ -435,7 +400,7 @@ export default function Prospeccao() {
                                 className={`w-[250px] shrink-0 rounded-2xl border transition-colors ${sobre === s.id ? 'bg-[#0071e3]/5 border-[#0071e3]/40' : 'bg-white/60 border-black/[.06]'}`}>
                                 <div className="flex items-center gap-2 px-3 py-2.5 border-b border-black/[.05]">
                                     <span className="w-2 h-2 rounded-full" style={{ background: s.cor }} />
-                                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">{s.label}</span>
+                                    <span className="text-[12.5px] font-semibold text-slate-800">{s.label}</span>
                                     <span className="ml-auto text-[11px] font-bold text-slate-400 tabular-nums">{doStatus.length}</span>
                                 </div>
                                 <div className="p-2 space-y-2 max-h-[calc(100dvh-330px)] overflow-y-auto">
@@ -511,7 +476,7 @@ export default function Prospeccao() {
                         <div className="hidden md:block overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50/70 text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
+                                    <tr className="bg-slate-50/70 text-[11px] font-medium text-slate-400 border-b border-black/[.06]">
                                         <th className="py-2.5 pl-4 pr-1 w-8"><input type="checkbox" checked={todosMarcados} onChange={marcarTodos} /></th>
                                         <th className="py-2.5 px-1 w-[70px]">Prior.</th>
                                         <th className="py-2.5 px-3">Lead</th>
@@ -563,7 +528,7 @@ export default function Prospeccao() {
                             </table>
                         </div>
                         {lista.length > limite && (
-                            <button onClick={() => setLimite((n) => n + LIMITE)} className="w-full py-3 text-[11px] font-bold text-[#0071e3] uppercase border-t border-black/[.06] hover:bg-slate-50">
+                            <button onClick={() => setLimite((n) => n + LIMITE)} className="w-full py-3 text-[12.5px] font-medium text-slate-500 hover:text-slate-900 border-t border-black/[.06] hover:bg-slate-50">
                                 Mostrar mais ({lista.length - limite} restantes)
                             </button>
                         )}

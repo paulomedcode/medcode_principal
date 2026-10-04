@@ -47,7 +47,7 @@ const tempoAtras = (iso) => {
     return d === 1 ? 'ontem' : `há ${d} dias`;
 };
 
-const VIDRO = 'bg-white/70 backdrop-blur-xl border border-white/70 shadow-[0_8px_30px_rgba(15,23,42,0.06)] rounded-3xl';
+const VIDRO = 'bg-white/85 backdrop-blur-xl border border-black/[.05] shadow-[0_1px_2px_rgba(15,23,42,0.04)] rounded-2xl';
 
 const TIPO_ITEM = {
     tarefa: { icone: ClipboardList, cor: 'bg-fuchsia-50 text-fuchsia-600', rotulo: 'Entrega' },
@@ -59,7 +59,7 @@ const TIPO_ITEM = {
 
 const Titulo = ({ icone: Icone, children, acao }) => (
     <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">{Icone && <Icone size={13} />}{children}</h2>
+        <h2 className="text-[13px] font-semibold text-slate-800 tracking-tight flex items-center gap-1.5">{Icone && <Icone size={13} />}{children}</h2>
         {acao}
     </div>
 );
@@ -223,16 +223,16 @@ export default function HomeHub() {
     const lista = grupos[aba] || [];
 
     return (
-        <div className="md:h-full w-full md:overflow-y-auto font-sans px-4 pb-8 pt-[84px] md:px-8 md:pt-[96px]">
-            <div className="max-w-[1500px] mx-auto space-y-5">
+        <div className="md:h-full w-full md:overflow-y-auto font-sans px-4 pb-8 pt-[80px] md:px-6 md:pt-[84px]">
+            <div className="max-w-[1500px] mx-auto space-y-4">
 
                 {/* Cabeçalho */}
                 <div className="flex flex-wrap items-end gap-4">
                     <div className="min-w-0">
-                        <p className="text-[12px] font-bold text-slate-500 uppercase tracking-widest">{dataExtenso()}</p>
-                        <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">{saudacao()}, {nomeFmt}</h1>
+                        <p className="text-[12px] font-medium text-slate-400 first-letter:uppercase">{dataExtenso()}</p>
+                        <h1 className="text-[24px] md:text-[26px] font-semibold text-slate-900 tracking-tight leading-tight">{saudacao()}, {nomeFmt}</h1>
                         {d && (
-                            <p className="text-[13px] font-semibold text-slate-500 mt-1">
+                            <p className="text-[13px] font-normal text-slate-500 mt-0.5">
                                 {grupos.atrasado.length + grupos.hoje.length === 0
                                     ? 'Nada atrasado nem vencendo hoje.'
                                     : `${grupos.hoje.length} para hoje${grupos.atrasado.length ? ` · ${grupos.atrasado.length} atrasado(s)` : ''}.`}
@@ -242,21 +242,21 @@ export default function HomeHub() {
                     {/* No celular a busca está na barra de cima e o ＋ na de baixo */}
                     <div className="ml-auto hidden md:flex items-center gap-2">
                         <button onClick={() => window.dispatchEvent(new CustomEvent('medcode:busca'))}
-                            className="h-11 pl-3 pr-2 w-64 max-w-[50vw] bg-white/80 backdrop-blur border border-white rounded-2xl shadow-sm flex items-center gap-2 text-[13px] font-semibold text-slate-400 hover:text-slate-600">
-                            <Search size={16} /> <span className="flex-1 text-left">Buscar…</span>
-                            <kbd className="text-[10px] font-bold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">Ctrl K</kbd>
+                            className="h-9 pl-3 pr-2 w-64 max-w-[50vw] bg-white/85 backdrop-blur border border-black/[.06] rounded-lg flex items-center gap-2 text-[13px] font-normal text-slate-400 hover:text-slate-600">
+                            <Search size={15} /> <span className="flex-1 text-left">Buscar…</span>
+                            <kbd className="text-[10.5px] font-medium text-slate-400 border border-slate-200 rounded px-1.5 py-px">Ctrl K</kbd>
                         </button>
                         {opcoesNovo.length > 0 && (
                             <div className="relative" ref={novoRef}>
                                 <button onClick={() => setNovoAberto((o) => !o)}
-                                    className="h-11 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow-lg shadow-indigo-600/25 flex items-center gap-1.5 text-[12px] font-black uppercase tracking-wide">
-                                    <Plus size={16} /> Novo
+                                    className="h-9 px-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg flex items-center gap-1.5 text-[13px] font-medium">
+                                    <Plus size={15} /> Novo
                                 </button>
                                 {novoAberto && (
-                                    <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-50 animate-in fade-in slide-in-from-top-1">
+                                    <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-black/[.06] p-1 z-50 animate-in fade-in slide-in-from-top-1">
                                         {opcoesNovo.map((o) => (
                                             <button key={o.id} onClick={() => escolherNovo(o.id)}
-                                                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[12.5px] font-bold text-slate-700 hover:bg-slate-50">
+                                                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-normal text-slate-700 hover:bg-slate-50">
                                                 <o.icone size={15} className="text-slate-400" /> {o.rotulo}
                                             </button>
                                         ))}
@@ -268,10 +268,10 @@ export default function HomeHub() {
                 </div>
 
                 {pode.numeros && (
-                    <div className="flex gap-1 bg-white/60 backdrop-blur border border-white/70 rounded-2xl p-1 w-fit">
+                    <div className="flex gap-0.5 bg-slate-900/[.05] backdrop-blur rounded-lg p-0.5 w-fit">
                         {[['dia', 'Meu dia'], ['numeros', 'Números']].map(([id, rot]) => (
                             <button key={id} onClick={() => trocarVista(id)}
-                                className={`h-9 px-4 rounded-xl text-[12.5px] font-bold transition-all ${vista === id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                                className={`h-7 px-3 rounded-md text-[13px] font-medium transition-all ${vista === id ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}>
                                 {rot}
                             </button>
                         ))}
@@ -284,18 +284,17 @@ export default function HomeHub() {
 
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
                         {/* Meu dia */}
-                        <section className={`${VIDRO} p-5 xl:col-span-2 md:min-h-[380px] flex flex-col`}>
+                        <section className={`${VIDRO} p-4 xl:col-span-2 md:min-h-[380px] flex flex-col`}>
                             <div className="flex flex-wrap items-center gap-2 mb-4">
-                                <h2 className="text-lg font-black text-slate-800 mr-2">Meu dia</h2>
                                 {[
                                     ['atrasado', 'Atrasados', 'bg-rose-600'],
                                     ['hoje', 'Hoje', 'bg-indigo-600'],
                                     ['semana', 'Próximos 7 dias', 'bg-slate-700'],
                                 ].map(([id, rotulo, cor]) => (
                                     <button key={id} onClick={() => setAba(id)}
-                                        className={`h-8 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 ${aba === id ? `${cor} text-white shadow-sm` : 'bg-white/70 text-slate-500 hover:text-slate-800'}`}>
+                                        className={`h-7 px-2.5 rounded-md text-[12px] font-medium transition-all flex items-center gap-1.5 ${aba === id ? `${cor} text-white` : 'bg-slate-100/80 text-slate-500 hover:text-slate-800'}`}>
                                         {rotulo}
-                                        <span className={`min-w-[18px] px-1 rounded-full text-[10px] ${aba === id ? 'bg-white/25' : 'bg-slate-100'}`}>{grupos[id].length}</span>
+                                        <span className={`min-w-[18px] px-1 rounded text-[11px] tabular-nums ${aba === id ? 'bg-white/20' : 'bg-white'}`}>{grupos[id].length}</span>
                                     </button>
                                 ))}
                             </div>
@@ -343,8 +342,8 @@ export default function HomeHub() {
                         {/* Coluna direita */}
                         <div className="space-y-5">
                             {veCrm && (
-                                <section className={`${VIDRO} p-5`}>
-                                    <Titulo icone={FolderKanban} acao={<button onClick={() => navigate('/projetos')} className="text-[10px] font-bold text-indigo-600 uppercase">Todos</button>}>Projetos em andamento</Titulo>
+                                <section className={`${VIDRO} p-4`}>
+                                    <Titulo icone={FolderKanban} acao={<button onClick={() => navigate('/projetos')} className="text-[12px] font-medium text-slate-500 hover:text-slate-900">Todos</button>}>Projetos em andamento</Titulo>
                                     {d.ativos.length === 0 ? (
                                         <p className="text-[12px] font-semibold text-slate-400">Nenhum projeto em andamento. Eles nascem quando uma oportunidade é ganha.</p>
                                     ) : (
@@ -378,7 +377,7 @@ export default function HomeHub() {
                             )}
 
                             {veCrm && (
-                                <section className={`${VIDRO} p-5`}>
+                                <section className={`${VIDRO} p-4`}>
                                     <Titulo icone={Sparkles}>Atividade recente</Titulo>
                                     {d.feed.length === 0 ? (
                                         <p className="text-[12px] font-semibold text-slate-400">Os registros de contato com clientes aparecem aqui.</p>

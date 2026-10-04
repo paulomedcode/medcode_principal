@@ -57,7 +57,7 @@ export default function TransferModal({ open, accounts = [], onClose, onDone }) 
   };
 
   const inputCls = 'w-full h-10 px-3 bg-white border border-black/[.085] rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-[#0071e3] focus:ring-2 focus:ring-indigo-500/10 transition-all';
-  const labelCls = 'text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block';
+  const labelCls = 'text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block';
 
   return (
     <div className="fixed inset-0 z-[11000] flex items-stretch md:items-center justify-center md:p-4">

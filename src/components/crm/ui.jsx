@@ -6,22 +6,26 @@ import useTravaRolagem from '../../hooks/useTravaRolagem';
 
 // Peças visuais do CRM/Vendas/Projetos — mesmo estilo das telas do financeiro.
 
-export const inputCls = 'w-full h-9 px-3 bg-white border border-black/[.085] rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#0071e3] transition-all shadow-sm disabled:bg-slate-50 disabled:text-slate-400';
-export const textareaCls = 'w-full px-3 py-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-[#0071e3] transition-all shadow-sm resize-none';
-export const btnPrimario = 'h-9 px-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg font-bold text-[11px] uppercase shadow-sm flex items-center gap-1.5 transition-all disabled:opacity-60';
-export const btnSecundario = 'h-9 px-4 text-[11px] font-bold text-slate-500 hover:bg-slate-100 rounded-lg uppercase';
-export const PAGINA = 'px-4 sm:px-5 py-4 min-h-[calc(100dvh-64px)] bg-[#f5f5f7] font-sans text-slate-900';
-export const CARD = 'bg-white border border-black/[.085] rounded-2xl shadow-sm';
+// Visual (out/2026): mais denso e sóbrio — sem caixa-alta nos botões, bordas
+// finas, sombra quase nenhuma, títulos em caixa normal.
+export const inputCls = 'w-full h-9 px-3 bg-white border border-black/[.09] rounded-lg text-[12.5px] font-normal text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 transition-all disabled:bg-slate-50 disabled:text-slate-400';
+export const textareaCls = 'w-full px-3 py-2 bg-white border border-black/[.09] rounded-lg text-[12.5px] font-normal text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 transition-all resize-none';
+export const btnPrimario = 'h-8 px-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-[12.5px] flex items-center gap-1.5 transition-colors disabled:opacity-60';
+export const btnSecundario = 'h-8 px-3.5 text-[12.5px] font-medium text-slate-600 hover:bg-slate-100 rounded-lg';
+export const PAGINA = 'px-4 sm:px-6 py-5 min-h-[calc(100dvh-64px)] bg-[#f7f7f8] font-sans text-slate-900';
+export const CARD = 'bg-white border border-black/[.07] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)]';
+/** Título de página: caixa normal, sem gritar. */
+export const TITULO = 'text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2';
 
 export const Campo = ({ label, children, className = '' }) => (
     <div className={className}>
-        <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">{label}</label>
+        <label className="text-[11px] font-medium text-slate-500 ml-0.5 mb-1 block">{label}</label>
         {children}
     </div>
 );
 
 export const Etiqueta = ({ className = '', children, title }) => (
-    <span title={title} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider border whitespace-nowrap ${className}`}>
+    <span title={title} className={`inline-flex items-center gap-1 px-1.5 py-px rounded-md text-[10.5px] font-medium border whitespace-nowrap ${className}`}>
         {children}
     </span>
 );
@@ -40,7 +44,7 @@ export const ServicosPicker = ({ value = [], onChange }) => {
                 return (
                     <button key={s.id} type="button" onClick={() => alternar(s.id)} aria-pressed={ativo}
                         title={ativo && value.length === 1 ? 'Escolha outro antes de desmarcar este' : undefined}
-                        className={`px-2.5 h-8 rounded-lg text-[11px] font-bold border transition-all ${ativo ? 'bg-[#0071e3] border-[#0071e3] text-white shadow-sm' : 'bg-white border-black/[.085] text-slate-600 hover:text-slate-900'}`}>
+                        className={`px-2.5 h-8 rounded-lg text-[12px] font-medium border transition-all ${ativo ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-black/[.09] text-slate-600 hover:text-slate-900'}`}>
                         {s.emoji} {s.label}
                     </button>
                 );
@@ -54,7 +58,7 @@ export const ServicosPicker = ({ value = [], onChange }) => {
 // ---------------------------------------------------------------------------
 
 /** Linha de abas/chips: quebra linha no computador, rola de lado no celular. */
-export const CHIPS = 'flex items-center gap-1 bg-slate-100/70 rounded-lg p-0.5 flex-nowrap overflow-x-auto no-scrollbar max-w-full md:flex-wrap md:overflow-visible';
+export const CHIPS = 'flex items-center gap-0.5 bg-slate-200/50 rounded-lg p-0.5 flex-nowrap overflow-x-auto no-scrollbar max-w-full md:flex-wrap md:overflow-visible';
 
 /** Faixa de números: rola de lado no celular em vez de empilhar cards. */
 export const FAIXA_KPI = 'flex gap-3 mb-3 flex-nowrap overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-5 sm:px-5 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible';
@@ -69,7 +73,7 @@ export const FiltrosCelular = ({ ativos = 0, children }) => {
         <>
             <div className="hidden md:contents">{children}</div>
             <button type="button" onClick={() => setAberto(true)}
-                className={`md:hidden h-9 px-3 shrink-0 rounded-lg border text-xs font-bold flex items-center gap-1.5 ${ativos ? 'bg-[#0071e3]/10 border-[#0071e3]/30 text-[#0071e3]' : 'bg-white border-black/[.085] text-slate-600'}`}>
+                className={`md:hidden h-9 px-3 shrink-0 rounded-lg border text-xs font-medium flex items-center gap-1.5 ${ativos ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-black/[.09] text-slate-600'}`}>
                 <SlidersHorizontal size={14} /> Filtros{ativos ? ` (${ativos})` : ''}
             </button>
             <Gaveta aberta={aberto} onClose={() => setAberto(false)} titulo="Filtros"
@@ -85,7 +89,7 @@ export const Carregando = () => (
 );
 
 export const Vazio = ({ children }) => (
-    <div className="py-10 text-center text-[11px] font-bold text-slate-400 uppercase">{children}</div>
+    <div className="py-10 text-center text-[12.5px] font-normal text-slate-400">{children}</div>
 );
 
 /** Janela sobreposta com cabeçalho, corpo rolável e rodapé. */
@@ -102,8 +106,8 @@ export const Janela = ({ titulo, icone: Icone, onClose, children, rodape, largur
             <div className="fixed inset-0 bg-black/25 backdrop-blur-sm animate-in fade-in" onClick={onClose} />
             <div className={`bg-white md:rounded-2xl shadow-2xl w-full ${largura} flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden md:border border-black/[.06] h-dvh md:h-auto max-h-dvh md:max-h-[90vh]`}>
                 <div className="p-4 border-b border-black/[.06] flex items-center justify-between shrink-0">
-                    <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                        {Icone && <Icone size={16} className="text-[#0071e3]" />} {titulo}
+                    <h3 className="text-[15px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                        {Icone && <Icone size={16} className="text-slate-400" />} {titulo}
                     </h3>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 bg-slate-50 rounded-lg"><X size={16} /></button>
                 </div>

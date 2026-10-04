@@ -137,8 +137,8 @@ export default function ClienteDetalhe() {
                     {empresa.nome_fantasia && <p className="text-[11px] font-semibold text-slate-400">{empresa.nome_fantasia}</p>}
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                    {podeEditar && <button onClick={() => setEditando(true)} className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold uppercase text-slate-600 hover:text-[#0071e3] flex items-center gap-1.5"><Edit2 size={13} /> Editar</button>}
-                    {podeExcluir && <button onClick={() => setConfirmar(true)} className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold uppercase text-slate-500 hover:text-rose-600 flex items-center gap-1.5"><Trash2 size={13} /></button>}
+                    {podeEditar && <button onClick={() => setEditando(true)} className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[12.5px] font-medium text-slate-600 hover:text-[#0071e3] flex items-center gap-1.5"><Edit2 size={13} /> Editar</button>}
+                    {podeExcluir && <button onClick={() => setConfirmar(true)} className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[12.5px] font-medium text-slate-500 hover:text-rose-600 flex items-center gap-1.5"><Trash2 size={13} /></button>}
                 </div>
             </div>
 
@@ -146,25 +146,25 @@ export default function ClienteDetalhe() {
                 {/* Coluna esquerda */}
                 <div className="space-y-4">
                     <div className={`${CARD} p-4 space-y-2`}>
-                        <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Dados</h3>
+                        <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight mb-1">Dados</h3>
                         <Linha icone={Phone} href={linkWhats(empresa.telefone)}>{empresa.telefone}</Linha>
                         <Linha icone={Mail} href={empresa.email ? `mailto:${empresa.email}` : null}>{empresa.email}</Linha>
                         <Linha icone={Globe} href={linkSite(empresa.site)}>{empresa.site}</Linha>
                         <Linha icone={Instagram} href={linkInsta(empresa.instagram)}>{empresa.instagram}</Linha>
                         <Linha icone={MapPin}>{[empresa.cidade, empresa.uf].filter(Boolean).join(' / ')}</Linha>
                         <div className="pt-2 mt-2 border-t border-black/[.05] grid grid-cols-2 gap-2 text-[11px]">
-                            <div><p className="font-bold text-slate-400 uppercase text-[9px]">{empresa.tipo_pessoa === 'PF' ? 'CPF' : 'CNPJ'}</p><p className="font-semibold text-slate-700">{empresa.document || '—'}</p></div>
-                            <div><p className="font-bold text-slate-400 uppercase text-[9px]">Origem</p><p className="font-semibold text-slate-700">{empresa.origem || '—'}</p></div>
-                            <div><p className="font-bold text-slate-400 uppercase text-[9px]">Responsável</p><p className="font-semibold text-slate-700">{empresa.responsavel?.name || '—'}</p></div>
-                            <div><p className="font-bold text-slate-400 uppercase text-[9px]">Cliente desde</p><p className="font-semibold text-slate-700">{fmtData(empresa.created_at)}</p></div>
+                            <div><p className="font-normal text-slate-400 text-[11px]">{empresa.tipo_pessoa === 'PF' ? 'CPF' : 'CNPJ'}</p><p className="font-semibold text-slate-700">{empresa.document || '—'}</p></div>
+                            <div><p className="font-normal text-slate-400 text-[11px]">Origem</p><p className="font-semibold text-slate-700">{empresa.origem || '—'}</p></div>
+                            <div><p className="font-normal text-slate-400 text-[11px]">Responsável</p><p className="font-semibold text-slate-700">{empresa.responsavel?.name || '—'}</p></div>
+                            <div><p className="font-normal text-slate-400 text-[11px]">Cliente desde</p><p className="font-semibold text-slate-700">{fmtData(empresa.created_at)}</p></div>
                         </div>
                         {empresa.notes && <p className="text-[11.5px] text-slate-600 whitespace-pre-wrap pt-2 border-t border-black/[.05]">{empresa.notes}</p>}
                     </div>
 
                     <div className={`${CARD} p-4`}>
                         <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Contatos</h3>
-                            {podeEditar && <button onClick={() => setContatoAberto(null)} className="text-[10px] font-bold text-[#0071e3] uppercase flex items-center gap-1"><Plus size={12} /> Adicionar</button>}
+                            <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight">Contatos</h3>
+                            {podeEditar && <button onClick={() => setContatoAberto(null)} className="text-[12px] font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"><Plus size={12} /> Adicionar</button>}
                         </div>
                         {contatos.length === 0 ? <p className="text-[11px] font-semibold text-slate-400">Nenhum contato.</p> : (
                             <ul className="space-y-2">
@@ -191,11 +191,11 @@ export default function ClienteDetalhe() {
 
                     {veFinanceiro && (
                         <div className={`${CARD} p-4`}>
-                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Financeiro</h3>
+                            <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight mb-2">Financeiro</h3>
                             <div className="grid grid-cols-2 gap-2">
-                                <div className="rounded-xl bg-emerald-50/70 p-2.5"><p className="text-[9px] font-bold text-emerald-700 uppercase">Recebido</p><p className="text-sm font-bold text-emerald-800 tabular-nums">{fmtBRL(fin.recebido)}</p></div>
-                                <div className="rounded-xl bg-amber-50/70 p-2.5"><p className="text-[9px] font-bold text-amber-700 uppercase">A receber</p><p className="text-sm font-bold text-amber-800 tabular-nums">{fmtBRL(fin.aReceber)}</p></div>
-                                {fin.custo > 0 && <div className="rounded-xl bg-rose-50/70 p-2.5 col-span-2"><p className="text-[9px] font-bold text-rose-700 uppercase">Pago a ele (fornecedor)</p><p className="text-sm font-bold text-rose-800 tabular-nums">{fmtBRL(fin.custo)}</p></div>}
+                                <div className="rounded-xl bg-emerald-50/70 p-2.5"><p className="text-[11px] font-medium text-emerald-700">Recebido</p><p className="text-sm font-bold text-emerald-800 tabular-nums">{fmtBRL(fin.recebido)}</p></div>
+                                <div className="rounded-xl bg-amber-50/70 p-2.5"><p className="text-[11px] font-medium text-amber-700">A receber</p><p className="text-sm font-bold text-amber-800 tabular-nums">{fmtBRL(fin.aReceber)}</p></div>
+                                {fin.custo > 0 && <div className="rounded-xl bg-rose-50/70 p-2.5 col-span-2"><p className="text-[11px] font-medium text-rose-700">Pago a ele (fornecedor)</p><p className="text-sm font-bold text-rose-800 tabular-nums">{fmtBRL(fin.custo)}</p></div>}
                             </div>
                         </div>
                     )}
@@ -205,8 +205,8 @@ export default function ClienteDetalhe() {
                 <div className="lg:col-span-2 space-y-4">
                     <div className={`${CARD} p-4`}>
                         <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><Target size={13} /> Oportunidades</h3>
-                            {podeVender && <button onClick={() => setNovaOp(true)} className="text-[10px] font-bold text-[#0071e3] uppercase flex items-center gap-1"><Plus size={12} /> Nova oportunidade</button>}
+                            <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight flex items-center gap-1.5"><Target size={13} /> Oportunidades</h3>
+                            {podeVender && <button onClick={() => setNovaOp(true)} className="text-[12px] font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"><Plus size={12} /> Nova oportunidade</button>}
                         </div>
                         {oportunidades.length === 0 ? <p className="text-[11px] font-semibold text-slate-400">Nenhuma oportunidade.</p> : (
                             <ul className="divide-y divide-black/[.05]">
@@ -230,7 +230,7 @@ export default function ClienteDetalhe() {
                     </div>
 
                     <div className={`${CARD} p-4`}>
-                        <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FolderKanban size={13} /> Projetos</h3>
+                        <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight mb-2 flex items-center gap-1.5"><FolderKanban size={13} /> Projetos</h3>
                         {projetos.length === 0 ? <p className="text-[11px] font-semibold text-slate-400">Nenhum projeto ainda — nasce quando uma oportunidade é ganha.</p> : (
                             <ul className="divide-y divide-black/[.05]">
                                 {projetos.map((p) => {

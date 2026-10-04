@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Upload, FileSpreadsheet, Loader2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { CAMPOS_IMPORTACAO, soDigitos } from '../../config/prospeccao';
+import { CAMPOS_IMPORTACAO, soDigitos, traduzirCategoria } from '../../config/prospeccao';
 import { importarLeads } from '../../services/prospeccao';
 import { Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from '../crm/ui';
 
@@ -64,9 +64,19 @@ export default function ImportarLeads({ existentes, onClose, onImportados }) {
         if (!arquivo) return;
         try {
             const buf = await arquivo.arrayBuffer();
-            // CSV sem adivinhar tipo: "4,8" não pode virar 48 nem telefone virar número.
-            const csv = /\.(csv|tsv|txt)$/i.test(arquivo.name);
-            carregarPlanilha(XLSX.read(buf, { type: 'array', raw: csv }), arquivo.name);
+            if (/\.(csv|tsv|txt)$/i.test(arquivo.name)) {
+                // CSV: o leitor da planilha assume Windows-1252 e transformava
+                // "Clínica" em "ClÃ­nica". Decodifica como UTF-8 (o que os
+                // extratores e o Google Planilhas geram) e só cai para
+                // Windows-1252 se o arquivo não for UTF-8 válido. Também sem
+                // adivinhar tipo: "4,8" não pode virar 48.
+                let texto;
+                try { texto = new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+                catch { texto = new TextDecoder('windows-1252').decode(buf); }
+                carregarPlanilha(XLSX.read(texto.replace(/^\uFEFF/, ''), { type: 'string', raw: true }), arquivo.name);
+            } else {
+                carregarPlanilha(XLSX.read(buf, { type: 'array' }), arquivo.name);
+            }
         } catch (e) { console.error(e); toast.error('Não consegui ler esse arquivo.'); }
     };
 
@@ -89,7 +99,7 @@ export default function ImportarLeads({ existentes, onClose, onImportados }) {
             const doEnd = val('cidade') ? {} : cidadeDoEndereco(val('endereco'));
             const lead = {
                 nome,
-                categoria: val('categoria') || null,
+                categoria: traduzirCategoria(val('categoria')) || null,
                 telefone: val('telefone') || null,
                 email: val('email') || null,
                 site: val('site') || null,
@@ -175,7 +185,7 @@ export default function ImportarLeads({ existentes, onClose, onImportados }) {
                 </div>
 
                 <div className="bg-white border border-black/[.085] rounded-2xl p-3">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">Qual coluna vai em cada campo</p>
+                    <p className="text-[11.5px] font-medium text-slate-500 mb-2">Qual coluna vai em cada campo</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                         {CAMPOS_IMPORTACAO.map((c) => (
                             <Campo key={c.id} label={c.label + (c.id === 'nome' ? ' *' : '')}>
@@ -194,7 +204,7 @@ export default function ImportarLeads({ existentes, onClose, onImportados }) {
                     <div className="bg-white border border-black/[.085] rounded-2xl overflow-x-auto">
                         <table className="w-full text-left text-[11px]">
                             <thead>
-                                <tr className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
+                                <tr className="text-[11px] font-medium text-slate-400 border-b border-black/[.06]">
                                     <th className="py-2 px-3">Nome</th><th className="py-2 px-3">Categoria</th><th className="py-2 px-3">Telefone</th>
                                     <th className="py-2 px-3">Cidade</th><th className="py-2 px-3">Nota</th>
                                 </tr>

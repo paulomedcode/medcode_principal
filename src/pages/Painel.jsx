@@ -26,17 +26,17 @@ const compacto = (v) => (Math.abs(v) >= 1000 ? `R$ ${(v / 1000).toLocaleString('
 
 const Numero = ({ rotulo, valor, detalhe, tom = 'text-slate-900', onClick }) => (
     <button onClick={onClick} disabled={!onClick}
-        className={`${CARD} px-4 py-3.5 text-left flex-1 min-w-[170px] ${onClick ? 'hover:border-[#0071e3]/40 cursor-pointer' : 'cursor-default'}`}>
-        <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest">{rotulo}</p>
-        <p className={`text-xl md:text-2xl font-bold tabular-nums tracking-tight mt-0.5 ${tom}`}>{valor}</p>
-        {detalhe && <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5">{detalhe}</p>}
+        className={`${CARD} px-4 py-3 text-left min-w-0 ${onClick ? 'hover:border-[#0071e3]/40 cursor-pointer' : 'cursor-default'}`}>
+        <p className="text-[11.5px] font-medium text-slate-500">{rotulo}</p>
+        <p className={`text-[19px] font-semibold tabular-nums tracking-tight mt-0.5 truncate ${tom}`}>{valor}</p>
+        {detalhe && <p className="text-[11px] font-normal text-slate-400 mt-0.5 truncate">{detalhe}</p>}
     </button>
 );
 
 const Bloco = ({ titulo, acao, children, className = '' }) => (
     <div className={`${CARD} p-4 ${className}`}>
         <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{titulo}</h3>
+            <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight">{titulo}</h3>
             {acao}
         </div>
         {children}
@@ -184,7 +184,7 @@ export default function Painel() {
     return (
         <div>
 
-            <div className="flex flex-wrap gap-3 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
                 <Numero rotulo="Receita recorrente (MRR)" valor={fmtBRL(k.mrr)} detalhe={`${fmtBRL(k.mrr * 12)} por ano`} tom="text-violet-700" />
                 {veFinanceiro && <Numero rotulo="Recebido no mês" valor={fmtBRL(k.recebidoMes)} tom="text-emerald-700" onClick={() => navigate('/finance/dashboard')} />}
                 {veFinanceiro && <Numero rotulo="A receber · 30 dias" valor={fmtBRL(k.receber30)}
@@ -217,7 +217,7 @@ export default function Painel() {
                 )}
 
                 {veVendas && (
-                    <Bloco titulo="Funil por etapa" acao={<button onClick={() => navigate('/vendas')} className="text-[10px] font-bold text-[#0071e3] uppercase">Abrir funil</button>}>
+                    <Bloco titulo="Funil por etapa" acao={<button onClick={() => navigate('/vendas')} className="text-[12px] font-medium text-slate-500 hover:text-slate-900">Abrir funil</button>}>
                         {k.funil.length === 0 ? <p className="text-[11.5px] font-semibold text-slate-400">Sem etapas.</p> : (
                             <div className="space-y-3">
                                 {k.funil.map((e) => <BarraRotulada key={e.id} rotulo={e.nome} valor={e.valor} max={maxFunil} cor={e.cor} detalhe={`${e.qtd}`} />)}
@@ -243,7 +243,7 @@ export default function Painel() {
                         ) : (
                             <table className="w-full text-left text-[11.5px]">
                                 <thead>
-                                    <tr className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <tr className="text-[11px] font-medium text-slate-400">
                                         <th className="pb-2">Projeto</th><th className="pb-2 text-right">Receita</th><th className="pb-2 text-right">Custos</th><th className="pb-2 text-right">Margem</th>
                                     </tr>
                                 </thead>
@@ -265,7 +265,7 @@ export default function Painel() {
                 )}
 
                 {veProspeccao && (
-                    <Bloco titulo="Prospecção" acao={<button onClick={() => navigate('/prospeccao')} className="text-[10px] font-bold text-[#0071e3] uppercase">Abrir</button>}>
+                    <Bloco titulo="Prospecção" acao={<button onClick={() => navigate('/prospeccao')} className="text-[12px] font-medium text-slate-500 hover:text-slate-900">Abrir</button>}>
                         {k.prospeccao.total === 0 ? <p className="text-[11.5px] font-semibold text-slate-400">Nenhum lead na lista ainda.</p> : (
                             <div className="space-y-2.5">
                                 {[['Na lista', k.prospeccao.total, '#94a3b8'], ['Abordados', k.prospeccao.abordados, '#3b82f6'],

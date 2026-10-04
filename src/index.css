@@ -1,13 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300..800&display=swap');
 @import "tailwindcss";
 
 /* Tema escuro por CLASSE (.dark no <html>), não por preferência do sistema.
    Quem liga/desliga é o hook useTema. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ---------------------------------------------------------------------------
+   Tipografia (out/2026): Geist no lugar da Outfit, e pesos mais leves.
+
+   As telas foram escritas com font-bold/font-black em quase tudo, o que deixava
+   o sistema "gritando". Em vez de reescrever cada classe, os pesos do tema
+   descem um degrau: quem pediu bold ganha 600, black ganha 680. O mesmo para o
+   espaçamento das letras em caixa-alta (tracking-wider/widest).
+   --------------------------------------------------------------------------- */
 @theme {
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-weight-medium: 480;
+  --font-weight-semibold: 540;
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 650;
+  --font-weight-black: 680;
+  --tracking-wide: 0.015em;
+  --tracking-wider: 0.035em;
+  --tracking-widest: 0.07em;
 }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Computador: tudo que é medido em rem (espaçamentos, alturas, text-xs/sm)
+   fica ~6% menor — mais conteúdo por tela. O celular continua em 16px. */
+@media (min-width: 768px) {
+  html { font-size: 15px; }
+}
+
+::selection { background: rgb(99 102 241 / 0.18); }
 
 @media print {
 

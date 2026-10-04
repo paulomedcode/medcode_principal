@@ -121,7 +121,7 @@ export const Topbar = () => {
 
     return (
         <>
-            <header className="h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-[999] shrink-0 print:hidden transition-colors duration-300 bg-white/60 dark:bg-slate-900/80 backdrop-blur-md border-b border-white/60 dark:border-slate-700/60 shadow-none">
+            <header className="h-[64px] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-[999] shrink-0 print:hidden transition-colors duration-300 bg-white/60 dark:bg-slate-900/80 backdrop-blur-md border-b border-white/60 dark:border-slate-700/60 shadow-none">
 
                 {/* LOGO */}
                 <div className="flex items-center justify-center shrink-0">
@@ -144,7 +144,7 @@ export const Topbar = () => {
                                     const Icon = m.icon;
                                     return (
                                         <Link key={m.id} to={m.path} onClick={() => setMobileNavOpen(false)}
-                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-bold ${moduloAtivo(m) ? 'bg-indigo-600 text-white' : 'text-slate-700 hover:bg-slate-50'}`}>
+                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium ${moduloAtivo(m) ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}>
                                             <Icon size={15} /> {m.label}
                                         </Link>
                                     );
@@ -160,7 +160,7 @@ export const Topbar = () => {
                                         const active = location.pathname === m.path;
                                         return (
                                             <Link key={m.id} to={m.path} onClick={() => setMobileNavOpen(false)}
-                                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-bold uppercase tracking-wide ${active ? 'bg-indigo-600 text-white' : 'text-slate-700 hover:bg-slate-50'}`}>
+                                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium ${active ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}>
                                                 {m.icon && <m.icon size={15} />} {m.label}
                                             </Link>
                                         );
@@ -195,7 +195,7 @@ export const Topbar = () => {
                                 const ativo = moduloAtivo(m);
                                 return (
                                     <Link key={m.id} to={m.path}
-                                        className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-[11px] font-black uppercase tracking-wide transition-colors ${ativo ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white/70'}`}>
+                                        className={`flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors ${ativo ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-black/[.04]' : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'}`}>
                                         <Icon size={14} /> {m.label}
                                     </Link>
                                 );
@@ -211,7 +211,7 @@ export const Topbar = () => {
                                 if (m.soon) {
                                     return (
                                         <button key={m.id} disabled
-                                            className="flex items-center gap-1.5 px-3 h-9 rounded-lg text-[11px] font-black uppercase tracking-wide text-slate-300 cursor-not-allowed">
+                                            className="flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium text-slate-300 cursor-not-allowed">
                                             {m.label}
                                             <span className="text-[8px] font-bold bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">em breve</span>
                                         </button>
@@ -221,7 +221,7 @@ export const Topbar = () => {
                                     const active = location.pathname === m.path;
                                     return (
                                         <Link key={m.id} to={m.path}
-                                            className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-[11px] font-black uppercase tracking-wide transition-colors ${active ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white/70'}`}>
+                                            className={`flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors ${active ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-black/[.04]' : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'}`}>
                                             {m.icon && <m.icon size={14} />} {m.label}
                                         </Link>
                                     );
@@ -233,7 +233,7 @@ export const Topbar = () => {
                                         onMouseEnter={() => setActiveDropdown(m.id)}
                                         onMouseLeave={() => setActiveDropdown(null)}>
                                         <button onClick={() => setActiveDropdown(open ? null : m.id)}
-                                            className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-[11px] font-black uppercase tracking-wide transition-colors ${open || anyActive ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white/70'}`}>
+                                            className={`flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors ${open || anyActive ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-black/[.04]' : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'}`}>
                                             {m.label}
                                             <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
                                         </button>
@@ -440,7 +440,7 @@ export const Topbar = () => {
                                 <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl"><User size={20} /></div>
                                 <div>
                                     <h2 className="text-lg font-black text-slate-800 uppercase tracking-widest leading-none">Meu Perfil</h2>
-                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gerencie sua conta</p>
+                                    <p className="text-[13px] font-semibold text-slate-800 tracking-tight mt-1">Gerencie sua conta</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsProfileOpen(false)} className="text-slate-500 hover:text-rose-500 bg-white p-2 rounded-full shadow-sm hover:shadow transition-all"><X size={18} /></button>

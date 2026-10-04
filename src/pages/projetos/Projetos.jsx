@@ -7,7 +7,7 @@ import { SERVICOS, STATUS_PROJETO, resumoServicos, temServico, statusProjeto, fm
 import { usePermission } from '../../contexts/PermissionContext';
 import { todayISO as hoje } from '../../utils/date';
 import ProjetoModal from '../../components/crm/ProjetoModal';
-import { PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario, CHIPS, FAIXA_KPI, FiltrosCelular } from '../../components/crm/ui';
+import { PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario, CHIPS, FiltrosCelular } from '../../components/crm/ui';
 
 const ATIVOS = ['PLANEJAMENTO', 'EM_ANDAMENTO', 'EM_REVISAO', 'PAUSADO'];
 
@@ -38,26 +38,16 @@ export default function Projetos() {
             .sort((a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999'));
     }, [projetos, filtro, fServico, busca]);
 
-    const resumo = useMemo(() => {
-        const ativos = projetos.filter((p) => ATIVOS.includes(p.status));
-        return {
-            ativos: ativos.length,
-            atrasados: ativos.filter((p) => p.prazo && p.prazo < hoje()).length,
-            carteira: ativos.reduce((s, p) => s + Number(p.valor_contratado || 0), 0),
-            mrr: projetos.filter((p) => p.status !== 'CANCELADO').reduce((s, p) => s + Number(p.valor_recorrente || 0), 0),
-        };
-    }, [projetos]);
-
     return (
         <div className={PAGINA}>
             <div className="flex flex-wrap items-center gap-3 mb-3">
-                <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
-                    <FolderKanban size={18} className="text-[#0071e3]" /> Projetos
+                <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                    <FolderKanban size={17} className="text-slate-400" /> Projetos
                 </h1>
                 <div className={`${CHIPS} order-last md:order-none w-full md:w-auto`}>
                     {[{ id: 'ATIVOS', label: 'Em curso' }, ...STATUS_PROJETO, { id: '', label: 'Todos' }].map((s) => (
                         <button key={s.id || 'todos'} onClick={() => setFiltro(s.id)}
-                            className={`shrink-0 px-2.5 h-8 md:h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${filtro === s.id ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+                            className={`shrink-0 px-2.5 h-8 md:h-7 rounded-md text-[12px] font-medium transition-all ${filtro === s.id ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}>
                             {s.label}
                         </button>
                     ))}
@@ -74,20 +64,6 @@ export default function Projetos() {
                         className="h-9 md:h-8 pl-8 pr-3 w-full md:w-44 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none focus:border-[#0071e3]" />
                 </div>
                 {podeEditar && <button onClick={() => setNovo(true)} className={`${btnPrimario} ml-auto hidden md:flex`}><Plus size={15} /> Novo projeto</button>}
-            </div>
-
-            <div className={FAIXA_KPI}>
-                {[
-                    ['Em curso', resumo.ativos, 'text-slate-800'],
-                    ['Atrasados', resumo.atrasados, resumo.atrasados ? 'text-rose-600' : 'text-slate-800'],
-                    ['Carteira em curso', fmtBRL(resumo.carteira), 'text-indigo-700'],
-                    ['Receita recorrente (MRR)', fmtBRL(resumo.mrr), 'text-violet-700'],
-                ].map(([r, v, tom]) => (
-                    <div key={r} className={`${CARD} px-4 py-3 min-w-[150px] shrink-0 md:shrink md:flex-1`}>
-                        <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest">{r}</p>
-                        <p className={`text-lg font-bold tabular-nums ${tom}`}>{v}</p>
-                    </div>
-                ))}
             </div>
 
             <div className={`${CARD} overflow-hidden`}>
@@ -126,7 +102,7 @@ export default function Projetos() {
                     <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/70 text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
+                                <tr className="bg-slate-50/70 text-[11px] font-medium text-slate-400 border-b border-black/[.06]">
                                     <th className="py-2.5 px-4">Projeto</th>
                                     <th className="py-2.5 px-3">Cliente</th>
                                     <th className="py-2.5 px-3">Status</th>

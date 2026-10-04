@@ -328,7 +328,7 @@ export default function FinanceDashboard() {
 
       {/* Header: gráficos seguem o mês atual; os cards de contas seguem a janela escolhida */}
       <div className="mb-4 flex flex-wrap items-center gap-3 shrink-0">
-        <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
+        <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
           <TrendingUp className="text-[#0071e3]" size={18} /> Financeiro MedCode
         </h1>
         <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
@@ -551,7 +551,7 @@ function SummaryCard({ title, subtitle, icon, accent, data, emptyText, onClick, 
         <div onClick={e => e.stopPropagation()}
           className="mt-2 rounded-xl border border-[#0071e3]/25 bg-[#0071e3]/[.06] px-2.5 py-2">
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-[10px] font-bold text-[#0071e3] uppercase tracking-wide">
+            <span className="text-[12px] font-medium text-slate-500 hover:text-slate-900 tracking-wide">
               {sel.size} selecionada{sel.size === 1 ? '' : 's'} · {fmt(selectedTotal)}
             </span>
             <button type="button" onClick={selection.clear} className="text-[10px] font-semibold text-slate-500 hover:text-slate-800">Limpar</button>

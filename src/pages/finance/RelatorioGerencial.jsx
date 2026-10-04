@@ -99,8 +99,8 @@ export default function RelatorioGerencial() {
   return (
     <div className="px-4 sm:px-5 py-4 min-h-[calc(100dvh-64px)] bg-[#f5f5f7] font-sans text-slate-900">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
-          <LayoutDashboard size={18} className="text-[#0071e3]" /> Relatório Gerencial <span className="text-slate-400">· {label}</span>
+        <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+          <LayoutDashboard size={17} className="text-slate-400" /> Relatório Gerencial <span className="text-slate-400">· {label}</span>
         </h1>
         <div className="flex flex-wrap items-center gap-2">
           <div className="w-full sm:w-60">

@@ -276,7 +276,7 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
         ) : view === 'resumo' ? (
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 bg-white">
-              <tr className="border-b border-black/[.06] text-[9px] font-semibold text-slate-400 uppercase tracking-widest">
+              <tr className="border-b border-black/[.06] text-[11px] font-medium text-slate-400">
                 <th className="py-2 px-2">{DIMENSIONS[dim].label}</th>
                 <th className="py-2 px-2 text-right">Lançamentos</th>
                 <th className="py-2 px-2 text-right">Bruto (R$)</th>
@@ -301,7 +301,7 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
         ) : (
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 bg-white">
-              <tr className="border-b border-black/[.06] text-[9px] font-semibold text-slate-400 uppercase tracking-widest">
+              <tr className="border-b border-black/[.06] text-[11px] font-medium text-slate-400">
                 <th className="py-2 px-2 w-8 text-center">
                   <input type="checkbox" aria-label="Selecionar todos os visíveis"
                     checked={allVisibleSelected}

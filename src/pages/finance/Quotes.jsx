@@ -106,13 +106,13 @@ export default function Quotes() {
 
       {/* Header */}
       <div className="flex flex-wrap items-center gap-3 mb-3">
-        <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
-          <ShoppingCart size={18} className="text-[#0071e3]" /> Orçamentos
+        <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+          <ShoppingCart size={17} className="text-slate-400" /> Orçamentos
         </h1>
         <div className="flex items-center gap-1 bg-slate-100/70 rounded-lg p-0.5">
           {['', 'PENDENTE', 'APROVADO', 'RECUSADO'].map(s => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${statusFilter === s ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+              className={`px-3 h-7 rounded-md text-[12px] font-medium transition-all ${statusFilter === s ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}>
               {s ? STATUS[s].label : 'Todos'}
             </button>
           ))}
@@ -133,7 +133,7 @@ export default function Quotes() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/70 text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
+                <tr className="bg-slate-50/70 text-[11px] font-medium text-slate-400 border-b border-black/[.06]">
                   <th className="py-2.5 px-4">Nº</th>
                   <th className="py-2.5 px-3">Cliente</th>
                   <th className="py-2.5 px-3">Descrição</th>
@@ -309,7 +309,7 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
           <div className="flex items-center gap-1 bg-slate-100/70 rounded-lg p-0.5 ml-auto">
             {[['orcamento', 'Orçamento'], ['proposta', 'Textos da proposta']].map(([k, l]) => (
               <button key={k} type="button" onClick={() => setAba(k)}
-                className={`px-3 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${aba === k ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>{l}</button>
+                className={`px-3 h-7 rounded-md text-[12px] font-medium transition-all ${aba === k ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}>{l}</button>
             ))}
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 bg-slate-50 rounded-lg"><X size={16} /></button>
@@ -324,17 +324,17 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
         <form onSubmit={submit} className={`flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/40 ${aba === 'orcamento' ? '' : 'hidden'}`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="md:col-span-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Cliente</label>
+              <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Cliente</label>
               <SearchableSelect options={parties.map(p => ({ value: p.id, label: `${p.name}${p.kind === 'LEAD' ? ' · em negociação' : ''}` }))}
                 value={partyId} onChange={setPartyId} placeholder="Selecione…" searchPlaceholder="Digite o nome do cliente…"
                 onCreate={(nome) => pedir(nome, 'LEAD')} createLabel="Cadastrar cliente" />
             </div>
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Validade</label>
+              <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Validade</label>
               <input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} className={inputCls} />
             </div>
             <div className="md:col-span-3">
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Descrição / Título</label>
+              <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Descrição / Título</label>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={inputCls} placeholder="Ex: Landing page de captação" />
             </div>
           </div>
@@ -383,7 +383,7 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
           </div>
 
           <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Observações</label>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Observações</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} className={`${inputCls} h-16 resize-none py-1.5`} />
           </div>
         </form>
@@ -445,25 +445,25 @@ function ApproveModal({ quote, accounts, categories, onClose, onApproved }) {
         <div className="p-4 space-y-3">
           <p className="text-[11px] font-semibold text-slate-500">Gera uma <b className="text-emerald-600">conta a receber</b> de <b>{fmt(quote.total_amount)}</b> para <b>{quote.finance_parties?.name || 'cliente'}</b>.</p>
           <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Vencimento</label>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Vencimento</label>
             <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Conta de destino</label>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Conta de destino</label>
             <select value={accountId} onChange={e => setAccountId(e.target.value)} className={`${inputCls} cursor-pointer`}>
               <option value="">Selecione...</option>
               {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Categoria (opcional)</label>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Categoria (opcional)</label>
             <select value={categoryId} onChange={e => setCategoryId(e.target.value)} className={`${inputCls} cursor-pointer`}>
               <option value="">Sem categoria</option>
               {categories.filter(c => c.type === 'ENTRADA').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Competência (mês ref.)</label>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Competência (mês ref.)</label>
             <input type="month" value={referenceMonth} onChange={e => setReferenceMonth(e.target.value)} className={inputCls} />
           </div>
         </div>

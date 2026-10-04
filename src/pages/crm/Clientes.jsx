@@ -57,14 +57,14 @@ export default function Clientes() {
     return (
         <div className={PAGINA}>
             <div className="flex flex-wrap items-center gap-3 mb-3">
-                <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
-                    <Building2 size={18} className="text-[#0071e3]" /> Clientes
+                <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                    <Building2 size={17} className="text-slate-400" /> Clientes
                 </h1>
                 <div className={`${CHIPS} order-last md:order-none w-full md:w-auto`}>
                     {FILTROS.map((f) => (
                         <button key={f.id} onClick={() => setFiltro(f.id)}
-                            className={`shrink-0 px-3 h-8 md:h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-all ${filtro === f.id ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
-                            {f.label} <span className="opacity-70">{contagem[f.id]}</span>
+                            className={`shrink-0 px-3 h-8 md:h-7 rounded-md text-[12px] font-medium transition-all ${filtro === f.id ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}>
+                            {f.label} <span className="text-slate-400 font-normal">{contagem[f.id]}</span>
                         </button>
                     ))}
                 </div>
@@ -112,7 +112,7 @@ export default function Clientes() {
                     <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/70 text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
+                                <tr className="bg-slate-50/70 text-[11px] font-medium text-slate-400 border-b border-black/[.06]">
                                     <th className="py-2.5 px-4">Empresa</th>
                                     <th className="py-2.5 px-3">Tipo</th>
                                     <th className="py-2.5 px-3">Segmento</th>

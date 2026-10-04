@@ -645,7 +645,7 @@ export default function FinanceSettings() {
       {/* Header Premium */}
       <div className="mb-4 border-b border-black/[.085] pb-4 flex justify-between items-center gap-3">
         <div>
-          <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
+          <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
             <Settings className="text-[#0071e3]" size={18} />
             Configurações Financeiras
           </h1>
@@ -709,7 +709,7 @@ export default function FinanceSettings() {
             
             <form onSubmit={handleSaveService} className="space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome do Serviço</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Nome do Serviço</label>
                 <input 
                   type="text" 
                   value={serviceForm.name} 
@@ -720,7 +720,7 @@ export default function FinanceSettings() {
               </div>
               
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Descrição</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Descrição</label>
                 <textarea 
                   value={serviceForm.description} 
                   onChange={e => setServiceForm({ ...serviceForm, description: e.target.value })} 
@@ -730,7 +730,7 @@ export default function FinanceSettings() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Preço Base (R$)</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Preço Base (R$)</label>
                 <CurrencyInput
                   value={serviceForm.base_price}
                   onChange={v => setServiceForm({ ...serviceForm, base_price: v })}
@@ -929,7 +929,7 @@ export default function FinanceSettings() {
             </div>
             <form onSubmit={handleSaveCategory} className="p-4 space-y-4 overflow-y-auto custom-scrollbar">
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome da Categoria</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Nome da Categoria</label>
                 <input 
                   type="text" 
                   value={categoryForm.name} 
@@ -940,7 +940,7 @@ export default function FinanceSettings() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Tipo</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Tipo</label>
                 <select 
                   value={categoryForm.type} 
                   onChange={e => setCategoryForm({ ...categoryForm, type: e.target.value })} 
@@ -952,7 +952,7 @@ export default function FinanceSettings() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Categoria Pai (opcional — vira subcategoria)</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Categoria Pai (opcional — vira subcategoria)</label>
                 <select
                   value={categoryForm.parent_id}
                   onChange={e => setCategoryForm({ ...categoryForm, parent_id: e.target.value })}
@@ -1026,7 +1026,7 @@ export default function FinanceSettings() {
               )}
 
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Cor</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Cor</label>
                 <div className="flex flex-wrap gap-1.5 items-center">
                   {CATEGORY_COLORS.map(col => (
                     <button key={col} type="button" title={col} onClick={() => setCategoryForm({ ...categoryForm, color: col })}
@@ -1041,7 +1041,7 @@ export default function FinanceSettings() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Ícone</label>
+                <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Ícone</label>
                 <div className="grid grid-cols-7 gap-1.5">
                   {CATEGORY_ICONS.map(({ key, Comp, label }) => (
                     <button key={key} type="button" title={label} onClick={() => setCategoryForm({ ...categoryForm, icon: key })}
@@ -1154,19 +1154,19 @@ export default function FinanceSettings() {
                 </div>
                 <form onSubmit={handleSaveCc} className="p-4 space-y-4 overflow-y-auto custom-scrollbar">
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome do Centro</label>
+                    <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Nome do Centro</label>
                     <input type="text" autoFocus value={ccForm.name}
                       onChange={e => setCcForm({ ...ccForm, name: e.target.value })}
                       className={baseInputStyle} placeholder="Ex: Comercial, Administrativo, Produção" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Sigla / Código (opcional)</label>
+                    <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Sigla / Código (opcional)</label>
                     <input type="text" value={ccForm.code}
                       onChange={e => setCcForm({ ...ccForm, code: e.target.value })}
                       className={baseInputStyle} placeholder="Ex: CC-ADM" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Centro Pai (opcional — vira subcentro)</label>
+                    <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Centro Pai (opcional — vira subcentro)</label>
                     <select value={ccForm.parent_id} onChange={e => setCcForm({ ...ccForm, parent_id: e.target.value })} className={`${baseInputStyle} cursor-pointer`}>
                       <option value="">Nenhum (centro principal)</option>
                       {(() => {
@@ -1179,7 +1179,7 @@ export default function FinanceSettings() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Cor</label>
+                    <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Cor</label>
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {CATEGORY_COLORS.map(col => (
                         <button key={col} type="button" title={col} onClick={() => setCcForm({ ...ccForm, color: col })}
@@ -1265,36 +1265,36 @@ export default function FinanceSettings() {
                 </div>
                 <form onSubmit={handleSaveAccount} className="p-4 space-y-4 overflow-y-auto custom-scrollbar">
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome da Conta / Caixa</label>
+                    <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Nome da Conta / Caixa</label>
                     <input type="text" autoFocus value={accForm.name} onChange={e => setAccForm({ ...accForm, name: e.target.value })} className={baseInputStyle} placeholder="Ex: Caixa Interno, Itaú Corrente PJ" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Banco</label>
+                    <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Banco</label>
                     <input type="text" value={accForm.bank_name} onChange={e => setAccForm({ ...accForm, bank_name: e.target.value })} className={baseInputStyle} placeholder="Ex: Itaú Unibanco" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Agência</label>
+                      <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Agência</label>
                       <input type="text" value={accForm.agency} onChange={e => setAccForm({ ...accForm, agency: e.target.value })} className={baseInputStyle} placeholder="0001" />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Conta</label>
+                      <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Conta</label>
                       <input type="text" value={accForm.account_number} onChange={e => setAccForm({ ...accForm, account_number: e.target.value })} className={baseInputStyle} placeholder="12345-6" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Saldo Inicial (R$)</label>
+                      <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Saldo Inicial (R$)</label>
                       <CurrencyInput value={accForm.initial_balance} onChange={v => setAccForm({ ...accForm, initial_balance: v })} className={baseInputStyle} />
                       {editingAccId && <p className="text-[9px] text-slate-400 mt-1 ml-1">Alterar aqui ajusta o saldo atual pela mesma diferença.</p>}
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Data do Saldo</label>
+                      <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Data do Saldo</label>
                       <input type="date" value={accForm.initial_balance_date} onChange={e => setAccForm({ ...accForm, initial_balance_date: e.target.value })} className={baseInputStyle} />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Limite de Cheque Especial (R$)</label>
+                    <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Limite de Cheque Especial (R$)</label>
                     <CurrencyInput value={accForm.overdraft_limit} onChange={v => setAccForm({ ...accForm, overdraft_limit: v })} className={baseInputStyle} />
                     <p className="text-[9px] text-slate-400 mt-1 ml-1">Se maior que zero, a tela de contas mostra também o disponível (saldo + limite).</p>
                   </div>

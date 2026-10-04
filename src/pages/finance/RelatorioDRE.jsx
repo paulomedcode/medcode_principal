@@ -271,8 +271,8 @@ export default function RelatorioDRE() {
   return (
     <div className="px-4 sm:px-5 py-4 min-h-[calc(100dvh-64px)] bg-[#f5f5f7] font-sans text-slate-900">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
-          <FileText size={18} className="text-[#0071e3]" /> Demonstração do Resultado do Exercício <span className="text-slate-400">· {label}</span>
+        <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+          <FileText size={17} className="text-slate-400" /> Demonstração do Resultado do Exercício <span className="text-slate-400">· {label}</span>
         </h1>
         <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
           <button onClick={toggleAll} disabled={loading || dre.expandableIds.length === 0} title={allOpen ? 'Recolher tudo' : 'Expandir tudo (abre categorias e lançamentos)'}

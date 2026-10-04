@@ -153,7 +153,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                         </section>
                     ) : (
                         <section>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Status</p>
+                            <p className="text-[11.5px] font-medium text-slate-500 mb-1.5 ml-1">Status</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5">
                                 {STATUS_MANUAIS.map((s) => {
                                     const on = s.id === lead.status;
@@ -187,13 +187,13 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                                 </p>
                             </div>
                             {podeEditar && (
-                                <button onClick={() => onTentativa(null)} className="h-9 px-3 rounded-lg bg-[#0071e3] hover:bg-[#0077ed] text-white text-[11px] font-bold flex items-center gap-1.5">
+                                <button onClick={() => onTentativa(null)} className="h-9 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold flex items-center gap-1.5">
                                     <PhoneOutgoing size={14} /> + Tentativa
                                 </button>
                             )}
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1 flex items-center gap-1">
+                            <p className="text-[11.5px] font-medium text-slate-500 mb-1 ml-1 flex items-center gap-1">
                                 <CalendarClock size={12} /> Retornar em
                                 {atrasado && <span className="text-rose-500 normal-case">· atrasado</span>}
                             </p>
@@ -220,12 +220,12 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                                     placeholder="O que rolou? (ex.: falei com a recepção, pediram para mandar por e-mail)"
                                     onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) adicionarNota(); }} />
                                 <button onClick={adicionarNota} disabled={!nota.trim() || salvandoNota} title="Salvar nota (⌘ Enter)"
-                                    className="w-10 shrink-0 rounded-lg bg-[#0071e3] text-white flex items-center justify-center disabled:opacity-40">
+                                    className="w-10 shrink-0 rounded-lg bg-slate-900 text-white flex items-center justify-center disabled:opacity-40">
                                     {salvandoNota ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                                 </button>
                             </div>
                         )}
-                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Histórico</p>
+                        <p className="text-[11.5px] font-medium text-slate-500 mb-1.5 ml-1">Histórico</p>
                         {eventos.length === 0 ? (
                             <p className="text-[11px] font-semibold text-slate-400 ml-1">Nada registrado ainda.</p>
                         ) : (
@@ -253,7 +253,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
 
                     {/* Dados */}
                     <section className="bg-white border border-black/[.085] rounded-2xl p-3">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Dados</p>
+                        <p className="text-[11.5px] font-medium text-slate-500 mb-2 ml-1">Dados</p>
                         <div className="grid grid-cols-2 gap-2.5">
                             <CampoTexto label="Telefone / WhatsApp" valor={lead.telefone} disabled={!podeEditar} onSalvar={(v) => salvar({ telefone: v })} />
                             <CampoTexto label="E-mail" valor={lead.email} disabled={!podeEditar} onSalvar={(v) => salvar({ email: v })} />
@@ -278,7 +278,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
 
                     {extras.length > 0 && (
                         <section className="bg-white border border-black/[.085] rounded-2xl p-3">
-                            <p className="text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Outros dados da planilha</p>
+                            <p className="text-[11.5px] font-medium text-slate-500 mb-2 ml-1">Outros dados da planilha</p>
                             <dl className="space-y-1.5">
                                 {extras.map(([k, v]) => (
                                     <div key={k} className="grid grid-cols-[120px_1fr] gap-2 text-[11.5px]">

@@ -265,8 +265,8 @@ export default function FluxoCaixa() {
     <div className="px-4 sm:px-5 py-4 min-h-[calc(100dvh-64px)] bg-[#f5f5f7] font-sans text-slate-900">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
-          <TrendingUp size={18} className="text-[#0071e3]" /> Fluxo de Caixa
+        <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+          <TrendingUp size={17} className="text-slate-400" /> Fluxo de Caixa
           {series.granularity === 'month' && <span className="text-[10px] font-bold text-slate-400 normal-case tracking-normal">· agrupado por mês</span>}
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
@@ -334,7 +334,7 @@ export default function FluxoCaixa() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/70 text-[9px] font-semibold text-slate-400 uppercase tracking-widest border-b border-black/[.06]">
+              <tr className="bg-slate-50/70 text-[11px] font-medium text-slate-400 border-b border-black/[.06]">
                 <th className="py-2.5 px-4">{series.granularity === 'month' ? 'Mês' : 'Data'}</th>
                 <th className="py-2.5 px-3 text-right">Recebimentos</th>
                 <th className="py-2.5 px-3 text-right">Pagamentos</th>

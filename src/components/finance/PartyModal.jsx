@@ -45,25 +45,25 @@ export default function PartyModal({ initialName = '', defaultKind = 'CLIENTE', 
         </div>
         <div className="p-4 space-y-3">
           <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nome / Empresa *</label>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Nome / Empresa *</label>
             <input autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="Ex.: Clínica Sorriso" className={inputCls} />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Telefone / WhatsApp</label>
+              <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Telefone / WhatsApp</label>
               <input value={telefone} onChange={e => setTelefone(maskTelefone(e.target.value))} placeholder="(11) 99999-9999" maxLength={15} className={inputCls} />
             </div>
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">CNPJ / CPF</label>
+              <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">CNPJ / CPF</label>
               <input value={document} onChange={e => setDocument(maskDocumento(e.target.value))} placeholder="opcional" className={inputCls} />
             </div>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">E-mail</label>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">E-mail</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="contato@empresa.com.br" className={inputCls} />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Tipo</label>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Tipo</label>
             <div className="grid grid-cols-4 gap-1">
               {TIPOS.map(([v, l]) => (
                 <button key={v} type="button" onClick={() => setKind(v)}

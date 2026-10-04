@@ -900,7 +900,7 @@ const UserManagement = ({ isEmbedded = false }) => {
             {/* Footer Compacto com Legenda */}
             <div className="border-t border-white/60 bg-white/60 backdrop-blur-md p-2 flex gap-3 overflow-x-auto">
                 {ROLES.filter(r => r !== 'Desenvolvedor' || currentUser?.role === 'Desenvolvedor').map(role => (
-                    <span key={role} className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase whitespace-nowrap">
+                    <span key={role} className="flex items-center gap-1 text-[11.5px] font-medium text-slate-500 whitespace-nowrap">
                         <div className={`w-1.5 h-1.5 rounded-full ${getRoleBadgeColor(role).split(' ')[0].replace('bg-', 'bg-').replace('-50', '-400')}`}></div>
                         {role}
                     </span>

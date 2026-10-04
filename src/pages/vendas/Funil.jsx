@@ -16,20 +16,12 @@ import Atividades from '../../components/crm/Atividades';
 import { QuoteModal } from '../finance/Quotes';
 import PdfsProposta from '../../components/propostas/PdfsProposta';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { PAGINA, CARD, FAIXA_KPI, FiltrosCelular, Etiqueta, Carregando, Janela, inputCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
+import { PAGINA, CARD, FiltrosCelular, Etiqueta, Carregando, Janela, inputCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
 import { useUsuarios } from '../../components/crm/dados';
 
 const hoje = () => { const d = new Date(); const p = (x) => String(x).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
 const diasAtras = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString(); };
 const iniciais = (nome) => String(nome || '').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
-
-const Kpi = ({ rotulo, valor, detalhe, tom = 'text-slate-800' }) => (
-    <div className={`${CARD} px-4 py-3 min-w-[150px] shrink-0 md:shrink md:flex-1`}>
-        <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest">{rotulo}</p>
-        <p className={`text-lg font-bold tabular-nums ${tom}`}>{valor}</p>
-        {detalhe && <p className="text-[10.5px] font-semibold text-slate-400">{detalhe}</p>}
-    </div>
-);
 
 export default function Funil() {
     const navigate = useNavigate();
@@ -123,25 +115,6 @@ export default function Funil() {
         return m;
     }, [filtradas, etapas, recente]);
 
-    const kpis = useMemo(() => {
-        const abertas = filtradas.filter((o) => etapas.find((e) => e.id === o.etapa_id)?.tipo === 'ABERTA');
-        const prob = (o) => (etapas.find((e) => e.id === o.etapa_id)?.probabilidade || 0) / 100;
-        const noventa = diasAtras(90);
-        const ganhas = filtradas.filter((o) => o.ganho_em && o.ganho_em >= noventa);
-        const perdidas = filtradas.filter((o) => o.perdido_em && o.perdido_em >= noventa);
-        const inicioMes = hoje().slice(0, 8) + '01';
-        const ganhasMes = filtradas.filter((o) => o.ganho_em && o.ganho_em.slice(0, 10) >= inicioMes);
-        return {
-            abertoQtd: abertas.length,
-            abertoValor: abertas.reduce((s, o) => s + Number(o.valor || 0), 0),
-            ponderado: abertas.reduce((s, o) => s + Number(o.valor || 0) * prob(o), 0),
-            mensalAberto: abertas.reduce((s, o) => s + Number(o.valor_recorrente || 0), 0),
-            ganhasMesQtd: ganhasMes.length,
-            ganhasMesValor: ganhasMes.reduce((s, o) => s + Number(o.valor || 0), 0),
-            conversao: ganhas.length + perdidas.length > 0 ? Math.round((ganhas.length / (ganhas.length + perdidas.length)) * 100) : null,
-        };
-    }, [filtradas, etapas]);
-
     const soltar = async (etapa, op = arrastando) => {
         setArrastando(null); setSobre(null);
         if (!op || !podeEditar || op.etapa_id === etapa.id) return;
@@ -204,8 +177,8 @@ export default function Funil() {
     return (
         <div className={PAGINA}>
             <div className="flex flex-wrap items-center gap-3 mb-3">
-                <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2">
-                    <Target size={18} className="text-[#0071e3]" /> Funil de Vendas
+                <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                    <Target size={17} className="text-slate-400" /> Funil de vendas
                 </h1>
                 <div className="relative flex-1 md:flex-none min-w-[140px]">
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -223,18 +196,10 @@ export default function Funil() {
                     </select>
                 </FiltrosCelular>
                 <div className="md:ml-auto flex items-center gap-2">
-                    <button onClick={() => navigate('/vendas/propostas')} title="Propostas" className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold uppercase text-slate-600 hover:text-[#0071e3] flex items-center gap-1.5"><FileText size={13} /> <span className="hidden md:inline">Propostas</span></button>
+                    <button onClick={() => navigate('/vendas/propostas')} title="Propostas" className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-[12.5px] font-medium text-slate-600 hover:text-[#0071e3] flex items-center gap-1.5"><FileText size={13} /> <span className="hidden md:inline">Propostas</span></button>
                     {podeConfigurar && <button onClick={() => setConfigurar(true)} title="Etapas do funil" className="h-9 px-3 bg-white border border-black/[.085] rounded-lg text-slate-500 hover:text-[#0071e3]"><Settings2 size={15} /></button>}
                     {podeEditar && <button onClick={() => setEditar(null)} className={`${btnPrimario} hidden md:flex`}><Plus size={15} /> Nova oportunidade</button>}
                 </div>
-            </div>
-
-            <div className={FAIXA_KPI}>
-                <Kpi rotulo="Em negociação" valor={fmtBRL(kpis.abertoValor)} detalhe={`${kpis.abertoQtd} oportunidade(s)`} />
-                <Kpi rotulo="Previsão ponderada" valor={fmtBRL(kpis.ponderado)} detalhe="valor × chance da etapa" tom="text-indigo-700" />
-                <Kpi rotulo="Mensalidades em jogo" valor={fmtBRL(kpis.mensalAberto)} detalhe="recorrente das abertas" tom="text-violet-700" />
-                <Kpi rotulo="Ganhos no mês" valor={fmtBRL(kpis.ganhasMesValor)} detalhe={`${kpis.ganhasMesQtd} fechada(s)`} tom="text-emerald-700" />
-                <Kpi rotulo="Conversão (90 dias)" valor={kpis.conversao == null ? '—' : `${kpis.conversao}%`} detalhe="ganhas ÷ fechadas" />
             </div>
 
             {carregando ? <Carregando /> : (<>
@@ -284,7 +249,7 @@ export default function Funil() {
                                 <div className="px-1.5 pt-1 pb-2">
                                     <div className="flex items-center gap-1.5">
                                         <span className="w-2 h-2 rounded-full" style={{ background: etapa.cor }} />
-                                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide truncate">{etapa.nome}</span>
+                                        <span className="text-[12.5px] font-semibold text-slate-800 truncate">{etapa.nome}</span>
                                         <span className="text-[10px] font-bold text-slate-400 ml-auto">{lista.length}</span>
                                     </div>
                                     <p className="text-[10.5px] font-semibold text-slate-500 tabular-nums mt-0.5">
@@ -403,27 +368,27 @@ function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar
 
                 <div className="p-4 space-y-4">
                     <div className={`${CARD} p-4 grid grid-cols-2 gap-3 text-[11px]`}>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Etapa</p>
+                        <div><p className="font-normal text-slate-400 text-[11px]">Etapa</p>
                             {etapa && <Etiqueta className="bg-white border-slate-200 text-slate-600 mt-0.5"><span className="w-1.5 h-1.5 rounded-full" style={{ background: etapa.cor }} />{etapa.nome}</Etiqueta>}</div>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Serviços</p><p className="font-semibold text-slate-700">{s.label}</p></div>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Valor</p><p className="font-bold text-slate-800 text-sm tabular-nums">{fmtBRL(op.valor)}</p></div>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Mensalidade</p><p className="font-bold text-violet-700 text-sm tabular-nums">{Number(op.valor_recorrente) > 0 ? fmtBRL(op.valor_recorrente) : '—'}</p></div>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Previsão</p><p className="font-semibold text-slate-700">{fmtData(op.previsao_fechamento)}</p></div>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Responsável</p><p className="font-semibold text-slate-700">{op.responsavel?.name || '—'}</p></div>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Contato</p><p className="font-semibold text-slate-700">{op.contato?.nome || '—'}</p></div>
-                        <div><p className="font-bold text-slate-400 uppercase text-[9px]">Origem</p><p className="font-semibold text-slate-700">{op.origem || '—'}</p></div>
-                        {op.motivo_perda && <div className="col-span-2"><p className="font-bold text-rose-400 uppercase text-[9px]">Motivo da perda</p><p className="font-semibold text-rose-700">{op.motivo_perda}</p></div>}
+                        <div><p className="font-normal text-slate-400 text-[11px]">Serviços</p><p className="font-semibold text-slate-700">{s.label}</p></div>
+                        <div><p className="font-normal text-slate-400 text-[11px]">Valor</p><p className="font-bold text-slate-800 text-sm tabular-nums">{fmtBRL(op.valor)}</p></div>
+                        <div><p className="font-normal text-slate-400 text-[11px]">Mensalidade</p><p className="font-bold text-violet-700 text-sm tabular-nums">{Number(op.valor_recorrente) > 0 ? fmtBRL(op.valor_recorrente) : '—'}</p></div>
+                        <div><p className="font-normal text-slate-400 text-[11px]">Previsão</p><p className="font-semibold text-slate-700">{fmtData(op.previsao_fechamento)}</p></div>
+                        <div><p className="font-normal text-slate-400 text-[11px]">Responsável</p><p className="font-semibold text-slate-700">{op.responsavel?.name || '—'}</p></div>
+                        <div><p className="font-normal text-slate-400 text-[11px]">Contato</p><p className="font-semibold text-slate-700">{op.contato?.nome || '—'}</p></div>
+                        <div><p className="font-normal text-slate-400 text-[11px]">Origem</p><p className="font-semibold text-slate-700">{op.origem || '—'}</p></div>
+                        {op.motivo_perda && <div className="col-span-2"><p className="font-normal text-rose-400 text-[11px]">Motivo da perda</p><p className="font-semibold text-rose-700">{op.motivo_perda}</p></div>}
                         {op.notas && <p className="col-span-2 text-[11.5px] text-slate-600 whitespace-pre-wrap border-t border-black/[.05] pt-2">{op.notas}</p>}
                     </div>
 
                     {podeEditar && (
                         <div className="flex flex-wrap gap-2">
                             {!op.ganho_em && !op.perdido_em && <>
-                                <button onClick={onGanhar} className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] uppercase flex items-center gap-1.5"><Trophy size={14} /> Ganhar</button>
-                                <button onClick={onPerder} className="h-9 px-4 bg-white border border-black/[.085] text-rose-600 rounded-lg font-bold text-[11px] uppercase flex items-center gap-1.5 hover:bg-rose-50"><XCircle size={14} /> Perder</button>
+                                <button onClick={onGanhar} className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-[12.5px] flex items-center gap-1.5"><Trophy size={14} /> Ganhar</button>
+                                <button onClick={onPerder} className="h-9 px-4 bg-white border border-black/[.085] text-rose-600 rounded-lg font-medium text-[12.5px] flex items-center gap-1.5 hover:bg-rose-50"><XCircle size={14} /> Perder</button>
                             </>}
-                            {op.perdido_em && <button onClick={onReabrir} className="h-9 px-4 bg-white border border-black/[.085] text-slate-600 rounded-lg font-bold text-[11px] uppercase flex items-center gap-1.5"><RotateCcw size={14} /> Reabrir</button>}
-                            <button onClick={onEditar} className="h-9 px-3 bg-white border border-black/[.085] text-slate-600 rounded-lg font-bold text-[11px] uppercase flex items-center gap-1.5 hover:text-[#0071e3]"><Edit2 size={13} /> Editar</button>
+                            {op.perdido_em && <button onClick={onReabrir} className="h-9 px-4 bg-white border border-black/[.085] text-slate-600 rounded-lg font-medium text-[12.5px] flex items-center gap-1.5"><RotateCcw size={14} /> Reabrir</button>}
+                            <button onClick={onEditar} className="h-9 px-3 bg-white border border-black/[.085] text-slate-600 rounded-lg font-medium text-[12.5px] flex items-center gap-1.5 hover:text-[#0071e3]"><Edit2 size={13} /> Editar</button>
                             {!op.ganho_em && <button onClick={onExcluir} className="h-9 px-3 bg-white border border-black/[.085] text-slate-400 rounded-lg hover:text-rose-600 ml-auto"><Trash2 size={14} /></button>}
                         </div>
                     )}
@@ -431,7 +396,7 @@ function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar
                     {/* Celular: mudar de etapa sem arrastar */}
                     {podeEditar && !op.ganho_em && (
                         <label className="md:hidden flex items-center gap-2">
-                            <span className="text-[11px] font-bold text-slate-500 uppercase shrink-0">Mover para</span>
+                            <span className="text-[12px] font-medium text-slate-500 shrink-0">Mover para</span>
                             <select value={op.etapa_id} onChange={(e) => { const et = etapas.find((x) => x.id === e.target.value); if (et) onMover(et); }}
                                 className={`${inputCls} h-11 text-sm cursor-pointer`}>
                                 {etapas.map((e) => <option key={e.id} value={e.id}>{e.nome}{e.tipo === 'GANHO' ? ' (ganhar)' : e.tipo === 'PERDIDO' ? ' (perder)' : ''}</option>)}
@@ -443,15 +408,15 @@ function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar
                         <button onClick={() => navigate(`/projetos/${projeto.id}`)} className={`${CARD} w-full p-3 flex items-center gap-2 text-left hover:border-[#0071e3]/40`}>
                             <FolderKanban size={16} className="text-amber-500" />
                             <span className="text-[12px] font-bold text-slate-700 flex-1">Projeto: {projeto.nome}</span>
-                            <span className="text-[10px] font-bold text-[#0071e3] uppercase">Abrir</span>
+                            <span className="text-[12px] font-medium text-slate-500 hover:text-slate-900">Abrir</span>
                         </button>
                     )}
 
                     {verPropostas && (
                         <div className={`${CARD} p-4`}>
                             <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><FileText size={13} /> Propostas</h3>
-                                {podeEditar && <button onClick={abrirNovaProposta} className="text-[10px] font-bold text-[#0071e3] uppercase flex items-center gap-1"><Plus size={12} /> Nova proposta</button>}
+                                <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight flex items-center gap-1.5"><FileText size={13} /> Propostas</h3>
+                                {podeEditar && <button onClick={abrirNovaProposta} className="text-[12px] font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"><Plus size={12} /> Nova proposta</button>}
                             </div>
                             {propostas.length === 0 ? <p className="text-[11px] font-semibold text-slate-400">Nenhuma proposta ainda.</p> : (
                                 <ul className="divide-y divide-black/[.05]">
@@ -550,7 +515,7 @@ function ConfigurarEtapas({ etapas, ops, onClose, onMudou }) {
                 const idx = lista.findIndex((e) => e.tipo !== 'ABERTA');
                 const nova = { nome: 'Nova etapa', probabilidade: 50, tipo: 'ABERTA', cor: '#6366f1' };
                 setLista((l) => (idx < 0 ? [...l, nova] : [...l.slice(0, idx), nova, ...l.slice(idx)]));
-            }} className="text-[10.5px] font-bold text-[#0071e3] uppercase flex items-center gap-1"><Plus size={12} /> Adicionar etapa</button>
+            }} className="text-[12.5px] font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"><Plus size={12} /> Adicionar etapa</button>
             <p className="text-[10.5px] font-semibold text-slate-400 flex items-center gap-1"><CalendarClock size={12} /> A chance (%) alimenta a previsão ponderada do funil.</p>
         </Janela>
     );

@@ -33,6 +33,23 @@ export const CAMPOS_IMPORTACAO = [
     { id: 'notas', label: 'Observações', apelidos: ['observacoes', 'obs', 'notas', 'notes', 'descricao', 'description'] },
 ];
 
+// Tipos do Google Places (o que os extratores do Maps exportam) → rótulo em português.
+const CATEGORIAS_GOOGLE = {
+    dentist: 'Dentista', dental_clinic: 'Clínica odontológica', doctor: 'Médico', medical_clinic: 'Clínica médica',
+    skin_care_clinic: 'Clínica de estética', physiotherapist: 'Fisioterapeuta', psychologist: 'Psicólogo',
+    hospital: 'Hospital', pharmacy: 'Farmácia', drugstore: 'Farmácia', veterinary_care: 'Veterinário',
+    beauty_salon: 'Salão de beleza', hair_care: 'Cabeleireiro', spa: 'Spa', gym: 'Academia', lawyer: 'Advogado',
+    accounting: 'Contabilidade', real_estate_agency: 'Imobiliária', restaurant: 'Restaurante', cafe: 'Café',
+    bakery: 'Padaria', store: 'Loja', clothing_store: 'Loja de roupas', car_repair: 'Oficina mecânica',
+    school: 'Escola', laboratory: 'Laboratório', nutritionist: 'Nutricionista', optician: 'Ótica',
+};
+/** "medical_clinic" → "Clínica médica"; o que não estiver na lista passa como veio. */
+export const traduzirCategoria = (c) => {
+    if (!c) return c;
+    const k = String(c).trim().toLowerCase();
+    return CATEGORIAS_GOOGLE[k] || (/^[a-z]+(_[a-z]+)+$/.test(k) ? k.replace(/_/g, ' ').replace(/^./, (x) => x.toUpperCase()) : c);
+};
+
 export const soDigitos = (s) => String(s || '').replace(/\D/g, '');
 
 /** Link de WhatsApp a partir do telefone (assume Brasil quando vier sem DDI). */

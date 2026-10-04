@@ -205,7 +205,7 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
             </p>
 
             <div className="bg-white border border-black/[.06] rounded-xl p-3 grid grid-cols-2 gap-3">
-                <p className="col-span-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Projeto</p>
+                <p className="col-span-2 text-[11.5px] font-medium text-slate-500">Projeto</p>
                 <Campo label="Nome do projeto" className="col-span-2">
                     <input value={form.nome} onChange={(e) => set({ nome: e.target.value })} className={inputCls} />
                 </Campo>
@@ -231,7 +231,7 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
             </div>
 
             <div className="bg-white border border-black/[.06] rounded-xl p-3 grid grid-cols-2 gap-3">
-                <p className="col-span-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recebimento</p>
+                <p className="col-span-2 text-[11.5px] font-medium text-slate-500">Recebimento</p>
                 <Campo label="Valor do projeto">
                     <CurrencyInput value={form.valor} onChange={(v) => set({ valor: v })} className={`${inputCls} text-right`} />
                 </Campo>
