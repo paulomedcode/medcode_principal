@@ -9,7 +9,7 @@ import { useOpcoesNovo, abrirNovo } from './novo';
  * "＋" no meio, ao alcance do polegar. O resto (outros módulos, tema, perfil,
  * sair) fica no "Mais" da barra superior.
  */
-const PRIORIDADE = ['vendas', 'projetos', 'financeiro', 'clientes', 'compromissos', 'painel'];
+const PRIORIDADE = ['vendas', 'projetos', 'prospeccao', 'financeiro', 'clientes', 'compromissos', 'painel'];
 
 export default function BarraInferior() {
     const { modulos, ativo } = useModulosNav();
