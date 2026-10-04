@@ -8,7 +8,7 @@ export function useOpcoesNovo() {
     return [
         hasPermission('Editar Prospecção') && { id: 'prospeccao', rotulo: 'Lead de prospecção', icone: Radar },
         (hasPermission('Editar Clientes') || hasPermission('Editar Vendas') || hasPermission('Editar Financeiro'))
-            && { id: 'lead', rotulo: 'Lead / Cliente', icone: Building2 },
+            && { id: 'lead', rotulo: 'Cliente / empresa', icone: Building2 },
         hasPermission('Editar Vendas') && { id: 'oportunidade', rotulo: 'Oportunidade', icone: Target },
         hasPermission('Editar Projetos') && { id: 'projeto', rotulo: 'Projeto', icone: FolderKanban },
         hasPermission('Acessar Compromissos') && { id: 'tarefa', rotulo: 'Tarefa', icone: ClipboardList },

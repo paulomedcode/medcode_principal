@@ -1,7 +1,5 @@
 import { supabase } from './supabase';
 import { logAction } from '../utils/logger';
-import { salvarEmpresa, registrarAtividade } from './crm';
-import { statusProspeccao } from '../config/prospeccao';
 
 /*
  * Prospecção: lista crua de possíveis clientes.
@@ -91,27 +89,24 @@ export async function registrarTentativa(lead, canal, autorId) {
 }
 
 /**
- * Cria a empresa no CRM (como LEAD) com os dados do lead, grava o vínculo e
- * leva o histórico da prospecção para a linha do tempo do cliente.
+ * Cria a empresa (se ainda não existe) e a oportunidade no Vendas, leva o
+ * histórico para o cliente e marca o lead como convertido — tudo numa
+ * transação (supabase/migrations/20261004190000_jornada_unica.sql).
  */
-export async function converterEmCliente(lead, autorId) {
-    const notas = [lead.notas, lead.maps_url && `Google Maps: ${lead.maps_url}`,
-        lead.endereco && `Endereço: ${lead.endereco}`].filter(Boolean).join('\n');
-    const empresa = await salvarEmpresa({
-        name: lead.nome, kind: 'LEAD', tipo_pessoa: 'PJ', telefone: lead.telefone, email: lead.email,
-        site: lead.site, instagram: lead.instagram, segmento: lead.categoria, origem: lead.origem || 'Prospecção',
-        cidade: lead.cidade, uf: lead.uf, responsavel_id: lead.responsavel_id, notes: notas || null,
-    });
-    const row = ok(await supabase.from('prospeccao_leads').update({ party_id: empresa.id }).eq('id', lead.id).select().single());
-    const eventos = await listarEventos(lead.id).catch(() => []);
-    const resumo = [
-        `Status na prospecção: ${statusProspeccao(lead.status).label} · ${lead.tentativas || 0} tentativa(s) de contato`,
-        lead.origem && `Origem: ${lead.origem}`,
-        ...eventos.filter((e) => e.tipo === 'NOTA').reverse()
-            .map((e) => `• ${new Date(e.created_at).toLocaleDateString('pt-BR')}: ${e.texto}`),
-    ].filter(Boolean).join('\n');
-    await registrarAtividade({ party_id: empresa.id, tipo: 'SISTEMA', titulo: 'Veio da Prospecção', descricao: resumo }, autorId)
-        .catch((e) => console.warn('Histórico da prospecção não foi para o cliente', e));
-    await logAction('PROSPECÇÃO', `Converteu em cliente: ${lead.nome}`);
-    return { lead: row, empresa };
+export async function virarOportunidade(lead, oportunidade) {
+    const op = ok(await supabase.rpc('prospeccao_virar_oportunidade', { p_lead: lead.id, p_op: oportunidade }));
+    await logAction('PROSPECÇÃO', `Virou oportunidade: ${lead.nome}`);
+    const row = ok(await supabase.from('prospeccao_leads').select('*').eq('id', lead.id).single());
+    return { lead: row, oportunidade: op };
+}
+
+/** Onde cada lead convertido está no Vendas: party_id → oportunidade mais recente com a etapa. */
+export async function situacaoNoVendas(partyIds) {
+    if (!partyIds.length) return {};
+    const ops = ok(await supabase.from('crm_oportunidades')
+        .select('id, titulo, party_id, created_at, etapa:crm_etapas(nome, tipo, cor)')
+        .in('party_id', partyIds).order('created_at', { ascending: false }));
+    const mapa = {};
+    ops.forEach((o) => { if (!mapa[o.party_id]) mapa[o.party_id] = o; });
+    return mapa;
 }

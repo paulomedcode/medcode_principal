@@ -19,7 +19,6 @@ import UserManagement from './pages/UserManagement';
 import ConfiguracoesHub from './pages/ConfiguracoesHub';
 import Login from './pages/Login';
 import RedefinirSenha, { DesvioDeRecuperacao } from './pages/RedefinirSenha';
-import Painel from './pages/Painel';
 import Clientes from './pages/crm/Clientes';
 import ClienteDetalhe from './pages/crm/ClienteDetalhe';
 import Funil from './pages/vendas/Funil';
@@ -149,11 +148,8 @@ const App = () => {
                     } />
 
                     {/* --- CRM, VENDAS E PROJETOS --- */}
-                    <Route path="/painel" element={
-                      <PermissionRoute requiredPermission="Acessar Painel">
-                        <Painel />
-                      </PermissionRoute>
-                    } />
+                    {/* O Painel virou a aba "Números" do Início; o endereço antigo leva para lá. */}
+                    <Route path="/painel" element={<Navigate to="/home?aba=numeros" replace />} />
 
                     <Route path="/clientes" element={
                       <PermissionRoute requiredPermission="Acessar Clientes">

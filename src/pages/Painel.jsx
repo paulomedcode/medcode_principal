@@ -1,18 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, CalendarClock, ChevronRight } from 'lucide-react';
+import { Radar } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import toast from 'react-hot-toast';
 import { supabase } from '../services/supabase';
-import { listarEtapas, listarOportunidades, listarProjetos, proximosPassos } from '../services/crm';
-import { SERVICOS, idsServicos, resumoServicos, fmtBRL, fmtData } from '../config/servicos';
+import { listarEtapas, listarOportunidades, listarProjetos } from '../services/crm';
+import { listarLeads } from '../services/prospeccao';
+import { SERVICOS, idsServicos, resumoServicos, fmtBRL } from '../config/servicos';
 import { usePermission } from '../contexts/PermissionContext';
 import { todayISO } from '../utils/date';
-import { PAGINA, CARD, Carregando } from '../components/crm/ui';
+import { CARD, Carregando } from '../components/crm/ui';
 
 /*
- * PAINEL — a empresa numa tela: dinheiro recorrente, o que entra nos próximos
- * dias, o funil, o que foi vendido e quanto cada projeto deixou de margem.
+ * NÚMEROS — a aba do Início com a empresa numa tela: dinheiro recorrente, o
+ * que entra nos próximos dias, a prospecção, o funil, o que foi vendido e
+ * quanto cada projeto deixou de margem. Era a tela "Painel"; virou aba para os
+ * números morarem num lugar só (o "Meu dia" ficou só com o que fazer).
  * Cada bloco só aparece para quem tem a permissão do módulo de onde ele vem.
  */
 
@@ -71,6 +74,7 @@ export default function Painel() {
     const veProjetos = hasPermission('Acessar Projetos');
     const veFinanceiro = hasPermission('Acessar Financeiro');
     const veClientes = hasPermission('Acessar Clientes');
+    const veProspeccao = hasPermission('Acessar Prospecção');
 
     const [d, setD] = useState(null);
 
@@ -88,11 +92,11 @@ export default function Painel() {
             veFinanceiro ? q(supabase.from('finance_transaction_payments').select('amount, payment_date, finance_transactions!inner(type, transfer_group_id)')
                 .gte('payment_date', `${hoje.slice(0, 8)}01`).lte('payment_date', hoje)) : vazio,
             veFinanceiro ? q(supabase.from('finance_transactions').select('amount, type, projeto_id').not('projeto_id', 'is', null).is('transfer_group_id', null)) : vazio,
-            (veClientes || veVendas || veProjetos) ? proximosPassos({ ate: addDias(hoje, 7) }) : vazio,
-        ]).then(([etapas, ops, projetos, recorr, abertos, pagamentos, porProjeto, passos]) => {
-            setD({ hoje, etapas, ops, projetos, recorr, abertos, pagamentos, porProjeto, passos });
-        }).catch((e) => { console.error(e); toast.error('Erro ao carregar o painel.'); setD({ erro: true }); });
-    }, [veVendas, veProjetos, veFinanceiro, veClientes]);
+            veProspeccao ? listarLeads() : vazio,
+        ]).then(([etapas, ops, projetos, recorr, abertos, pagamentos, porProjeto, leads]) => {
+            setD({ hoje, etapas, ops, projetos, recorr, abertos, pagamentos, porProjeto, leads });
+        }).catch((e) => { console.error(e); toast.error('Erro ao carregar os números.'); setD({ erro: true }); });
+    }, [veVendas, veProjetos, veFinanceiro, veClientes, veProspeccao]);
 
     const k = useMemo(() => {
         if (!d || d.erro) return null;
@@ -158,22 +162,27 @@ export default function Painel() {
             meses, funil, porServico, margem,
             ativos: ativos.length,
             atrasados: ativos.filter((p) => p.prazo && p.prazo < hoje).length,
-            passos: d.passos,
+            prospeccao: (() => {
+                const c = (f) => d.leads.filter(f).length;
+                const abordados = c((l) => l.status !== 'NOVO');
+                const responderam = c((l) => ['RESPONDEU', 'CONVERTIDO'].includes(l.status));
+                return {
+                    total: d.leads.length, abordados, responderam, convertidos: c((l) => l.status === 'CONVERTIDO'),
+                    taxa: abordados ? Math.round((responderam / abordados) * 100) : null,
+                };
+            })(),
         };
     }, [d, veFinanceiro]);
 
-    if (!d) return <div className={PAGINA}><Carregando /></div>;
-    if (!k) return <div className={PAGINA}><p className="text-sm font-semibold text-slate-500">Não foi possível montar o painel.</p></div>;
+    if (!d) return <Carregando />;
+    if (!k) return <p className="text-sm font-semibold text-slate-500">Não foi possível montar os números.</p>;
 
     const maxFunil = Math.max(0, ...k.funil.map((e) => e.valor));
     const maxServico = Math.max(0, ...k.porServico.map((s) => s.valor));
     const temVendas = k.meses.some((m) => m.qtd > 0);
 
     return (
-        <div className={PAGINA}>
-            <h1 className="text-base font-semibold text-[#1d1d1f] uppercase tracking-tight flex items-center gap-2 mb-3">
-                <LayoutDashboard size={18} className="text-[#0071e3]" /> Painel
-            </h1>
+        <div>
 
             <div className="flex flex-wrap gap-3 mb-4">
                 <Numero rotulo="Receita recorrente (MRR)" valor={fmtBRL(k.mrr)} detalhe={`${fmtBRL(k.mrr * 12)} por ano`} tom="text-violet-700" />
@@ -255,25 +264,26 @@ export default function Painel() {
                     </Bloco>
                 )}
 
-                {(veClientes || veVendas || veProjetos) && (
-                    <Bloco titulo="Próximos passos · 7 dias">
-                        {k.passos.length === 0 ? <p className="text-[11.5px] font-semibold text-slate-400">Nada combinado para esta semana.</p> : (
-                            <ul className="space-y-1.5">
-                                {k.passos.map((a) => {
-                                    const atrasado = a.proximo_passo_em < d.hoje;
-                                    return (
-                                        <li key={a.id} onClick={() => navigate(a.projeto_id ? `/projetos/${a.projeto_id}` : a.oportunidade_id ? `/vendas?abrir=${a.oportunidade_id}` : `/clientes/${a.party_id}`)}
-                                            className="flex items-start gap-2 p-2 rounded-xl hover:bg-slate-50 cursor-pointer">
-                                            {atrasado ? <AlertTriangle size={13} className="text-rose-500 mt-0.5 shrink-0" /> : <CalendarClock size={13} className="text-amber-500 mt-0.5 shrink-0" />}
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-[12px] font-semibold text-slate-800 leading-snug">{a.proximo_passo || a.titulo}</p>
-                                                <p className="text-[10.5px] font-semibold text-slate-400">{a.empresa?.name} · <span className={atrasado ? 'text-rose-600' : ''}>{fmtData(a.proximo_passo_em)}</span></p>
-                                            </div>
-                                            <ChevronRight size={14} className="text-slate-300 mt-0.5" />
-                                        </li>
-                                    );
-                                })}
-                            </ul>
+                {veProspeccao && (
+                    <Bloco titulo="Prospecção" acao={<button onClick={() => navigate('/prospeccao')} className="text-[10px] font-bold text-[#0071e3] uppercase">Abrir</button>}>
+                        {k.prospeccao.total === 0 ? <p className="text-[11.5px] font-semibold text-slate-400">Nenhum lead na lista ainda.</p> : (
+                            <div className="space-y-2.5">
+                                {[['Na lista', k.prospeccao.total, '#94a3b8'], ['Abordados', k.prospeccao.abordados, '#3b82f6'],
+                                    ['Responderam', k.prospeccao.responderam, '#06b6d4'], ['Viraram oportunidade', k.prospeccao.convertidos, '#10b981']].map(([rot, n, cor]) => (
+                                    <div key={rot}>
+                                        <div className="flex items-baseline justify-between text-[11.5px]">
+                                            <span className="font-semibold text-slate-700">{rot}</span>
+                                            <span className="font-bold text-slate-800 tabular-nums">{n}</span>
+                                        </div>
+                                        <div className="h-2 mt-1 rounded-full bg-slate-100 overflow-hidden">
+                                            <div className="h-full rounded-full" style={{ width: `${Math.max(n ? 2 : 0, (n / k.prospeccao.total) * 100)}%`, background: cor }} />
+                                        </div>
+                                    </div>
+                                ))}
+                                <p className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 pt-1">
+                                    <Radar size={12} /> Taxa de resposta: <b className="text-slate-600">{k.prospeccao.taxa == null ? '—' : `${k.prospeccao.taxa}%`}</b>
+                                </p>
+                            </div>
                         )}
                     </Bloco>
                 )}

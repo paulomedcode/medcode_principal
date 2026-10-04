@@ -60,7 +60,7 @@ export default function NovoGlobal() {
                 )}
             </Gaveta>
 
-            {criar === 'lead' && <EmpresaModal onClose={fechar} onSaved={(row) => { setCriar(null); navigate(`/clientes/${row.id}`); }} />}
+            {criar === 'lead' && <EmpresaModal kindInicial="CLIENTE" onClose={fechar} onSaved={(row) => { setCriar(null); navigate(`/clientes/${row.id}`); }} />}
             {criar === 'projeto' && <ProjetoModal onClose={fechar} onSaved={(row) => { setCriar(null); navigate(`/projetos/${row.id}`); }} />}
             {criar === 'oportunidade' && <NovaOportunidade onClose={fechar} onSaved={() => { setCriar(null); navigate('/vendas'); }} />}
         </>

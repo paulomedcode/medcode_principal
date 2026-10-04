@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Radar, Plus, Search, Upload, List, Columns3, CalendarClock, Trash2, X, Building2, ArrowUpDown } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STATUS_PROSPECCAO, statusProspeccao, tempoDesde } from '../../config/prospeccao';
+import { STATUS_PROSPECCAO, STATUS_MANUAIS, statusProspeccao, tempoDesde } from '../../config/prospeccao';
 import {
-    listarLeads, salvarLead, alterarLeads, excluirLeads, registrarTentativa,
+    listarLeads, salvarLead, alterarLeads, excluirLeads, registrarTentativa, situacaoNoVendas,
 } from '../../services/prospeccao';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -21,8 +21,9 @@ const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toL
 const hoje = () => { const d = new Date(); const p = (x) => String(x).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
 const fmtCurta = (s) => { const [, m, d] = String(s).split('-'); return `${d}/${m}`; };
 
-const EM_CONVERSA = ['RESPONDEU', 'INTERESSADO', 'PROPOSTA'];
-const RESPONDERAM = ['RESPONDEU', 'INTERESSADO', 'PROPOSTA', 'FECHADO', 'PRODUCAO'];
+// Fora da fila de trabalho: descartados e os que já viraram oportunidade.
+const ENCERRADOS = ['DESCARTADO', 'CONVERTIDO'];
+const RESPONDERAM = ['RESPONDEU', 'CONVERTIDO'];
 
 const ORDENS = [
     { id: 'recentes', label: 'Mais recentes' },
@@ -54,14 +55,25 @@ const Kpi = ({ rotulo, valor, detalhe, tom = 'text-slate-800', onClick, ativo })
     </button>
 );
 
-/** Select de status colorido, para trocar direto na linha. */
-const SeletorStatus = ({ lead, onChange, disabled }) => {
+/** Etapa do Vendas de um lead convertido (ou só "No Vendas" se não dá para ver). */
+const NoVendas = ({ op }) => (
+    <a href={op ? `/vendas?abrir=${op.id}` : '/vendas'} onClick={(e) => e.stopPropagation()}
+        title={op ? `${op.titulo} — abrir no Vendas` : 'Abrir o Vendas'}
+        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border text-[10.5px] font-bold bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-400 whitespace-nowrap">
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: op?.etapa?.cor || '#10b981' }} />
+        Vendas{op?.etapa?.nome ? ` · ${op.etapa.nome}` : ''}
+    </a>
+);
+
+/** Select de status colorido, para trocar direto na linha. Convertido não troca: mostra o Vendas. */
+const SeletorStatus = ({ lead, onChange, disabled, op }) => {
+    if (lead.status === 'CONVERTIDO') return <NoVendas op={op} />;
     const st = statusProspeccao(lead.status);
     return (
         <select value={lead.status} disabled={disabled} onClick={(e) => e.stopPropagation()}
             onChange={(e) => onChange(e.target.value)}
             className={`h-7 pl-2 pr-6 rounded-full border text-[10.5px] font-bold outline-none cursor-pointer disabled:cursor-default ${st.etiqueta}`}>
-            {STATUS_PROSPECCAO.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+            {STATUS_MANUAIS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>
     );
 };
@@ -71,11 +83,12 @@ export default function Prospeccao() {
     const { hasPermission } = usePermission();
     const podeEditar = hasPermission('Editar Prospecção');
     const podeExcluir = hasPermission('Excluir Prospecção');
-    const podeConverter = hasPermission('Editar Clientes') || hasPermission('Editar Vendas') || hasPermission('Editar Financeiro');
     const podeVender = hasPermission('Editar Vendas');
+    const veVendas = hasPermission('Acessar Vendas');
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [leads, setLeads] = useState([]);
+    const [noVendas, setNoVendas] = useState({});     // party_id → oportunidade com a etapa
     const [carregando, setCarregando] = useState(true);
     const [visao, setVisao] = useState(() => { try { return localStorage.getItem('prospeccao.visao') || 'lista'; } catch { return 'lista'; } });
     const [fStatus, setFStatus] = useState('ATIVOS');   // ATIVOS | TODOS | RETORNO | id do status
@@ -97,10 +110,15 @@ export default function Prospeccao() {
     const [sobre, setSobre] = useState(null);
 
     const carregar = useCallback(async () => {
-        try { setLeads(await listarLeads()); }
+        try {
+            const ls = await listarLeads();
+            setLeads(ls);
+            const convertidos = [...new Set(ls.filter((l) => l.party_id).map((l) => l.party_id))];
+            if (veVendas && convertidos.length) setNoVendas(await situacaoNoVendas(convertidos).catch(() => ({})));
+        }
         catch (e) { console.error(e); toast.error('Erro ao carregar os leads.'); }
         finally { setCarregando(false); }
-    }, []);
+    }, [veVendas]);
     useEffect(() => { carregar(); }, [carregar]);
     useEffect(() => { try { localStorage.setItem('prospeccao.visao', visao); } catch { /* sem storage */ } }, [visao]);
     useEffect(() => { setLimite(LIMITE); }, [fStatus, busca, fCategoria, fCidade, fOrigem, fContato, ordem]);
@@ -149,8 +167,8 @@ export default function Prospeccao() {
         const h = hoje();
         base.forEach((l) => {
             c[l.status] = (c[l.status] || 0) + 1;
-            if (l.status !== 'DESCARTADO') c.ATIVOS++;
-            if (l.proximo_contato_em && l.proximo_contato_em <= h && l.status !== 'DESCARTADO') c.RETORNO++;
+            if (!ENCERRADOS.includes(l.status)) c.ATIVOS++;
+            if (l.proximo_contato_em && l.proximo_contato_em <= h && !ENCERRADOS.includes(l.status)) c.RETORNO++;
         });
         return c;
     }, [base]);
@@ -159,8 +177,8 @@ export default function Prospeccao() {
         const h = hoje();
         const r = base.filter((l) => {
             if (fStatus === 'TODOS') return true;
-            if (fStatus === 'ATIVOS') return l.status !== 'DESCARTADO';
-            if (fStatus === 'RETORNO') return l.proximo_contato_em && l.proximo_contato_em <= h && l.status !== 'DESCARTADO';
+            if (fStatus === 'ATIVOS') return !ENCERRADOS.includes(l.status);
+            if (fStatus === 'RETORNO') return l.proximo_contato_em && l.proximo_contato_em <= h && !ENCERRADOS.includes(l.status);
             return l.status === fStatus;
         });
         return r.sort(fStatus === 'RETORNO' ? comparar.retorno : comparar[ordem]);
@@ -172,8 +190,8 @@ export default function Prospeccao() {
         return {
             total: leads.length,
             aAbordar: leads.filter((l) => l.status === 'NOVO').length,
-            conversa: leads.filter((l) => EM_CONVERSA.includes(l.status)).length,
-            fechados: leads.filter((l) => ['FECHADO', 'PRODUCAO'].includes(l.status)).length,
+            respondeu: leads.filter((l) => l.status === 'RESPONDEU').length,
+            convertidos: leads.filter((l) => l.status === 'CONVERTIDO').length,
             taxa: abordados ? Math.round((responderam / abordados) * 100) : null,
             abordados, responderam,
         };
@@ -218,7 +236,10 @@ export default function Prospeccao() {
     };
 
     const emMassa = async (dados, rotulo) => {
-        const ids = [...selecionados];
+        // Quem já virou oportunidade não volta para a fila por troca em massa.
+        const convertidos = new Set(leads.filter((l) => l.status === 'CONVERTIDO').map((l) => l.id));
+        const ids = [...selecionados].filter((id) => !(dados.status && convertidos.has(id)));
+        if (!ids.length) { toast('Os selecionados já estão no Vendas.'); return; }
         try {
             const rows = await alterarLeads(ids, dados);
             rows.forEach(atualizarLocal);
@@ -263,7 +284,11 @@ export default function Prospeccao() {
     const soltar = (status) => {
         const lead = arrastando;
         setArrastando(null); setSobre(null);
-        if (lead && lead.status !== status) mudar(lead, { status });
+        if (!lead || lead.status === status) return;
+        // Virar oportunidade pede título e serviço: é pela ficha, não arrastando.
+        if (status === 'CONVERTIDO') { abrir(lead.id); toast('Use “Virar oportunidade” na ficha.'); return; }
+        if (lead.status === 'CONVERTIDO') { toast('Esse lead já está no Vendas.'); return; }
+        mudar(lead, { status });
     };
 
     const chips = [
@@ -303,9 +328,11 @@ export default function Prospeccao() {
                 <Kpi rotulo="Na lista" valor={kpi.total} detalhe={`${kpi.aAbordar} a abordar`} onClick={() => setFStatus('NOVO')} ativo={fStatus === 'NOVO'} />
                 <Kpi rotulo="Retornar hoje" valor={contagem.RETORNO} detalhe="combinados até hoje" tom={contagem.RETORNO ? 'text-rose-600' : 'text-slate-800'}
                     onClick={() => setFStatus('RETORNO')} ativo={fStatus === 'RETORNO'} />
-                <Kpi rotulo="Em conversa" valor={kpi.conversa} detalhe="respondeu, interessado, proposta" tom="text-indigo-600" />
+                <Kpi rotulo="Responderam" valor={kpi.respondeu} detalhe="esperando virar oportunidade" tom="text-cyan-700"
+                    onClick={() => setFStatus('RESPONDEU')} ativo={fStatus === 'RESPONDEU'} />
                 <Kpi rotulo="Taxa de resposta" valor={kpi.taxa == null ? '—' : `${kpi.taxa}%`} detalhe={`${kpi.responderam} de ${kpi.abordados} abordados`} />
-                <Kpi rotulo="Fechados" valor={kpi.fechados} tom="text-emerald-600" onClick={() => setFStatus('FECHADO')} ativo={fStatus === 'FECHADO'} />
+                <Kpi rotulo="Viraram oportunidade" valor={kpi.convertidos} detalhe="seguem no Vendas" tom="text-emerald-600"
+                    onClick={() => setFStatus('CONVERTIDO')} ativo={fStatus === 'CONVERTIDO'} />
             </div>
 
             {/* Status */}
@@ -367,7 +394,7 @@ export default function Prospeccao() {
                         <select value="" onChange={(e) => e.target.value && emMassa({ status: e.target.value }, `movido(s) para ${statusProspeccao(e.target.value).label}`)}
                             className="h-8 px-2 rounded-lg bg-white/10 border border-white/20 text-[11px] font-bold outline-none">
                             <option value="">Mudar status…</option>
-                            {STATUS_PROSPECCAO.map((s) => <option key={s.id} value={s.id} className="text-slate-800">{s.label}</option>)}
+                            {STATUS_MANUAIS.map((s) => <option key={s.id} value={s.id} className="text-slate-800">{s.label}</option>)}
                         </select>
                         <select value="" onChange={(e) => e.target.value !== '' && emMassa({ prioridade: Number(e.target.value) }, 'com prioridade nova')}
                             className="h-8 px-2 rounded-lg bg-white/10 border border-white/20 text-[11px] font-bold outline-none">
@@ -414,7 +441,7 @@ export default function Prospeccao() {
                                 <div className="p-2 space-y-2 max-h-[calc(100dvh-330px)] overflow-y-auto">
                                     {doStatus.length === 0 && <p className="text-center text-[10.5px] font-semibold text-slate-300 py-4">vazio</p>}
                                     {doStatus.slice(0, 80).map((l) => (
-                                        <div key={l.id} draggable={podeEditar}
+                                        <div key={l.id} draggable={podeEditar && l.status !== 'CONVERTIDO'}
                                             onDragStart={(e) => { setArrastando(l); e.dataTransfer.effectAllowed = 'move'; }}
                                             onDragEnd={() => { setArrastando(null); setSobre(null); }}
                                             onClick={() => abrir(l.id)}
@@ -519,7 +546,7 @@ export default function Prospeccao() {
                                                 {l.telefone && <div className="text-[10.5px] font-semibold text-slate-400 tabular-nums">{l.telefone}</div>}
                                             </td>
                                             <td className="py-2 px-3 whitespace-nowrap"><NotaGoogle lead={l} /></td>
-                                            <td className="py-2 px-3"><SeletorStatus lead={l} disabled={!podeEditar} onChange={(status) => mudar(l, { status })} /></td>
+                                            <td className="py-2 px-3"><SeletorStatus lead={l} op={noVendas[l.party_id]} disabled={!podeEditar} onChange={(status) => mudar(l, { status })} /></td>
                                             <td className="py-2 px-3 whitespace-nowrap font-semibold text-slate-500">
                                                 {l.tentativas ? <><span className="font-bold text-slate-700">{l.tentativas}×</span> · {tempoDesde(l.ultimo_contato_em)}</> : <span className="text-slate-300">—</span>}
                                             </td>
@@ -560,10 +587,10 @@ export default function Prospeccao() {
                     onAnterior={idxAberto > 0 ? () => irPara(idxAberto - 1) : undefined}
                     onProximo={idxAberto >= 0 && idxAberto < ordemFicha.length - 1 ? () => irPara(idxAberto + 1) : undefined}
                     onClose={() => setAbertoId(null)}
-                    onAlterado={atualizarLocal}
+                    onAlterado={(row) => { atualizarLocal(row); if (row.status === 'CONVERTIDO' && !noVendas[row.party_id]) carregar(); }}
                     onTentativa={(canal) => tentativa(leadAberto, canal)}
                     onExcluir={(l) => setExcluir([l.id])}
-                    podeEditar={podeEditar} podeExcluir={podeExcluir} podeConverter={podeConverter} podeVender={podeVender}
+                    podeEditar={podeEditar} podeExcluir={podeExcluir} podeVender={podeVender} noVendas={noVendas[leadAberto.party_id]}
                 />
             )}
 

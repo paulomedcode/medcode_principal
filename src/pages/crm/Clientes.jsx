@@ -8,11 +8,12 @@ import { usePermission } from '../../contexts/PermissionContext';
 import EmpresaModal from '../../components/crm/EmpresaModal';
 import { PAGINA, CARD, CHIPS, Etiqueta, Carregando, Vazio, btnPrimario } from '../../components/crm/ui';
 
+// Lead cru mora na Prospecção; aqui é a ficha de quem já é (ou está quase
+// sendo) cliente. "Em negociação" (kind LEAD) aparece só em "Todos".
 const FILTROS = [
-    { id: '', label: 'Todos' },
-    { id: 'LEAD', label: 'Leads' },
     { id: 'CLIENTE', label: 'Clientes' },
     { id: 'FORNECEDOR', label: 'Fornecedores' },
+    { id: '', label: 'Todos' },
 ];
 
 const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -23,7 +24,7 @@ export default function Clientes() {
     const podeEditar = hasPermission('Editar Clientes') || hasPermission('Editar Vendas') || hasPermission('Editar Financeiro');
     const [empresas, setEmpresas] = useState([]);
     const [carregando, setCarregando] = useState(true);
-    const [filtro, setFiltro] = useState('');
+    const [filtro, setFiltro] = useState('CLIENTE');
     const [busca, setBusca] = useState('');
     const [nova, setNova] = useState(false);
 
@@ -35,9 +36,8 @@ export default function Clientes() {
     useEffect(() => { carregar(); }, []);
 
     const contagem = useMemo(() => {
-        const c = { '': empresas.length, LEAD: 0, CLIENTE: 0, FORNECEDOR: 0 };
+        const c = { '': empresas.length, CLIENTE: 0, FORNECEDOR: 0 };
         empresas.forEach((e) => {
-            if (e.kind === 'LEAD') c.LEAD++;
             if (e.kind === 'CLIENTE' || e.kind === 'AMBOS') c.CLIENTE++;
             if (e.kind === 'FORNECEDOR' || e.kind === 'AMBOS') c.FORNECEDOR++;
         });
@@ -47,7 +47,6 @@ export default function Clientes() {
     const lista = useMemo(() => {
         const q = norm(busca.trim());
         return empresas.filter((e) => {
-            if (filtro === 'LEAD' && e.kind !== 'LEAD') return false;
             if (filtro === 'CLIENTE' && !['CLIENTE', 'AMBOS'].includes(e.kind)) return false;
             if (filtro === 'FORNECEDOR' && !['FORNECEDOR', 'AMBOS'].includes(e.kind)) return false;
             if (!q) return true;
@@ -154,7 +153,7 @@ export default function Clientes() {
 
             {nova && (
                 <EmpresaModal
-                    kindInicial={filtro === 'FORNECEDOR' ? 'FORNECEDOR' : filtro === 'CLIENTE' ? 'CLIENTE' : 'LEAD'}
+                    kindInicial={filtro === 'FORNECEDOR' ? 'FORNECEDOR' : 'CLIENTE'}
                     onClose={() => setNova(false)}
                     onSaved={(row) => { setNova(false); navigate(`/clientes/${row.id}`); }} />
             )}

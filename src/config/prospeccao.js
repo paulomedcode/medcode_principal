@@ -1,16 +1,18 @@
-// Etapas da prospecção (coluna prospeccao_leads.status). A ordem é a do quadro
-// e a tecla de atalho na ficha do lead (1 a 9).
+// Etapas da prospecção (coluna prospeccao_leads.status). A prospecção termina
+// quando o lead responde: daí ele vira oportunidade no Vendas (CONVERTIDO) e a
+// história segue lá. A ordem é a do quadro; as que têm `tecla` trocam pelo
+// teclado na ficha.
 export const STATUS_PROSPECCAO = [
-    { id: 'NOVO', label: 'A abordar', cor: '#94a3b8', etiqueta: 'bg-slate-100 text-slate-600 border-slate-200' },
-    { id: 'CONTATADO', label: 'Abordado', cor: '#3b82f6', etiqueta: 'bg-blue-50 text-blue-700 border-blue-200' },
-    { id: 'SEM_RESPOSTA', label: 'Sem resposta', cor: '#f59e0b', etiqueta: 'bg-amber-50 text-amber-700 border-amber-200' },
-    { id: 'RESPONDEU', label: 'Respondeu', cor: '#06b6d4', etiqueta: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
-    { id: 'INTERESSADO', label: 'Interessado', cor: '#6366f1', etiqueta: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-    { id: 'PROPOSTA', label: 'Proposta enviada', cor: '#8b5cf6', etiqueta: 'bg-violet-50 text-violet-700 border-violet-200' },
-    { id: 'FECHADO', label: 'Fechado', cor: '#10b981', etiqueta: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    { id: 'PRODUCAO', label: 'Em produção', cor: '#14b8a6', etiqueta: 'bg-teal-50 text-teal-700 border-teal-200' },
-    { id: 'DESCARTADO', label: 'Descartado', cor: '#f43f5e', etiqueta: 'bg-rose-50 text-rose-600 border-rose-200' },
+    { id: 'NOVO', label: 'A abordar', cor: '#94a3b8', etiqueta: 'bg-slate-100 text-slate-600 border-slate-200', tecla: '1' },
+    { id: 'CONTATADO', label: 'Abordado', cor: '#3b82f6', etiqueta: 'bg-blue-50 text-blue-700 border-blue-200', tecla: '2' },
+    { id: 'SEM_RESPOSTA', label: 'Sem resposta', cor: '#f59e0b', etiqueta: 'bg-amber-50 text-amber-700 border-amber-200', tecla: '3' },
+    { id: 'RESPONDEU', label: 'Respondeu', cor: '#06b6d4', etiqueta: 'bg-cyan-50 text-cyan-700 border-cyan-200', tecla: '4' },
+    { id: 'DESCARTADO', label: 'Descartado', cor: '#f43f5e', etiqueta: 'bg-rose-50 text-rose-600 border-rose-200', tecla: '5' },
+    { id: 'CONVERTIDO', label: 'No Vendas', cor: '#10b981', etiqueta: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 ];
+
+/** Os que dá para escolher à mão (CONVERTIDO só nasce de "Virar oportunidade"). */
+export const STATUS_MANUAIS = STATUS_PROSPECCAO.filter((s) => s.tecla);
 
 export const statusProspeccao = (id) => STATUS_PROSPECCAO.find((s) => s.id === id) || STATUS_PROSPECCAO[0];
 

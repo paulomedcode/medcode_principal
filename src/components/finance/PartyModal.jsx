@@ -7,7 +7,7 @@ import { maskTelefone, maskDocumento } from '../../utils/masks';
 // nome digitado num campo de cliente/fornecedor não existe. Só o básico
 // (nome, telefone, e-mail); o resto se completa depois em Clientes.
 // onSave(data) cria e resolve; onCancel fecha sem criar.
-const TIPOS = [['LEAD', 'Lead'], ['CLIENTE', 'Cliente'], ['FORNECEDOR', 'Fornecedor'], ['AMBOS', 'Ambos']];
+const TIPOS = [['LEAD', 'Em negociação'], ['CLIENTE', 'Cliente'], ['FORNECEDOR', 'Fornecedor'], ['AMBOS', 'Ambos']];
 
 const inputCls = 'w-full h-9 px-3 bg-white border border-black/[.085] rounded-lg text-sm font-semibold text-slate-700 outline-none focus:border-[#0071e3]';
 

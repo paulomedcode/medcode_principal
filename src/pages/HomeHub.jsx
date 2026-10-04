@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
     Search, Plus, Building2, Target, FolderKanban, ClipboardList, DollarSign, CalendarClock, Check,
@@ -11,13 +11,14 @@ import { supabase } from '../services/supabase';
 import { tarefasAtribuidas } from '../services/notificacoes';
 import { concluirLembrete } from '../services/concluirLembrete';
 import {
-    proximosPassos, concluirProximoPasso, listarProjetos, listarEtapas, listarOportunidades,
+    proximosPassos, concluirProximoPasso, listarProjetos,
     progressoDasEntregas, atividadesRecentes,
 } from '../services/crm';
 import { resumoServicos, statusProjeto, tipoAtividade, fmtBRL, fmtData } from '../config/servicos';
 import { todayISO } from '../utils/date';
 import { statusProspeccao } from '../config/prospeccao';
 import { useOpcoesNovo, abrirNovo } from '../components/novo';
+import Numeros from './Painel';
 
 /*
  * TELA INICIAL — "Central do dia".
@@ -25,10 +26,13 @@ import { useOpcoesNovo, abrirNovo } from '../components/novo';
  * Numa agência a pessoa abre o sistema para saber o que fazer agora, não para
  * escolher um menu (a navegação entre módulos mora na barra superior). Então
  * a tela é o trabalho: o que está atrasado, o que vence hoje e na semana
- * (tarefas das entregas, retornos combinados com clientes, recebimentos,
- * prazos de projeto), os projetos em andamento com o progresso das entregas,
- * o funil e o que a equipe registrou por último. Cada bloco respeita as
- * permissões: quem não abre o módulo não vê o bloco.
+ * (tarefas das entregas, retornos com clientes e com leads da prospecção,
+ * recebimentos, prazos de projeto), os projetos em andamento com o progresso
+ * das entregas e o que a equipe registrou por último.
+ *
+ * Os números da empresa ficam na aba "Números" (src/pages/Painel.jsx), que
+ * antes era a tela Painel: assim cada número aparece num lugar só. Cada bloco
+ * respeita as permissões: quem não abre o módulo não vê o bloco.
  */
 
 const addDias = (iso, n) => { const [y, m, d] = iso.split('-').map(Number); const dt = new Date(y, m - 1, d + n); const p = (x) => String(x).padStart(2, '0'); return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`; };
@@ -53,14 +57,6 @@ const TIPO_ITEM = {
     prospeccao: { icone: Radar, cor: 'bg-lime-50 text-lime-700', rotulo: 'Prospecção' },
 };
 
-const Chip = ({ rotulo, valor, detalhe, tom = 'text-slate-900', alerta, onClick }) => (
-    <button onClick={onClick} className={`${VIDRO} !rounded-2xl px-3.5 py-2.5 md:px-4 md:py-3 text-left flex-1 min-w-0 md:min-w-[160px] hover:bg-white/90 transition-colors`}>
-        <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-widest truncate">{rotulo}</p>
-        <p className={`text-lg md:text-xl font-bold tabular-nums tracking-tight ${tom}`}>{valor}</p>
-        {detalhe && <p className={`text-[10.5px] font-semibold ${alerta ? 'text-rose-500' : 'text-slate-400'}`}>{detalhe}</p>}
-    </button>
-);
-
 const Titulo = ({ icone: Icone, children, acao }) => (
     <div className="flex items-center justify-between mb-3">
         <h2 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">{Icone && <Icone size={13} />}{children}</h2>
@@ -70,6 +66,7 @@ const Titulo = ({ icone: Icone, children, acao }) => (
 
 export default function HomeHub() {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { currentUser } = useAuth();
     const { hasPermission } = usePermission();
     const pode = {
@@ -81,10 +78,14 @@ export default function HomeHub() {
         financeiro: hasPermission('Acessar Financeiro'),
         compromissos: hasPermission('Acessar Compromissos'),
         prospeccao: hasPermission('Acessar Prospecção'),
+        numeros: hasPermission('Acessar Painel'),
         editarProspeccao: hasPermission('Editar Prospecção'),
         editarClientes: hasPermission('Editar Clientes') || hasPermission('Editar Vendas') || hasPermission('Editar Financeiro'),
     };
     const veCrm = pode.clientes || pode.vendas || pode.projetos;
+    // Aba no endereço (/home?aba=numeros) para o link "Números" do menu e da busca.
+    const vista = pode.numeros && searchParams.get('aba') === 'numeros' ? 'numeros' : 'dia';
+    const trocarVista = (v) => setSearchParams(v === 'numeros' ? { aba: 'numeros' } : {}, { replace: true });
 
     const [d, setD] = useState(null);
     const [aba, setAba] = useState('hoje');
@@ -96,31 +97,27 @@ export default function HomeHub() {
         const hoje = todayISO();
         const vazio = Promise.resolve([]);
         const seguro = (p) => p.catch((e) => { console.warn(e); return []; });
-        const [tarefas, passos, projetos, etapas, ops, receber, recorr, feed, prosp] = await Promise.all([
+        const [tarefas, passos, projetos, receber, feed, prosp] = await Promise.all([
             pode.compromissos && currentUser?.id ? seguro(tarefasAtribuidas(currentUser.id)) : vazio,
             veCrm && currentUser?.id ? seguro(proximosPassos({ autorId: currentUser.id })) : vazio,
             veCrm ? seguro(listarProjetos()) : vazio,
-            pode.vendas ? seguro(listarEtapas()) : vazio,
-            pode.vendas ? seguro(listarOportunidades()) : vazio,
             pode.financeiro ? seguro(supabase.from('finance_transactions')
                 .select('id, description, amount, paid_amount, due_date, status, party_id, finance_parties(name)')
                 .eq('type', 'ENTRADA').is('transfer_group_id', null).neq('status', 'PAGO')
                 .lte('due_date', addDias(hoje, 7)).order('due_date').then((r) => r.data || [])) : vazio,
-            pode.financeiro ? seguro(supabase.from('finance_recurrences').select('amount, frequency, end_date')
-                .eq('is_active', true).eq('type', 'ENTRADA').then((r) => r.data || [])) : vazio,
             veCrm ? seguro(atividadesRecentes(8)) : vazio,
             // Retornos combinados na Prospecção (meus ou sem dono), até a semana que vem.
             pode.prospeccao && currentUser?.id ? seguro(supabase.from('prospeccao_leads')
                 .select('id, nome, categoria, cidade, status, proximo_contato_em, responsavel_id')
                 .not('proximo_contato_em', 'is', null).lte('proximo_contato_em', addDias(hoje, 7))
-                .not('status', 'in', '(DESCARTADO,FECHADO,PRODUCAO)')
+                .not('status', 'in', '(DESCARTADO,CONVERTIDO)')
                 .or(`responsavel_id.is.null,responsavel_id.eq.${currentUser.id}`)
                 .order('proximo_contato_em').then((r) => r.data || [])) : vazio,
         ]);
         const ativos = projetos.filter((p) => ['PLANEJAMENTO', 'EM_ANDAMENTO', 'EM_REVISAO', 'PAUSADO'].includes(p.status));
         const progresso = await progressoDasEntregas(ativos.map((p) => p.workspace_page_id)).catch(() => ({}));
-        setD({ hoje, tarefas, passos, projetos, ativos, etapas, ops, receber, recorr, feed, progresso, prosp });
-    }, [currentUser?.id, veCrm, pode.compromissos, pode.vendas, pode.financeiro, pode.prospeccao]);
+        setD({ hoje, tarefas, passos, projetos, ativos, receber, feed, progresso, prosp });
+    }, [currentUser?.id, veCrm, pode.compromissos, pode.financeiro, pode.prospeccao]);
 
     useEffect(() => { carregar(); }, [carregar]);
 
@@ -213,27 +210,6 @@ export default function HomeHub() {
         }
     };
 
-    // ---- números do topo ----
-    const kpi = useMemo(() => {
-        if (!d) return null;
-        const etapa = (o) => d.etapas.find((e) => e.id === o.etapa_id);
-        const abertas = d.ops.filter((o) => etapa(o)?.tipo === 'ABERTA');
-        const saldo = (t) => Number(t.amount) - Number(t.paid_amount || 0);
-        const mensal = (r) => (r.frequency === 'ANUAL' ? r.amount / 12 : r.frequency === 'SEMANAL' ? r.amount * 52 / 12 : Number(r.amount));
-        return {
-            receber: d.receber.reduce((s, t) => s + saldo(t), 0),
-            vencido: d.receber.filter((t) => t.due_date < d.hoje).reduce((s, t) => s + saldo(t), 0),
-            negociacao: abertas.reduce((s, o) => s + Number(o.valor || 0), 0),
-            qtdAbertas: abertas.length,
-            atrasados: d.ativos.filter((p) => p.prazo && p.prazo < d.hoje).length,
-            mrr: d.recorr.filter((r) => !r.end_date || r.end_date >= d.hoje).reduce((s, r) => s + mensal(r), 0),
-            funil: d.etapas.filter((e) => e.tipo === 'ABERTA').map((e) => {
-                const l = abertas.filter((o) => o.etapa_id === e.id);
-                return { ...e, qtd: l.length, valor: l.reduce((s, o) => s + Number(o.valor || 0), 0) };
-            }),
-        };
-    }, [d]);
-
     const primeiroNome = (currentUser?.name || 'Olá').split(' ')[0];
     const nomeFmt = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
 
@@ -291,19 +267,20 @@ export default function HomeHub() {
                     </div>
                 </div>
 
-                {!d ? (
+                {pode.numeros && (
+                    <div className="flex gap-1 bg-white/60 backdrop-blur border border-white/70 rounded-2xl p-1 w-fit">
+                        {[['dia', 'Meu dia'], ['numeros', 'Números']].map(([id, rot]) => (
+                            <button key={id} onClick={() => trocarVista(id)}
+                                className={`h-9 px-4 rounded-xl text-[12.5px] font-bold transition-all ${vista === id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                                {rot}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {vista === 'numeros' ? <Numeros /> : !d ? (
                     <div className="py-24 flex justify-center"><Loader2 size={28} className="animate-spin text-indigo-400" /></div>
                 ) : (<>
-
-                    {/* Números */}
-                    {kpi && (pode.financeiro || pode.vendas || veCrm) && (
-                        <div className="grid grid-cols-2 gap-2.5 md:flex md:flex-wrap md:gap-3">
-                            {pode.financeiro && <Chip rotulo="A receber · 7 dias" valor={fmtBRL(kpi.receber)} detalhe={kpi.vencido > 0 ? `${fmtBRL(kpi.vencido)} vencido` : 'nada vencido'} alerta={kpi.vencido > 0} onClick={() => navigate('/finance/contas-receber')} />}
-                            {pode.vendas && <Chip rotulo="Em negociação" valor={fmtBRL(kpi.negociacao)} detalhe={`${kpi.qtdAbertas} oportunidade(s)`} onClick={() => navigate('/vendas')} />}
-                            {veCrm && <Chip rotulo="Projetos em curso" valor={d.ativos.length} detalhe={kpi.atrasados ? `${kpi.atrasados} atrasado(s)` : 'nenhum atrasado'} alerta={kpi.atrasados > 0} onClick={() => navigate('/projetos')} />}
-                            {pode.financeiro && <Chip rotulo="Receita recorrente" valor={fmtBRL(kpi.mrr)} detalhe="por mês" tom="text-violet-700" onClick={() => navigate('/painel')} />}
-                        </div>
-                    )}
 
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
                         {/* Meu dia */}
@@ -397,21 +374,6 @@ export default function HomeHub() {
                                             })}
                                         </ul>
                                     )}
-                                </section>
-                            )}
-
-                            {pode.vendas && kpi && (
-                                <section className={`${VIDRO} p-5`}>
-                                    <Titulo icone={Target} acao={<button onClick={() => navigate('/vendas')} className="text-[10px] font-bold text-indigo-600 uppercase">Abrir funil</button>}>Funil</Titulo>
-                                    <div className="grid grid-cols-2 gap-1.5 md:flex">
-                                        {kpi.funil.map((e) => (
-                                            <button key={e.id} onClick={() => navigate('/vendas')} title={`${e.nome}: ${e.qtd} · ${fmtBRL(e.valor)}`}
-                                                className="flex-1 min-w-0 rounded-xl bg-white/70 hover:bg-white p-2 text-left border-t-[3px]" style={{ borderTopColor: e.cor }}>
-                                                <p className="text-lg font-black text-slate-800 leading-none">{e.qtd}</p>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase truncate mt-1">{e.nome}</p>
-                                            </button>
-                                        ))}
-                                    </div>
                                 </section>
                             )}
 

@@ -40,15 +40,16 @@ export const PERMISSION_MODULES = [
     {
         id: 'painel',
         home: 'painel',
-        label: 'Painel',
-        desc: 'Indicadores da empresa numa tela',
-        route: '/painel',
+        // Aba "Números" do Início (era a tela Painel). Sem item próprio no menu.
+        label: 'Números',
+        desc: 'Indicadores da empresa (aba do Início)',
+        route: '/home?aba=numeros',
         icon: 'LayoutDashboard',
         gradient: 'from-rose-400 to-pink-500',
         accent: 'rose',
         accessKey: 'Acessar Painel',
         permissions: [
-            { id: 'Acessar Painel', label: 'Acessar o módulo', desc: 'Cada bloco só mostra dados dos módulos que a pessoa já acessa' },
+            { id: 'Acessar Painel', label: 'Ver a aba Números do Início', desc: 'Cada bloco só mostra dados dos módulos que a pessoa já acessa' },
         ],
     },
     {

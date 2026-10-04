@@ -325,7 +325,7 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="md:col-span-2">
               <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Cliente</label>
-              <SearchableSelect options={parties.map(p => ({ value: p.id, label: `${p.name}${p.kind === 'LEAD' ? ' · lead' : ''}` }))}
+              <SearchableSelect options={parties.map(p => ({ value: p.id, label: `${p.name}${p.kind === 'LEAD' ? ' · em negociação' : ''}` }))}
                 value={partyId} onChange={setPartyId} placeholder="Selecione…" searchPlaceholder="Digite o nome do cliente…"
                 onCreate={(nome) => pedir(nome, 'LEAD')} createLabel="Cadastrar cliente" />
             </div>

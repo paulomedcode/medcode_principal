@@ -148,7 +148,7 @@ export const STATUS_PROJETO = [
 export const statusProjeto = (id) => STATUS_PROJETO.find((s) => s.id === id) || STATUS_PROJETO[0];
 
 export const TIPOS_EMPRESA = [
-    { id: 'LEAD', label: 'Lead', cor: 'bg-amber-50 text-amber-700 border-amber-100' },
+    { id: 'LEAD', label: 'Em negociação', cor: 'bg-amber-50 text-amber-700 border-amber-100' },
     { id: 'CLIENTE', label: 'Cliente', cor: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
     { id: 'FORNECEDOR', label: 'Fornecedor', cor: 'bg-slate-100 text-slate-600 border-slate-200' },
     { id: 'AMBOS', label: 'Cliente e fornecedor', cor: 'bg-sky-50 text-sky-700 border-sky-100' },

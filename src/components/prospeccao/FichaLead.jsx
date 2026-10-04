@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    X, ChevronLeft, ChevronRight, PhoneOutgoing, Target, CalendarClock, StickyNote, Trash2, Building2, ArrowRightLeft, Loader2, Copy, Send,
+    X, ChevronLeft, ChevronRight, PhoneOutgoing, Target, CalendarClock, StickyNote, Trash2, Building2, Loader2, Copy, Send, ArrowRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { STATUS_PROSPECCAO, statusProspeccao, tempoDesde } from '../../config/prospeccao';
-import { listarEventos, registrarEvento, excluirEvento, salvarLead, converterEmCliente } from '../../services/prospeccao';
+import { STATUS_MANUAIS, statusProspeccao, tempoDesde } from '../../config/prospeccao';
+import { listarEventos, registrarEvento, excluirEvento, salvarLead } from '../../services/prospeccao';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUsuarios } from '../crm/dados';
 import { Campo, inputCls, textareaCls, Etiqueta } from '../crm/ui';
 import useTravaRolagem from '../../hooks/useTravaRolagem';
 import { Estrelas, Contatos, NotaGoogle } from './pecas';
+import VirarOportunidade from './VirarOportunidade';
 
 const hojeMais = (dias) => {
     const d = new Date(); d.setDate(d.getDate() + dias);
@@ -45,17 +46,19 @@ const ROTULO_EVENTO = { CONTATO: 'Tentativa de contato', NOTA: 'Nota' };
 /**
  * Ficha do lead: painel à direita (tela cheia no celular). Feita para triagem
  * em sequência: setas (ou ← →) passam para o próximo da lista filtrada e as
- * teclas 1–9 trocam o status.
+ * teclas 1–5 trocam o status. Quando o lead responde, "Virar oportunidade"
+ * leva para o Vendas — e a ficha passa a mostrar em que etapa ele está lá.
  */
 export default function FichaLead({ lead, posicao, total, onAnterior, onProximo, onClose, onAlterado, onExcluir, onTentativa,
-    podeEditar, podeExcluir, podeConverter, podeVender }) {
+    podeEditar, podeExcluir, podeVender, noVendas }) {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const usuarios = useUsuarios();
     const [eventos, setEventos] = useState([]);
     const [nota, setNota] = useState('');
     const [salvandoNota, setSalvandoNota] = useState(false);
-    const [convertendo, setConvertendo] = useState(false);
+    const [virando, setVirando] = useState(false);
+    const convertido = lead.status === 'CONVERTIDO';
     useTravaRolagem();
 
     const carregarEventos = useCallback(async () => {
@@ -81,14 +84,14 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
             if (digitando(document.activeElement) || e.metaKey || e.ctrlKey || e.altKey) return;
             if (e.key === 'ArrowRight' || e.key === 'j') { e.preventDefault(); onProximo?.(); }
             else if (e.key === 'ArrowLeft' || e.key === 'k') { e.preventDefault(); onAnterior?.(); }
-            else if (podeEditar && /^[1-9]$/.test(e.key)) {
-                const st = STATUS_PROSPECCAO[Number(e.key) - 1];
+            else if (podeEditar && !convertido) {
+                const st = STATUS_MANUAIS.find((s) => s.tecla === e.key);
                 if (st && st.id !== lead.status) salvar({ status: st.id });
             }
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [onClose, onProximo, onAnterior, podeEditar, lead.status, salvar]);
+    }, [onClose, onProximo, onAnterior, podeEditar, convertido, lead.status, salvar]);
 
     const adicionarNota = async () => {
         if (!nota.trim()) return;
@@ -105,18 +108,6 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
         catch (e) { console.error(e); toast.error('Não apagou.'); }
     };
 
-    const converter = async () => {
-        setConvertendo(true);
-        try {
-            const { lead: row, empresa } = await converterEmCliente(lead, currentUser?.id);
-            onAlterado(row);
-            toast.success(`${empresa.name} agora está em Clientes.`);
-        } catch (e) {
-            console.error(e);
-            toast.error(e.code === '42501' ? 'Sem permissão para cadastrar empresa.' : 'Não converteu.');
-        } finally { setConvertendo(false); }
-    };
-
     const st = statusProspeccao(lead.status);
     const atrasado = lead.proximo_contato_em && lead.proximo_contato_em < hojeMais(0);
     const extras = Object.entries(lead.extras || {});
@@ -131,7 +122,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                         <button onClick={onAnterior} disabled={!onAnterior} title="Anterior (←)" className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 disabled:opacity-30"><ChevronLeft size={18} /></button>
                         <span className="text-[11px] font-bold text-slate-400 tabular-nums">{posicao} de {total}</span>
                         <button onClick={onProximo} disabled={!onProximo} title="Próximo (→)" className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 disabled:opacity-30"><ChevronRight size={18} /></button>
-                        <span className="hidden md:inline text-[10px] font-semibold text-slate-300 ml-2">← → navegam · 1–9 trocam o status</span>
+                        <span className="hidden md:inline text-[10px] font-semibold text-slate-300 ml-2">← → navegam · 1–5 trocam o status</span>
                         <button onClick={onClose} className="ml-auto p-2 text-slate-400 hover:text-rose-500 bg-slate-50 rounded-lg"><X size={16} /></button>
                     </div>
                     <CampoNome lead={lead} podeEditar={podeEditar} onSalvar={(nome) => nome.trim() && salvar({ nome: nome.trim() })} />
@@ -145,24 +136,46 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {/* Status */}
-                    <section>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Status</p>
-                        <div className="grid grid-cols-3 gap-1.5">
-                            {STATUS_PROSPECCAO.map((s, i) => {
-                                const on = s.id === lead.status;
-                                return (
-                                    <button key={s.id} disabled={!podeEditar} onClick={() => !on && salvar({ status: s.id })}
-                                        className={`h-9 px-2 rounded-lg text-[11px] font-bold border flex items-center gap-1.5 transition-all disabled:cursor-default ${on ? 'text-white shadow-sm' : 'bg-white border-black/[.085] text-slate-600 hover:border-slate-300'}`}
-                                        style={on ? { background: s.cor, borderColor: s.cor } : undefined}>
-                                        <span className={`hidden md:inline text-[9px] tabular-nums ${on ? 'text-white/70' : 'text-slate-300'}`}>{i + 1}</span>
-                                        {!on && <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.cor }} />}
-                                        <span className="truncate">{s.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </section>
+                    {/* Status — ou, depois de convertido, onde ele está no Vendas */}
+                    {convertido ? (
+                        <section className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center gap-3">
+                            <Target size={20} className="text-emerald-600 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-bold text-emerald-800">Virou oportunidade</p>
+                                <p className="text-[11.5px] font-semibold text-emerald-700/80 truncate">
+                                    {noVendas ? <>{noVendas.titulo} · <b>{noVendas.etapa?.nome}</b></> : 'Acompanhe pelo Vendas'}
+                                </p>
+                            </div>
+                            <button onClick={() => navigate(noVendas ? `/vendas?abrir=${noVendas.id}` : '/vendas')}
+                                className="h-9 px-3 rounded-lg bg-emerald-600 text-white text-[11px] font-bold flex items-center gap-1 shrink-0">
+                                Abrir no Vendas <ArrowRight size={13} />
+                            </button>
+                        </section>
+                    ) : (
+                        <section>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Status</p>
+                            <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5">
+                                {STATUS_MANUAIS.map((s) => {
+                                    const on = s.id === lead.status;
+                                    return (
+                                        <button key={s.id} disabled={!podeEditar} onClick={() => !on && salvar({ status: s.id })}
+                                            className={`h-9 px-2 rounded-lg text-[11px] font-bold border flex items-center gap-1.5 transition-all disabled:cursor-default ${on ? 'text-white shadow-sm' : 'bg-white border-black/[.085] text-slate-600 hover:border-slate-300'}`}
+                                            style={on ? { background: s.cor, borderColor: s.cor } : undefined}>
+                                            <span className={`hidden md:inline text-[9px] tabular-nums ${on ? 'text-white/70' : 'text-slate-300'}`}>{s.tecla}</span>
+                                            {!on && <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.cor }} />}
+                                            <span className="truncate">{s.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {podeVender && (
+                                <button onClick={() => setVirando(true)}
+                                    className={`mt-2 w-full h-11 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-all ${lead.status === 'RESPONDEU' ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm' : 'bg-white border border-black/[.085] text-slate-600 hover:border-emerald-400'}`}>
+                                    <Target size={15} /> Virar oportunidade no Vendas
+                                </button>
+                            )}
+                        </section>
+                    )}
 
                     {/* Contato e retorno */}
                     <section className="bg-white border border-black/[.085] rounded-2xl p-3 space-y-3">
@@ -282,20 +295,9 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
 
                 {/* Rodapé */}
                 <div className="bg-white border-t border-black/[.06] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-2 shrink-0">
-                    {lead.party_id ? (<>
+                    {lead.party_id && (
                         <button onClick={() => navigate(`/clientes/${lead.party_id}`)} className="h-9 px-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold flex items-center gap-1.5">
-                            <Building2 size={14} /> Ver cliente
-                        </button>
-                        {podeVender && (
-                            <button onClick={() => navigate(`/vendas?nova=${lead.party_id}`)} title="Abre uma oportunidade no funil de Vendas para esta empresa"
-                                className="h-9 px-3 rounded-lg bg-[#0071e3] text-white text-[11px] font-bold flex items-center gap-1.5">
-                                <Target size={14} /> Criar oportunidade
-                            </button>
-                        )}
-                    </>) : podeConverter && (
-                        <button onClick={converter} disabled={convertendo} title="Cria a empresa em Clientes (como Lead) para abrir oportunidade no Vendas"
-                            className="h-9 px-3 rounded-lg bg-white border border-black/[.085] text-slate-700 hover:border-[#0071e3] text-[11px] font-bold flex items-center gap-1.5">
-                            {convertendo ? <Loader2 size={14} className="animate-spin" /> : <ArrowRightLeft size={14} />} Converter em cliente
+                            <Building2 size={14} /> Ficha da empresa
                         </button>
                     )}
                     {lead.telefone && (
@@ -311,6 +313,11 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                     )}
                 </div>
             </aside>
+
+            {virando && (
+                <VirarOportunidade lead={lead} onClose={() => setVirando(false)}
+                    onFeito={(row) => { setVirando(false); onAlterado(row); }} />
+            )}
         </div>
     );
 }

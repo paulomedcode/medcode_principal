@@ -61,7 +61,7 @@ export default function BuscaGlobal() {
             ]);
             const podeAbrirCliente = hasPermission('Acessar Clientes');
             setResultados([
-                ...(emp.data || []).map((e) => ({ id: `emp:${e.id}`, tipo: 'Empresa', icone: Building2, titulo: e.name, sub: e.nome_fantasia || (e.kind === 'LEAD' ? 'Lead' : e.kind === 'FORNECEDOR' ? 'Fornecedor' : 'Cliente'), destino: podeAbrirCliente ? `/clientes/${e.id}` : '/finance/transacoes' })),
+                ...(emp.data || []).map((e) => ({ id: `emp:${e.id}`, tipo: 'Empresa', icone: Building2, titulo: e.name, sub: e.nome_fantasia || (e.kind === 'LEAD' ? 'Em negociação' : e.kind === 'FORNECEDOR' ? 'Fornecedor' : 'Cliente'), destino: podeAbrirCliente ? `/clientes/${e.id}` : '/finance/transacoes' })),
                 ...(ops.data || []).map((o) => ({ id: `op:${o.id}`, tipo: 'Oportunidade', icone: Target, titulo: o.titulo, sub: `${rotuloServicos(o)} · ${o.empresa?.name || ''}`, destino: `/vendas?abrir=${o.id}` })),
                 ...(prosp.data || []).map((l) => ({ id: `prosp:${l.id}`, tipo: 'Prospecção', icone: Radar, titulo: l.nome, sub: [statusProspeccao(l.status).label, l.categoria, l.cidade].filter(Boolean).join(' · '), destino: `/prospeccao?abrir=${l.id}` })),
                 ...(projs.data || []).map((p) => ({ id: `proj:${p.id}`, tipo: 'Projeto', icone: FolderKanban, titulo: p.nome, sub: `${rotuloServicos(p)} · ${p.empresa?.name || ''}`, destino: `/projetos/${p.id}` })),

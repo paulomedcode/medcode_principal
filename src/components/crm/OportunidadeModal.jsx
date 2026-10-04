@@ -57,7 +57,7 @@ export function OportunidadeModal({ oportunidade, etapas, empresas, partyIdFixo,
 
     const opcoesEmpresa = empresas
         .filter((p) => p.kind !== 'FORNECEDOR' || p.id === form.party_id)
-        .map((p) => ({ value: p.id, label: `${p.name}${p.kind === 'LEAD' ? ' · lead' : ''}` }));
+        .map((p) => ({ value: p.id, label: `${p.name}${p.kind === 'LEAD' ? ' · em negociação' : ''}` }));
 
     return (
         <>
