@@ -73,7 +73,7 @@ export const PERMISSION_MODULES = [
         label: 'Prospecção',
         desc: 'Lista de possíveis clientes e abordagem',
         route: '/prospeccao',
-        icon: 'Radar',
+        icon: 'UserSearch',
         gradient: 'from-lime-400 to-green-500',
         accent: 'lime',
         accessKey: 'Acessar Prospecção',

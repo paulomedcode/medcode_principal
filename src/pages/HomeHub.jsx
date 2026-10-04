@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
     Search, Plus, Building2, Target, FolderKanban, ClipboardList, DollarSign, CalendarClock, Check,
-    AlertTriangle, ChevronRight, Loader2, Repeat, Sparkles, Flag, Radar,
+    AlertTriangle, ChevronRight, Loader2, Repeat, Sparkles, Flag, UserSearch,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermission } from '../contexts/PermissionContext';
@@ -54,7 +54,7 @@ const TIPO_ITEM = {
     retorno: { icone: CalendarClock, cor: 'bg-amber-50 text-amber-600', rotulo: 'Retorno' },
     receber: { icone: DollarSign, cor: 'bg-emerald-50 text-emerald-600', rotulo: 'Receber' },
     prazo: { icone: Flag, cor: 'bg-rose-50 text-rose-600', rotulo: 'Prazo' },
-    prospeccao: { icone: Radar, cor: 'bg-lime-50 text-lime-700', rotulo: 'Prospecção' },
+    prospeccao: { icone: UserSearch, cor: 'bg-lime-50 text-lime-700', rotulo: 'Prospecção' },
 };
 
 const Titulo = ({ icone: Icone, children, acao }) => (

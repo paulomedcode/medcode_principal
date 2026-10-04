@@ -1,4 +1,4 @@
-import { Building2, Target, FolderKanban, ClipboardList, DollarSign, Radar } from 'lucide-react';
+import { Building2, Target, FolderKanban, ClipboardList, DollarSign, UserSearch } from 'lucide-react';
 import { usePermission } from '../contexts/PermissionContext';
 
 // Opções do "Novo" (NovoGlobal.jsx) e o atalho para abri-lo de qualquer tela.
@@ -6,7 +6,7 @@ import { usePermission } from '../contexts/PermissionContext';
 export function useOpcoesNovo() {
     const { hasPermission } = usePermission();
     return [
-        hasPermission('Editar Prospecção') && { id: 'prospeccao', rotulo: 'Lead de prospecção', icone: Radar },
+        hasPermission('Editar Prospecção') && { id: 'prospeccao', rotulo: 'Lead de prospecção', icone: UserSearch },
         (hasPermission('Editar Clientes') || hasPermission('Editar Vendas') || hasPermission('Editar Financeiro'))
             && { id: 'lead', rotulo: 'Cliente / empresa', icone: Building2 },
         hasPermission('Editar Vendas') && { id: 'oportunidade', rotulo: 'Oportunidade', icone: Target },

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Radar, Plus, Search, Upload, List, Columns3, CalendarClock, Trash2, X, Building2, ArrowUpDown } from 'lucide-react';
+import { UserSearch, Plus, Search, Upload, List, Columns3, CalendarClock, Trash2, X, Building2, ArrowUpDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { STATUS_PROSPECCAO, STATUS_MANUAIS, statusProspeccao, tempoDesde } from '../../config/prospeccao';
 import {
@@ -280,7 +280,7 @@ export default function Prospeccao() {
             {/* Título e ações */}
             <div className="flex flex-wrap items-center gap-3 mb-3">
                 <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-                    <Radar size={17} className="text-slate-400" /> Prospecção
+                    <UserSearch size={17} className="text-slate-400" /> Prospecção
                 </h1>
                 <div className="hidden md:flex items-center gap-0.5 bg-slate-100/70 rounded-lg p-0.5">
                     {[{ id: 'lista', icone: <List size={13} />, rot: 'Lista' }, { id: 'quadro', icone: <Columns3 size={13} />, rot: 'Quadro' }].map(({ id, icone, rot }) => (
@@ -378,7 +378,7 @@ export default function Prospeccao() {
 
             {carregando ? <div className={CARD}><Carregando /></div> : leads.length === 0 ? (
                 <div className={`${CARD} py-14 px-6 text-center`}>
-                    <Radar size={34} className="mx-auto text-[#0071e3] mb-3" />
+                    <UserSearch size={34} className="mx-auto text-[#0071e3] mb-3" />
                     <p className="text-sm font-bold text-slate-700">Nenhum lead na lista ainda</p>
                     <p className="text-[12px] font-semibold text-slate-400 mt-1 max-w-md mx-auto">
                         Importe a planilha que você tirou do Google Maps (ou de onde for) — CSV ou Excel — e trabalhe um por um daqui.
@@ -588,7 +588,7 @@ function NovoLead({ onClose, onSalvo }) {
         catch (e) { console.error(e); toast.error(e.code === '42501' ? 'Sem permissão.' : 'Não salvou.'); setSalvando(false); }
     };
     return (
-        <Janela titulo="Novo lead" icone={Radar} onClose={onClose} largura="max-w-lg"
+        <Janela titulo="Novo lead" icone={UserSearch} onClose={onClose} largura="max-w-lg"
             rodape={<><button onClick={onClose} className={btnSecundario}>Cancelar</button>
                 <button onClick={salvar} disabled={salvando} className={btnPrimario}>Salvar</button></>}>
             <div className="grid grid-cols-2 gap-2.5">

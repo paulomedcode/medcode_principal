@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Building2, Target, FolderKanban, CornerDownLeft, Loader2, Radar } from 'lucide-react';
+import { Search, Building2, Target, FolderKanban, CornerDownLeft, Loader2, UserSearch } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { usePermission } from '../contexts/PermissionContext';
 import { PERMISSION_MODULES } from '../config/permissions';
@@ -63,7 +63,7 @@ export default function BuscaGlobal() {
             setResultados([
                 ...(emp.data || []).map((e) => ({ id: `emp:${e.id}`, tipo: 'Empresa', icone: Building2, titulo: e.name, sub: e.nome_fantasia || (e.kind === 'LEAD' ? 'Em negociação' : e.kind === 'FORNECEDOR' ? 'Fornecedor' : 'Cliente'), destino: podeAbrirCliente ? `/clientes/${e.id}` : '/finance/transacoes' })),
                 ...(ops.data || []).map((o) => ({ id: `op:${o.id}`, tipo: 'Oportunidade', icone: Target, titulo: o.titulo, sub: `${rotuloServicos(o)} · ${o.empresa?.name || ''}`, destino: `/vendas?abrir=${o.id}` })),
-                ...(prosp.data || []).map((l) => ({ id: `prosp:${l.id}`, tipo: 'Prospecção', icone: Radar, titulo: l.nome, sub: [statusProspeccao(l.status).label, l.categoria, l.cidade].filter(Boolean).join(' · '), destino: `/prospeccao?abrir=${l.id}` })),
+                ...(prosp.data || []).map((l) => ({ id: `prosp:${l.id}`, tipo: 'Prospecção', icone: UserSearch, titulo: l.nome, sub: [statusProspeccao(l.status).label, l.categoria, l.cidade].filter(Boolean).join(' · '), destino: `/prospeccao?abrir=${l.id}` })),
                 ...(projs.data || []).map((p) => ({ id: `proj:${p.id}`, tipo: 'Projeto', icone: FolderKanban, titulo: p.nome, sub: `${rotuloServicos(p)} · ${p.empresa?.name || ''}`, destino: `/projetos/${p.id}` })),
             ]);
             setSel(0);

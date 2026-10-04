@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Radar } from 'lucide-react';
+import { UserSearch } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import toast from 'react-hot-toast';
 import { supabase } from '../services/supabase';
@@ -281,7 +281,7 @@ export default function Painel() {
                                     </div>
                                 ))}
                                 <p className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 pt-1">
-                                    <Radar size={12} /> Taxa de resposta: <b className="text-slate-600">{k.prospeccao.taxa == null ? '—' : `${k.prospeccao.taxa}%`}</b>
+                                    <UserSearch size={12} /> Taxa de resposta: <b className="text-slate-600">{k.prospeccao.taxa == null ? '—' : `${k.prospeccao.taxa}%`}</b>
                                 </p>
                             </div>
                         )}

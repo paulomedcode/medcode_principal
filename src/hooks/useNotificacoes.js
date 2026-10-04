@@ -73,8 +73,16 @@ export function tocarAviso() {
   } catch { /* navegador bloqueou áudio: segue sem som */ }
 }
 
+/**
+ * O navegador só deixa vibrar/tocar som depois que a pessoa tocou na página;
+ * antes disso a chamada é recusada e enche o console de erro. O sino continua
+ * balançando de qualquer jeito.
+ */
+const jaInteragiu = () => !navigator.userActivation || navigator.userActivation.hasBeenActive;
+
 /** Vibração curta (só faz efeito em celular). */
 function vibrar() {
+  if (!jaInteragiu()) return;
   try { navigator.vibrate?.([90, 60, 90]); } catch { /* ignore */ }
 }
 
@@ -91,7 +99,7 @@ export default function useNotificacoes(currentUser) {
   // Chama a atenção: sino balançando + som + vibração.
   const avisar = useCallback(() => {
     ultimoAvisoRef.current = Date.now();
-    tocarAviso();
+    if (jaInteragiu()) tocarAviso();
     vibrar();
     setPulsando(true);
     setTimeout(() => setPulsando(false), 6000);
