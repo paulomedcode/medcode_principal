@@ -22,7 +22,7 @@ export const cup = {
   // texto
   text: 'text-[#1d1d1f]',
   muted: 'text-[#86868b]',
-  label: 'text-[10px] font-semibold uppercase tracking-[.08em] text-[#86868b]',
+  label: 'text-[12px] font-medium text-[#86868b]',
   title: 'text-[15px] font-semibold tracking-[-.01em] text-[#1d1d1f]',
   subtitle: 'text-[11px] text-[#86868b]',
 
@@ -34,12 +34,12 @@ export const cup = {
 
   // controles
   btn: 'h-9 px-3.5 rounded-lg border border-black/[.085] bg-white text-[11.5px] font-medium text-[#1d1d1f] hover:bg-black/[.03] transition-colors inline-flex items-center gap-1.5',
-  btnPrimary: 'h-9 px-4 rounded-lg bg-[#0071e3] hover:bg-[#0077ed] text-white text-[11.5px] font-semibold transition-colors inline-flex items-center gap-1.5 shadow-[0_1px_2px_rgba(0,113,227,.35)]',
+  btnPrimary: 'h-9 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11.5px] font-semibold transition-colors inline-flex items-center gap-1.5 shadow-[0_1px_2px_rgba(0,113,227,.35)]',
   input: 'h-9 px-3 rounded-lg border border-black/[.085] bg-white text-[12px] text-[#1d1d1f] placeholder:text-[#86868b] outline-none focus:border-[#0071e3] transition-colors',
   select: 'h-9 px-2.5 rounded-lg border border-black/[.085] bg-white text-[11.5px] font-medium text-[#1d1d1f] outline-none focus:border-[#0071e3] cursor-pointer transition-colors',
 
   // tabela
-  th: 'text-[9.5px] font-semibold uppercase tracking-[.09em] text-[#86868b] text-left py-2.5 px-3 whitespace-nowrap',
+  th: 'text-[12px] font-medium text-[#86868b] text-left py-2.5 px-3 whitespace-nowrap',
 };
 
 // Status como ponto colorido + texto — substitui as pílulas de fundo colorido.

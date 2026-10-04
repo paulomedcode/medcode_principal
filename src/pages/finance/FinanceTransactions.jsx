@@ -987,7 +987,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50/50">
+                  <tr className="border-b border-slate-100 text-[12px] font-medium text-slate-400 bg-slate-50/50">
                     <th className="py-3 px-4">Mês de Referência</th>
                     <th className="py-3 px-4 text-right text-emerald-600 bg-emerald-50/20">Receitas Realizadas</th>
                     <th className="py-3 px-4 text-right text-emerald-600/70 bg-emerald-50/10">Receitas Projetadas</th>
@@ -1000,7 +1000,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
                 <tbody className="divide-y divide-slate-50">
                   {cashFlowProjection.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="text-center py-12 text-slate-400 text-xs font-bold uppercase">Nenhum dado projetado para os próximos meses.</td>
+                      <td colSpan="7" className="text-center py-12 text-slate-400 text-xs font-medium">Nenhum dado projetado para os próximos meses.</td>
                     </tr>
                   ) : (
                     cashFlowProjection.map((m, idx) => (
@@ -1091,7 +1091,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsAccountModalOpen(false)}></div>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col relative z-10 animate-in zoom-in-95 duration-200 overflow-hidden border border-slate-100">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-              <h3 className="text-base font-bold text-slate-800 tracking-tight uppercase">Cadastrar Nova Conta</h3>
+              <h3 className="text-base font-medium text-slate-800 tracking-tight">Cadastrar Nova Conta</h3>
               <button onClick={() => setIsAccountModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
                 <Plus size={20} className="rotate-45" />
               </button>
@@ -1168,13 +1168,13 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
                 <button 
                   type="button" 
                   onClick={() => setIsAccountModalOpen(false)}
-                  className="h-10 px-4 font-bold text-slate-500 hover:bg-slate-100 rounded-xl text-xs uppercase"
+                  className="h-10 px-4 font-medium text-slate-500 hover:bg-slate-100 rounded-xl text-xs"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit" 
-                  className="h-10 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs uppercase transition-all shadow-md"
+                  className="h-10 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-xs transition-all shadow-md"
                 >
                   Salvar Conta
                 </button>

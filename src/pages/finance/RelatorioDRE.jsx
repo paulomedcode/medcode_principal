@@ -252,7 +252,7 @@ export default function RelatorioDRE() {
         <td className="py-2 px-3" style={{ paddingLeft: `${12 + depth * 18}px` }}>
           <span className="inline-flex items-center gap-1.5">
             {has ? (open ? <ChevronDown size={13} className="text-slate-400 shrink-0" /> : <ChevronRight size={13} className="text-slate-400 shrink-0" />) : <span className="inline-block w-[13px] shrink-0" />}
-            <span className={isGroup ? 'uppercase tracking-wide' : ''}>{isGroup ? `${sign === '-' ? '(-)' : '(+)'} ` : ''}{node.name}</span>
+            <span className={isGroup ? 'font-semibold' : ''}>{isGroup ? `${sign === '-' ? '(-)' : '(+)'} ` : ''}{node.name}</span>
             {kids.length > 0 && <span className="text-[9px] font-medium text-slate-400 shrink-0">{kids.length} lçto{kids.length > 1 ? 's' : ''}</span>}
           </span>
         </td>
@@ -300,7 +300,7 @@ export default function RelatorioDRE() {
               {/* RECEITAS — grupos ENTRADA pelo valor BRUTO (expansíveis até os lançamentos) */}
               {dre.revenueGroups.filter(g => Math.abs(g.total) > 0.0049).flatMap(g => renderNode(g, 0, '+', true))}
               <tr className="border-b border-black/[.06] bg-indigo-50/40 font-semibold text-slate-900 text-xs">
-                <td className="py-2 px-3 uppercase tracking-wide" style={{ paddingLeft: '12px' }}>(=) Receita Bruta</td>
+                <td className="py-2 px-3" style={{ paddingLeft: '12px' }}>(=) Receita Bruta</td>
                 <td className="py-2 px-3 text-right text-indigo-700 tabular-nums">{fmt(dre.grossRevenues)}</td>
               </tr>
 
@@ -320,7 +320,7 @@ export default function RelatorioDRE() {
                 <td className="py-2 px-3 text-right tabular-nums whitespace-nowrap text-rose-600">- {fmt(dre.compTaxes)}</td>
               </tr>
               <tr className="border-b border-black/[.06] bg-indigo-50/40 font-semibold text-slate-900 text-xs">
-                <td className="py-2 px-3 uppercase tracking-wide" style={{ paddingLeft: '12px' }}>(=) Receita Líquida</td>
+                <td className="py-2 px-3" style={{ paddingLeft: '12px' }}>(=) Receita Líquida</td>
                 <td className={`py-2 px-3 text-right tabular-nums ${dre.netRevenues >= 0 ? 'text-indigo-700' : 'text-rose-600'}`}>{fmt(dre.netRevenues)}</td>
               </tr>
 
@@ -333,7 +333,7 @@ export default function RelatorioDRE() {
                 if (!taxGroups.length) return null;
                 return [
                   <tr key="lair" className="border-b border-black/[.06] bg-indigo-50/40 font-semibold text-slate-900 text-xs">
-                    <td className="py-2 px-3 uppercase tracking-wide" style={{ paddingLeft: '12px' }}>(=) Lucro Antes dos Impostos (LAIR)</td>
+                    <td className="py-2 px-3" style={{ paddingLeft: '12px' }}>(=) Lucro Antes dos Impostos (LAIR)</td>
                     <td className={`py-2 px-3 text-right tabular-nums ${dre.lair >= 0 ? 'text-indigo-700' : 'text-rose-600'}`}>{fmt(dre.lair)}</td>
                   </tr>,
                   ...taxGroups.flatMap(g => renderNode(g, 0, '-')),
@@ -342,11 +342,11 @@ export default function RelatorioDRE() {
 
               {/* RESULTADO/LUCRO LÍQUIDO */}
               <tr className="bg-slate-900 text-white font-semibold text-xs">
-                <td className="py-2.5 px-3 uppercase tracking-wide rounded-l-xl">(=) {dre.profitTaxes > 0.0049 ? 'Lucro Líquido do Exercício' : 'Resultado Líquido do Exercício'}</td>
+                <td className="py-2.5 px-3 rounded-l-xl">(=) {dre.profitTaxes > 0.0049 ? 'Lucro Líquido do Exercício' : 'Resultado Líquido do Exercício'}</td>
                 <td className={`py-2.5 px-3 text-right rounded-r-xl tabular-nums ${dre.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{fmt(dre.netProfit)}</td>
               </tr>
               <tr className="text-[11px] font-semibold text-slate-500">
-                <td className="py-2 px-3 uppercase tracking-wide">Margem Líquida</td>
+                <td className="py-2 px-3">Margem Líquida</td>
                 <td className={`py-2 px-3 text-right tabular-nums ${dre.margin >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{dre.margin.toFixed(1)}%</td>
               </tr>
             </tbody>
@@ -355,7 +355,7 @@ export default function RelatorioDRE() {
           {/* Fora do resultado (não-operacional): financiamento, capex, sócio — não afetam o resultado. */}
           {dre.nonOpGroups.length > 0 && (
             <div className="mt-4 border-t border-dashed border-black/[.085] pt-3">
-              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">Fora do resultado (não-operacional)</div>
+              <div className="text-[12px] font-semibold text-slate-400 mb-1.5">Fora do resultado (não-operacional)</div>
               <table className="w-full text-left border-collapse">
                 <tbody>
                   {dre.nonOpGroups.flatMap(g => renderNode(g, 0, g.type === 'ENTRADA' ? '+' : '-'))}

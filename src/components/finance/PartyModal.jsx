@@ -67,15 +67,15 @@ export default function PartyModal({ initialName = '', defaultKind = 'CLIENTE', 
             <div className="grid grid-cols-4 gap-1">
               {TIPOS.map(([v, l]) => (
                 <button key={v} type="button" onClick={() => setKind(v)}
-                  className={`h-8 rounded-lg text-[10px] font-bold uppercase tracking-wide border transition-colors ${kind === v ? 'bg-[#0071e3] border-[#0071e3] text-white' : 'bg-white border-black/[.085] text-slate-500 hover:border-[#0071e3]/40'}`}>{l}</button>
+                  className={`h-8 rounded-lg text-[12px] font-medium border transition-colors ${kind === v ? 'bg-[#0071e3] border-[#0071e3] text-white' : 'bg-white border-black/[.085] text-slate-500 hover:border-[#0071e3]/40'}`}>{l}</button>
               ))}
             </div>
           </div>
           <p className="text-[10.5px] font-semibold text-slate-400">Os demais dados (endereço, segmento, contatos) você completa depois em Clientes.</p>
         </div>
         <div className="p-4 border-t border-black/[.06] flex justify-end gap-2">
-          <button type="button" onClick={onCancel} className="h-9 px-4 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg uppercase">Cancelar</button>
-          <button type="submit" disabled={saving} className="h-9 px-5 bg-[#0071e3] hover:bg-[#0077ed] text-white font-bold rounded-lg text-xs uppercase shadow-sm flex items-center gap-2 disabled:opacity-60">
+          <button type="button" onClick={onCancel} className="h-9 px-4 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">Cancelar</button>
+          <button type="submit" disabled={saving} className="h-9 px-5 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg text-xs shadow-sm flex items-center gap-2 disabled:opacity-60">
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Cadastrar
           </button>
         </div>

@@ -119,7 +119,7 @@ export default function Quotes() {
         </div>
         {canEdit && (
           <button onClick={openNew}
-            className="h-9 px-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg font-bold text-[11px] uppercase shadow-sm flex items-center gap-1.5 transition-all ml-auto">
+            className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-[12.5px] shadow-sm flex items-center gap-1.5 transition-all ml-auto">
             <Plus size={15} /> Novo Orçamento
           </button>
         )}
@@ -145,7 +145,7 @@ export default function Quotes() {
               </thead>
               <tbody className="divide-y divide-black/[.055]">
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="py-10 text-center text-[11px] font-bold text-slate-400 uppercase">Nenhum orçamento</td></tr>
+                  <tr><td colSpan={7} className="py-10 text-center text-[12.5px] font-medium text-slate-400">Nenhum orçamento</td></tr>
                 ) : filtered.map(q => {
                   const st = STATUS[q.status] || STATUS.PENDENTE;
                   const pend = q.status === 'PENDENTE';
@@ -156,7 +156,7 @@ export default function Quotes() {
                       <td className="py-2.5 px-3 font-semibold text-slate-600">{q.title || '—'}</td>
                       <td className="py-2.5 px-3 font-semibold text-slate-500 tabular-nums whitespace-nowrap">{fmtDate(q.valid_until)}</td>
                       <td className="py-2.5 px-3 text-right font-semibold text-slate-800 tabular-nums whitespace-nowrap">{fmt(q.total_amount)}</td>
-                      <td className="py-2.5 px-3"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider border ${st.cls}`}>{st.label}</span></td>
+                      <td className="py-2.5 px-3"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${st.cls}`}>{st.label}</span></td>
                       <td className="py-2.5 px-3">
                         <div className="flex items-center justify-end gap-1">
                         <button onClick={() => setPdfsDe({ quote: q })} title="Proposta em PDF"
@@ -342,33 +342,33 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
           {/* Itens */}
           <div className="bg-white border border-black/[.085] rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Itens</span>
-              <button type="button" onClick={addItem} className="text-[10px] font-semibold text-[#0071e3] hover:text-indigo-700 uppercase flex items-center gap-1"><Plus size={12} /> Adicionar item</button>
+              <span className="text-[12px] font-semibold text-slate-500">Itens</span>
+              <button type="button" onClick={addItem} className="text-[12px] font-semibold text-[#0071e3] hover:text-indigo-700 flex items-center gap-1"><Plus size={12} /> Adicionar item</button>
             </div>
             <div className="space-y-2">
               {items.map((it, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-end">
                   <div className="col-span-12 md:col-span-2">
-                    {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Serviço</label>}
+                    {i === 0 && <label className="text-[11px] font-medium text-slate-400 ml-1 mb-0.5 block">Serviço</label>}
                     <select value={it.service_id} onChange={e => pickService(i, e.target.value)} className={`${inputCls} cursor-pointer`}>
                       <option value="">Livre</option>
                       {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                   </div>
                   <div className="col-span-12 md:col-span-3">
-                    {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Descrição</label>}
+                    {i === 0 && <label className="text-[11px] font-medium text-slate-400 ml-1 mb-0.5 block">Descrição</label>}
                     <input type="text" value={it.description} onChange={e => setItem(i, { description: e.target.value })} className={inputCls} placeholder="Descrição do item" />
                   </div>
                   <div className="col-span-12 md:col-span-2">
-                    {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Prazo</label>}
+                    {i === 0 && <label className="text-[11px] font-medium text-slate-400 ml-1 mb-0.5 block">Prazo</label>}
                     <input type="text" value={it.detalhes?.prazo || ''} onChange={e => setItemDetalhes(i, { prazo: e.target.value })} className={inputCls} placeholder="Ex.: 10 dias" />
                   </div>
                   <div className="col-span-4 md:col-span-1">
-                    {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Qtd</label>}
+                    {i === 0 && <label className="text-[11px] font-medium text-slate-400 ml-1 mb-0.5 block">Qtd</label>}
                     <input type="number" step="0.01" value={it.quantity} onChange={e => setItem(i, { quantity: e.target.value })} className={`${inputCls} text-right`} />
                   </div>
                   <div className="col-span-4 md:col-span-2">
-                    {i === 0 && <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-0.5 block">Valor un.</label>}
+                    {i === 0 && <label className="text-[11px] font-medium text-slate-400 ml-1 mb-0.5 block">Valor un.</label>}
                     <CurrencyInput value={it.unit_price} onChange={v => setItem(i, { unit_price: v })} className={`${inputCls} text-right`} />
                   </div>
                   <div className="col-span-3 md:col-span-1 text-right text-xs font-semibold text-slate-700 tabular-nums pb-2">
@@ -394,14 +394,14 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
             Total: <span className="text-indigo-700">{fmt(total)}</span>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
-            <button onClick={onClose} className="h-9 px-4 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg uppercase">Cancelar</button>
-            <button type="button" onClick={abrirPrevia} className="h-9 px-3 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg uppercase flex items-center gap-1.5">
+            <button onClick={onClose} className="h-9 px-4 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">Cancelar</button>
+            <button type="button" onClick={abrirPrevia} className="h-9 px-3 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg flex items-center gap-1.5">
               <Eye size={14} /> Pré-visualizar
             </button>
-            <button onClick={submit} disabled={saving} className="h-9 px-4 bg-white border border-black/[.1] hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-xs uppercase shadow-sm flex items-center gap-2">
+            <button onClick={submit} disabled={saving} className="h-9 px-4 bg-white border border-black/[.1] hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-xs shadow-sm flex items-center gap-2">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Salvar
             </button>
-            <button onClick={(e) => submit(e, { gerarPdf: true })} disabled={saving} className="h-9 px-4 bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold rounded-lg text-xs uppercase shadow-sm flex items-center gap-2">
+            <button onClick={(e) => submit(e, { gerarPdf: true })} disabled={saving} className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-xs shadow-sm flex items-center gap-2">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Salvar e gerar PDF
             </button>
           </div>
@@ -468,8 +468,8 @@ function ApproveModal({ quote, accounts, categories, onClose, onApproved }) {
           </div>
         </div>
         <div className="p-4 border-t border-black/[.06] flex justify-end gap-2">
-          <button onClick={onClose} className="h-9 px-4 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg uppercase">Cancelar</button>
-          <button onClick={confirm} disabled={saving} className="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs uppercase shadow-sm flex items-center gap-2">
+          <button onClick={onClose} className="h-9 px-4 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">Cancelar</button>
+          <button onClick={confirm} disabled={saving} className="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs shadow-sm flex items-center gap-2">
             {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />} Aprovar
           </button>
         </div>

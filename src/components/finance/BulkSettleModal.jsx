@@ -91,18 +91,18 @@ export default function BulkSettleModal({ rows = [], accounts = [], onClose, onD
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-[.08em] text-[#86868b] mb-1">Data</label>
+              <label className="block text-[12px] font-semibold text-[#86868b] mb-1">Data</label>
               <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className={`${field} tabular-nums`} />
             </div>
             <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-[.08em] text-[#86868b] mb-1">Forma</label>
+              <label className="block text-[12px] font-semibold text-[#86868b] mb-1">Forma</label>
               <select value={form.method} onChange={e => setForm(f => ({ ...f, method: e.target.value }))} className={field}>
                 {PAYMENT_METHODS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-[.08em] text-[#86868b] mb-1">Conta</label>
+            <label className="block text-[12px] font-semibold text-[#86868b] mb-1">Conta</label>
             <select value={form.accountId} onChange={e => setForm(f => ({ ...f, accountId: e.target.value }))} className={field}>
               <option value="">Selecione…</option>
               {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}

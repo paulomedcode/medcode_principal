@@ -229,22 +229,22 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
   return (
     <div className="lg:col-span-12 bg-white border border-black/[.085] rounded-2xl p-4 shadow-sm mt-3">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+        <h3 className="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5">
           <FileBarChart2 size={14} className="text-[#0071e3]" /> Relatórios Personalizados
         </h3>
         <div className="flex flex-wrap md:flex-nowrap items-center gap-1.5">
           <div className="flex bg-slate-100/70 rounded-md p-0.5">
-            <button onClick={() => setView('resumo')} className={`px-2.5 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 transition-all ${view === 'resumo' ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><ListTree size={12} /> Resumo</button>
-            <button onClick={() => setView('detalhe')} className={`px-2.5 h-7 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 transition-all ${view === 'detalhe' ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><Rows3 size={12} /> Detalhado</button>
+            <button onClick={() => setView('resumo')} className={`px-2.5 h-7 rounded-md text-[12px] font-semibold flex items-center gap-1 transition-all ${view === 'resumo' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-800'}`}><ListTree size={12} /> Resumo</button>
+            <button onClick={() => setView('detalhe')} className={`px-2.5 h-7 rounded-md text-[12px] font-semibold flex items-center gap-1 transition-all ${view === 'detalhe' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-800'}`}><Rows3 size={12} /> Detalhado</button>
           </div>
-          <button onClick={handlePrint} className="h-8 px-3 bg-white border border-black/[.085] hover:border-[#0071e3]/40 rounded-lg text-[10px] font-semibold uppercase text-slate-600 flex items-center gap-1.5 shadow-sm transition-colors"><Printer size={13} /> Imprimir</button>
-          <button onClick={handleExport} className="h-8 px-3 bg-white border border-black/[.085] hover:border-[#0071e3]/40 rounded-lg text-[10px] font-semibold uppercase text-slate-600 flex items-center gap-1.5 shadow-sm transition-colors"><Download size={13} /> Exportar</button>
+          <button onClick={handlePrint} className="h-8 px-3 bg-white border border-black/[.085] hover:border-[#0071e3]/40 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-1.5 shadow-sm transition-colors"><Printer size={13} /> Imprimir</button>
+          <button onClick={handleExport} className="h-8 px-3 bg-white border border-black/[.085] hover:border-[#0071e3]/40 rounded-lg text-[12px] font-semibold text-slate-600 flex items-center gap-1.5 shadow-sm transition-colors"><Download size={13} /> Exportar</button>
         </div>
       </div>
 
       {/* Filtros — todos combináveis; opções derivadas dos lançamentos do período */}
       <div className="flex flex-wrap items-center gap-1.5 mb-3 pb-3 border-b border-black/[.06]">
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400 mr-1">Agrupar por</span>
+        <span className="text-[11px] font-semibold text-slate-400 mr-1">Agrupar por</span>
         <select value={dim} onChange={e => setDim(e.target.value)} className={`${selCls} border-[#0071e3]/40 text-indigo-700`}>
           {Object.entries(DIMENSIONS).map(([k, d]) => <option key={k} value={k}>{d.label}</option>)}
         </select>
@@ -265,14 +265,14 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
         </label>
         {(activeFiltersText || f.busca) && (
           <button onClick={() => setF({ tipo: '', status: '', conta: '', categoria: '', cc: '', metodo: '', contraparte: '', projeto: '', busca: '', min: '', max: '', transfers: false })}
-            className="h-8 px-2.5 rounded-lg text-[10px] font-semibold uppercase text-rose-500 hover:bg-rose-50 transition-colors">Limpar</button>
+            className="h-8 px-2.5 rounded-lg text-[12px] font-semibold text-rose-500 hover:bg-rose-50 transition-colors">Limpar</button>
         )}
       </div>
 
       {/* Tabela */}
       <div className="overflow-x-auto max-h-[52vh] overflow-y-auto custom-scrollbar">
         {rows.length === 0 ? (
-          <div className="py-12 text-center text-[11px] font-bold text-slate-400 uppercase">Nenhum lançamento bate com os filtros no período</div>
+          <div className="py-12 text-center text-[12.5px] font-medium text-slate-400">Nenhum lançamento bate com os filtros no período</div>
         ) : view === 'resumo' ? (
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 bg-white">
@@ -332,7 +332,7 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
                   <td className="py-1.5 px-2 whitespace-nowrap">{t.finance_accounts?.name || '—'}</td>
                   <td className="py-1.5 px-2 max-w-[170px] truncate" title={t.finance_categories?.name}>{t.finance_categories?.name || 'Geral'}</td>
                   <td className="py-1.5 px-2 max-w-[150px] truncate" title={t.finance_cost_centers?.name}>{t.finance_cost_centers?.name || '—'}</td>
-                  <td className="py-1.5 px-2 text-center"><span className={`text-[9px] font-semibold uppercase ${t.status === 'PAGO' ? 'text-emerald-600' : 'text-amber-600'}`}>{t.status === 'PAGO' ? 'Pago' : 'Pend.'}</span></td>
+                  <td className="py-1.5 px-2 text-center"><span className={`text-[11px] font-semibold ${t.status === 'PAGO' ? 'text-emerald-600' : 'text-amber-600'}`}>{t.status === 'PAGO' ? 'Pago' : 'Pend.'}</span></td>
                   <td className="py-1.5 px-2 text-right tabular-nums whitespace-nowrap text-slate-400" title={t.gross_amount != null ? `Bruto R$ ${fmtBRL(t.gross_amount)} − impostos = líquido R$ ${fmtBRL(t.amount)}` : 'Sem retenção: bruto = líquido'}>{fmtBRL(t.gross_amount != null ? t.gross_amount : t.amount)}</td>
                   <td className={`py-1.5 px-2 text-right tabular-nums font-bold whitespace-nowrap ${t.type === 'ENTRADA' ? 'text-emerald-600' : 'text-rose-600'}`}>{t.type === 'ENTRADA' ? '+' : '−'}{fmtBRL(t.amount)}</td>
                   <td className="py-1.5 px-2 text-right tabular-nums whitespace-nowrap">{(() => { const pend = t.status === 'PAGO' ? 0 : (Number(t.amount) - Number(t.paid_amount || 0)); return pend > 0.004 ? <span className="font-semibold text-amber-600">{fmtBRL(pend)}</span> : <span className="text-slate-300">0,00</span>; })()}</td>
@@ -350,14 +350,14 @@ export default function ReportBuilder({ transactions, periodLabel, theme, userNa
           <span className="text-[11px] font-bold text-slate-400">Bruto <span className="font-semibold text-slate-700">{fmtBRL(selectedTotals.bruto)}</span></span>
           <span className="text-[11px] font-bold text-slate-400">Líquido <span className="font-semibold text-slate-700">{fmtBRL(selectedTotals.liquido)}</span></span>
           <span className="text-[11px] font-bold text-amber-600">Pendente <span className="font-semibold">{fmtBRL(selectedTotals.pendente)}</span></span>
-          <button onClick={clearSelection} className="text-[10px] font-semibold uppercase text-slate-400 hover:text-rose-500">Limpar</button>
+          <button onClick={clearSelection} className="text-[12px] font-semibold text-slate-400 hover:text-rose-500">Limpar</button>
         </div>
       )}
 
       {/* Totais — sempre visíveis, reagem a todos os filtros */}
       {rows.length > 0 && (
         <div className="mt-2 pt-2.5 border-t-2 border-black/[.085] flex flex-wrap items-center justify-end gap-x-6 gap-y-1 px-1 tabular-nums">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-auto">{totals.count} lançamento{totals.count === 1 ? '' : 's'}{view === 'resumo' ? ` · ${groups.length} grupo${groups.length === 1 ? '' : 's'}` : ''}</span>
+          <span className="text-[12px] font-medium text-slate-400 mr-auto">{totals.count} lançamento{totals.count === 1 ? '' : 's'}{view === 'resumo' ? ` · ${groups.length} grupo${groups.length === 1 ? '' : 's'}` : ''}</span>
           <span className="text-[11px] font-bold text-slate-400">Bruto <span className="font-semibold text-slate-700">{fmtBRL(totals.bruto)}</span></span>
           <span className="text-[11px] font-bold text-emerald-600">Entradas <span className="font-semibold">+{fmtBRL(totals.inflow)}</span></span>
           <span className="text-[11px] font-bold text-rose-600">Saídas <span className="font-semibold">−{fmtBRL(totals.outflow)}</span></span>

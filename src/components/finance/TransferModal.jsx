@@ -114,9 +114,9 @@ export default function TransferModal({ open, accounts = [], onClose, onDone }) 
         </div>
 
         <div className="p-4 border-t border-black/[.06] flex justify-end gap-2 shrink-0">
-          <button onClick={onClose} className="h-10 px-5 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-xl uppercase">Cancelar</button>
+          <button onClick={onClose} className="h-10 px-5 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-xl">Cancelar</button>
           <button onClick={submit} disabled={saving}
-            className="h-10 px-6 bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold rounded-xl text-xs uppercase shadow-md flex items-center gap-2 disabled:opacity-60">
+            className="h-10 px-6 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs shadow-md flex items-center gap-2 disabled:opacity-60">
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Repeat2 size={14} />} Transferir
           </button>
         </div>

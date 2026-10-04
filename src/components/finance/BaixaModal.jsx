@@ -118,7 +118,7 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
           {/* Rateio: linhas-irmãs + quitar grupo inteiro */}
           {siblings.length > 1 && (
             <div className="rounded-xl border border-black/[.085] bg-black/[.02] p-3">
-              <div className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.08em] mb-1.5 flex items-center gap-1">
+              <div className="text-[12px] font-semibold text-[#86868b] mb-1.5 flex items-center gap-1">
                 <Split size={12} /> Rateio · {siblings.length} categorias
               </div>
               <div className="space-y-1 mb-2.5">
@@ -135,7 +135,7 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
               </div>
               {groupRemaining > 0.0049 && (
                 <button onClick={quitarGrupo} disabled={saving}
-                  className="w-full h-9 bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold rounded-lg text-[11px] flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
+                  className="w-full h-9 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-[11px] flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
                   {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} strokeWidth={3} />} Quitar grupo inteiro ({fmt(groupRemaining)})
                 </button>
               )}
@@ -150,7 +150,7 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
             <div className="py-6 flex justify-center"><Loader2 size={22} className="text-[#0071e3] animate-spin" /></div>
           ) : payments.length > 0 && (
             <div>
-              <div className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.08em] mb-1.5">Baixas registradas</div>
+              <div className="text-[12px] font-semibold text-[#86868b] mb-1.5">Baixas registradas</div>
               <div className="divide-y divide-black/[.055] border border-black/[.085] rounded-xl overflow-hidden">
                 {payments.map(p => (
                   <div key={p.id} className="group flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-black/[.02]">
@@ -169,31 +169,31 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
           {/* Form de nova baixa */}
           {remaining > 0.0049 && (
             <div className="border-t border-black/[.085] pt-3 space-y-3">
-              <div className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.08em]">Nova baixa</div>
+              <div className="text-[12px] font-semibold text-[#86868b]">Nova baixa</div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Valor (R$)</label>
+                  <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Valor (R$)</label>
                   <CurrencyInput value={form.amount} onChange={v => setForm({ ...form, amount: v.toFixed(2) })} className={inputCls} />
                   <button type="button" onClick={() => setForm({ ...form, amount: remaining.toFixed(2) })} className="text-[10px] font-medium text-[#0071e3] hover:opacity-70 mt-1 ml-1">Quitar total ({fmt(remaining)})</button>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">{L.actor}</label>
+                  <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">{L.actor}</label>
                   <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className={inputCls} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Conta</label>
+                  <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Conta</label>
                   <select value={form.accountId} onChange={e => setForm({ ...form, accountId: e.target.value })} className={`${inputCls} cursor-pointer`}>
                     {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Forma</label>
+                  <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Forma</label>
                   <select value={form.method} onChange={e => setForm({ ...form, method: e.target.value })} className={`${inputCls} cursor-pointer`}>
                     {PAYMENT_METHODS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Nº Doc / NF (opcional)</label>
+                  <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Nº Doc / NF (opcional)</label>
                   <input type="text" value={form.doc} onChange={e => setForm({ ...form, doc: e.target.value })} className={inputCls} placeholder="Ex: comprovante 123" />
                 </div>
               </div>
@@ -205,7 +205,7 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
           <button onClick={onClose} className="h-10 px-5 text-[11.5px] font-medium text-[#86868b] hover:bg-black/[.04] rounded-xl transition-colors">Fechar</button>
           {remaining > 0.0049 && (
             <button onClick={submit} disabled={saving}
-              className="h-10 px-6 bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold rounded-xl text-[11.5px] shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center gap-2 disabled:opacity-60 transition-colors">
+              className="h-10 px-6 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-[11.5px] shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center gap-2 disabled:opacity-60 transition-colors">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />} Registrar baixa
             </button>
           )}
@@ -218,7 +218,7 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
 function Box({ label, value, color }) {
   return (
     <div className="bg-white px-2 py-2 text-center">
-      <div className="text-[9px] font-semibold text-[#86868b] uppercase tracking-[.06em]">{label}</div>
+      <div className="text-[11px] font-semibold text-[#86868b]">{label}</div>
       <div className={`text-[12px] font-semibold tabular-nums mt-0.5 ${color || 'text-[#1d1d1f]'}`}>{value}</div>
     </div>
   );

@@ -151,7 +151,7 @@ export default function DuePeriodPicker({ onChange, initialKey = 'thisMonth' }) 
       {open && (
         <div className="absolute z-50 mt-1.5 left-0 w-[430px] max-w-[92vw] bg-white border border-black/[.085] rounded-xl shadow-[0_8px_28px_rgba(0,0,0,.14)] p-3 flex gap-3">
           <div className="w-[196px] shrink-0">
-            <div className="text-[10px] font-semibold uppercase tracking-[.08em] text-[#86868b] px-1 mb-1.5">Atalhos</div>
+            <div className="text-[12px] font-semibold text-[#86868b] px-1 mb-1.5">Atalhos</div>
             <div className="flex flex-col gap-px max-h-[340px] overflow-y-auto">
               {presets.map(p => {
                 const active = period.start === p.start && period.end === p.end;
@@ -169,7 +169,7 @@ export default function DuePeriodPicker({ onChange, initialKey = 'thisMonth' }) 
           <div className="w-px bg-black/[.085]" />
 
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-semibold uppercase tracking-[.08em] text-[#86868b] px-1 mb-1.5">Escolher</div>
+            <div className="text-[12px] font-semibold text-[#86868b] px-1 mb-1.5">Escolher</div>
 
             <label className="block text-[10.5px] font-medium text-[#86868b] px-1">Mês</label>
             <input type="month" value={period.start.slice(0, 7)} onChange={e => setMonth(e.target.value)}
@@ -188,7 +188,7 @@ export default function DuePeriodPicker({ onChange, initialKey = 'thisMonth' }) 
                 className="h-9 flex-1 min-w-0 px-2 bg-white border border-black/[.085] rounded-lg text-[11px] font-medium text-[#1d1d1f] outline-none focus:border-[#0071e3] cursor-pointer tabular-nums" />
             </div>
             <button onClick={applyRange}
-              className="mt-2 w-full h-9 rounded-lg bg-[#0071e3] hover:bg-[#0077ed] text-white text-[11.5px] font-semibold transition-colors">
+              className="mt-2 w-full h-9 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11.5px] font-semibold transition-colors">
               Aplicar intervalo
             </button>
           </div>

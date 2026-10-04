@@ -363,20 +363,20 @@ export default function FinanceSettings() {
           <div className="min-w-0 flex items-center gap-2 flex-1">
             <span className={`truncate ${depth === 0 ? 'font-semibold text-slate-800 text-sm' : 'font-bold text-slate-600 text-[13px]'}`}>{cat.name}</span>
             {depth === 0 && (
-              <span className={`text-[8px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${isEntrada ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>{isEntrada ? 'Entrada' : 'Saída'}</span>
+              <span className={`text-[10.5px] font-semibold px-1.5 py-0.5 rounded border ${isEntrada ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>{isEntrada ? 'Entrada' : 'Saída'}</span>
             )}
             {hasKids && <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 rounded-full">{kids.length}</span>}
             {cat.in_result === false && (
               <span title="Não entra no Resultado Líquido do DRE (item não-operacional)"
-                className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-100 shrink-0">Fora do DRE</span>
+                className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-100 shrink-0">Fora do DRE</span>
             )}
             {cat.in_cash_flow === false && (
               <span title="Competência pura: conta no DRE, mas R$ 0,00 no Fluxo de Caixa (ex.: depreciação)"
-                className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border bg-sky-50 text-sky-600 border-sky-100 shrink-0">Sem caixa</span>
+                className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded border bg-sky-50 text-sky-600 border-sky-100 shrink-0">Sem caixa</span>
             )}
             {cat.is_profit_tax === true && (
               <span title="Imposto sobre o lucro (IRPJ/CSLL): subtraído após o LAIR, antes do Lucro Líquido"
-                className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border bg-violet-50 text-violet-600 border-violet-100 shrink-0">IRPJ/CSLL</span>
+                className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded border bg-violet-50 text-violet-600 border-violet-100 shrink-0">IRPJ/CSLL</span>
             )}
           </div>
 
@@ -501,8 +501,8 @@ export default function FinanceSettings() {
           <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cc.color || '#64748b' }} />
           <div className="min-w-0 flex items-center gap-2 flex-1">
             <span className={`truncate ${depth === 0 ? 'font-semibold text-slate-800 text-sm' : 'font-bold text-slate-600 text-[13px]'}`}>{cc.name}</span>
-            {cc.code && <span className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{cc.code}</span>}
-            {isDefault && <span className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-indigo-50 text-[#0071e3] border border-indigo-100">Padrão</span>}
+            {cc.code && <span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{cc.code}</span>}
+            {isDefault && <span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50 text-[#0071e3] border border-indigo-100">Padrão</span>}
             {hasKids && <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 rounded-full">{kids.length}</span>}
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -649,43 +649,43 @@ export default function FinanceSettings() {
             <Settings className="text-[#0071e3]" size={18} />
             Configurações Financeiras
           </h1>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">Serviços, cadastros, plano de contas e contas bancárias</p>
+          <p className="text-xs font-medium text-slate-400 mt-0.5">Serviços, cadastros, plano de contas e contas bancárias</p>
         </div>
         <button onClick={printActiveTab} title="Imprimir o cadastro desta aba"
-          className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[10px] uppercase tracking-wide shadow-sm flex items-center gap-1.5 transition-all shrink-0">
+          className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[12px] shadow-sm flex items-center gap-1.5 transition-all shrink-0">
           <Printer size={14} /> Imprimir
         </button>
       </div>
 
       {/* Tabs Layout */}
-      <div className="flex gap-2 sm:gap-3 mb-4 bg-white/60 backdrop-blur-md border border-white/50 shadow-sm p-1.5 rounded-2xl max-w-full overflow-x-auto no-scrollbar [&>button]:shrink-0">
+      <div className="flex gap-0.5 mb-4 bg-slate-200/50 p-0.5 rounded-lg w-fit max-w-full overflow-x-auto no-scrollbar [&>button]:shrink-0">
         <button 
           onClick={() => setActiveTab('services')}
-          className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'services' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+          className={`px-3 h-7 text-[12.5px] font-medium transition-all rounded-md ${activeTab === 'services' ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}
         >
           Catálogo de Serviços
         </button>
         <button
           onClick={() => setActiveTab('parties')}
-          className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'parties' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+          className={`px-3 h-7 text-[12.5px] font-medium transition-all rounded-md ${activeTab === 'parties' ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}
         >
           Clientes e Fornecedores
         </button>
         <button
           onClick={() => setActiveTab('categories')}
-          className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'categories' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+          className={`px-3 h-7 text-[12.5px] font-medium transition-all rounded-md ${activeTab === 'categories' ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}
         >
           Categorias DRE
         </button>
         <button
           onClick={() => setActiveTab('costcenters')}
-          className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'costcenters' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+          className={`px-3 h-7 text-[12.5px] font-medium transition-all rounded-md ${activeTab === 'costcenters' ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}
         >
           Centros de Custo
         </button>
         <button
           onClick={() => setActiveTab('bankaccounts')}
-          className={`px-5 py-2 text-[10px] font-semibold uppercase tracking-wide transition-all rounded-xl ${activeTab === 'bankaccounts' ? 'bg-[#0071e3] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+          className={`px-3 h-7 text-[12.5px] font-medium transition-all rounded-md ${activeTab === 'bankaccounts' ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}
         >
           Contas Bancárias
         </button>
@@ -703,7 +703,7 @@ export default function FinanceSettings() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
           {/* Formulário */}
           <div className="lg:col-span-4 bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-4 shadow-sm">
-            <h3 className="text-[10px] font-semibold text-[#0071e3] uppercase tracking-widest mb-5 flex items-center gap-2">
+            <h3 className="text-[12px] font-semibold text-[#0071e3] mb-5 flex items-center gap-2">
               <Plus size={16} /> {editingServiceId ? 'Editar Serviço' : 'Novo Serviço'}
             </h3>
             
@@ -749,14 +749,14 @@ export default function FinanceSettings() {
               </label>
 
               <div className="pt-2">
-                <button type="submit" className="w-full h-10 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-bold text-xs uppercase shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all">
+                <button type="submit" className="w-full h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium text-xs shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all">
                   <Save size={14} /> Salvar Serviço
                 </button>
                 {editingServiceId && (
                   <button
                     type="button"
                     onClick={() => { setEditingServiceId(null); setServiceForm({ name: '', description: '', base_price: 0, is_active: true }); }}
-                    className="w-full h-8 text-xs font-bold text-slate-400 hover:text-slate-600 uppercase mt-2"
+                    className="w-full h-8 text-xs font-medium text-slate-400 hover:text-slate-600 mt-2"
                   >
                     Cancelar Edição
                   </button>
@@ -795,11 +795,11 @@ export default function FinanceSettings() {
               </select>
               <div className="flex items-center gap-1.5">
                 <button onClick={handleExportServices} title="Exportar XLSX"
-                  className="h-9 px-3 flex items-center gap-1.5 text-[10px] font-bold uppercase text-slate-600 bg-white border border-black/[.085] rounded-lg hover:bg-slate-50 transition-colors">
+                  className="h-9 px-3 flex items-center gap-1.5 text-[12px] font-medium text-slate-600 bg-white border border-black/[.085] rounded-lg hover:bg-slate-50 transition-colors">
                   <Download size={14} /> Exportar
                 </button>
                 <label title="Importar XLSX"
-                  className="h-9 px-3 flex items-center gap-1.5 text-[10px] font-bold uppercase text-slate-600 bg-white border border-black/[.085] rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                  className="h-9 px-3 flex items-center gap-1.5 text-[12px] font-medium text-slate-600 bg-white border border-black/[.085] rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
                   <Upload size={14} /> Importar
                   <input type="file" accept=".xlsx,.xls" onChange={handleImportServices} className="hidden" />
                 </label>
@@ -811,13 +811,13 @@ export default function FinanceSettings() {
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input type="checkbox" checked={pagedAllSelected} onChange={toggleSelectAllPaged}
                   className="w-4 h-4 rounded accent-indigo-600 cursor-pointer" />
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
+                <span className="text-[12px] font-semibold text-slate-500">
                   {selectedServiceIds.length > 0 ? `${selectedServiceIds.length} selecionado(s)` : `${filteredServices.length} serviço(s)`}
                 </span>
               </label>
               {selectedServiceIds.length > 0 && (
                 <button onClick={handleBulkDeleteServices}
-                  className="h-7 px-3 flex items-center gap-1.5 text-[10px] font-bold uppercase text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors">
+                  className="h-7 px-3 flex items-center gap-1.5 text-[12px] font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors">
                   <Trash2 size={13} /> Excluir selecionados
                 </button>
               )}
@@ -827,7 +827,7 @@ export default function FinanceSettings() {
               {filteredServices.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center py-12 gap-2">
                   <div className="w-12 h-12 rounded-2xl bg-slate-100 grid place-items-center text-slate-300"><Briefcase size={22} /></div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{services.length === 0 ? 'Nenhum serviço cadastrado' : 'Nenhum serviço encontrado'}</p>
+                  <p className="text-xs font-medium text-slate-400">{services.length === 0 ? 'Nenhum serviço cadastrado' : 'Nenhum serviço encontrado'}</p>
                 </div>
               ) : (
                 pagedServices.map(s => {
@@ -840,7 +840,7 @@ export default function FinanceSettings() {
                         <div className="flex items-center gap-2">
                           <h4 className={`font-bold text-sm truncate ${active ? 'text-slate-800' : 'text-slate-400 line-through'}`}>{s.name}</h4>
                           <button onClick={() => handleToggleServiceActive(s)} title="Alternar ativo/inativo"
-                            className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border shrink-0 transition-colors ${active ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-100 text-slate-400 border-black/[.085] hover:bg-slate-200'}`}>
+                            className={`text-[11px] font-semibold px-1.5 py-0.5 rounded border shrink-0 transition-colors ${active ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-100 text-slate-400 border-black/[.085] hover:bg-slate-200'}`}>
                             {active ? 'Ativo' : 'Inativo'}
                           </button>
                         </div>
@@ -871,10 +871,10 @@ export default function FinanceSettings() {
             {filteredServices.length > 0 && (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 mt-1 border-t border-black/[.085]">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Por página:</span>
+                  <span className="text-[12px] font-medium text-slate-400">Por página:</span>
                   {[10, 20, 50, 100].map(n => (
                     <button key={n} onClick={() => setServicePageSize(n)}
-                      className={`px-2 h-7 rounded-md text-[10px] font-semibold transition-all ${servicePageSize === n ? 'bg-[#0071e3] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'}`}>
+                      className={`px-2 h-7 rounded-md text-[10px] font-semibold transition-all ${servicePageSize === n ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}>
                       {n}
                     </button>
                   ))}
@@ -884,7 +884,7 @@ export default function FinanceSettings() {
                     className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">
                     <ChevronUp size={15} className="rotate-[-90deg]" />
                   </button>
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <span className="text-[12px] font-semibold text-slate-500">
                     {currentServicePage} / {serviceTotalPages}
                   </span>
                   <button onClick={() => setServicePage(p => Math.min(serviceTotalPages, p + 1))} disabled={currentServicePage >= serviceTotalPages}
@@ -907,7 +907,7 @@ export default function FinanceSettings() {
             No lançamento você ainda pode cadastrar na hora, pelo campo Origem/Destino.
           </p>
           <Link to="/clientes"
-            className="inline-flex mt-4 h-9 px-4 items-center bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg font-bold text-[11px] uppercase">
+            className="inline-flex mt-4 h-9 px-4 items-center bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-[12.5px]">
             Abrir Clientes
           </Link>
         </div>
@@ -973,7 +973,7 @@ export default function FinanceSettings() {
               <div className="rounded-xl border border-black/[.085] bg-[#f5f5f7] p-3">
                 <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
                   <span>
-                    <span className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wide">Entra no resultado (DRE)</span>
+                    <span className="block text-[12.5px] font-semibold text-slate-700">Entra no resultado (DRE)</span>
                     <span className="block text-[10px] font-medium text-slate-400 mt-0.5 leading-snug">
                       Desligue para itens <b>não-operacionais</b> (amortização de principal, aportes, empréstimos): contam no caixa, mas ficam <b>fora</b> do Resultado Líquido.
                     </span>
@@ -991,7 +991,7 @@ export default function FinanceSettings() {
               <div className="rounded-xl border border-black/[.085] bg-[#f5f5f7] p-3">
                 <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
                   <span>
-                    <span className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wide">Gera caixa (Fluxo de Caixa)</span>
+                    <span className="block text-[12.5px] font-semibold text-slate-700">Gera caixa (Fluxo de Caixa)</span>
                     <span className="block text-[10px] font-medium text-slate-400 mt-0.5 leading-snug">
                       Desligue para <b>competência pura</b> (depreciação, amortização contábil de ativos): conta no DRE como despesa, mas vale <b>R$ 0,00</b> no Fluxo de Caixa (não há saída física de dinheiro).
                     </span>
@@ -1010,7 +1010,7 @@ export default function FinanceSettings() {
                 <div className="rounded-xl border border-black/[.085] bg-[#f5f5f7] p-3">
                   <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
                     <span>
-                      <span className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wide">Imposto sobre o lucro (IRPJ/CSLL)</span>
+                      <span className="block text-[12.5px] font-semibold text-slate-700">Imposto sobre o lucro (IRPJ/CSLL)</span>
                       <span className="block text-[10px] font-medium text-slate-400 mt-0.5 leading-snug">
                         Ligue para <b>IRPJ e CSLL</b>. No DRE sai da cascata operacional e é subtraído <b>no final</b>, logo após o Lucro Antes dos Impostos (LAIR), imediatamente antes do Lucro Líquido. Não é dedução de faturamento (2.1).
                       </span>
@@ -1045,7 +1045,7 @@ export default function FinanceSettings() {
                 <div className="grid grid-cols-7 gap-1.5">
                   {CATEGORY_ICONS.map(({ key, Comp, label }) => (
                     <button key={key} type="button" title={label} onClick={() => setCategoryForm({ ...categoryForm, icon: key })}
-                      className={`h-9 rounded-lg grid place-items-center transition-all ${categoryForm.icon === key ? 'bg-[#0071e3] text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                      className={`h-9 rounded-lg grid place-items-center transition-all ${categoryForm.icon === key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                       <Comp size={15} />
                     </button>
                   ))}
@@ -1054,8 +1054,8 @@ export default function FinanceSettings() {
 
               <div className="pt-1 flex gap-2">
                 <button type="button" onClick={() => { setCatModalOpen(false); resetCategoryForm(); }}
-                  className="flex-1 h-10 rounded-xl text-xs font-bold uppercase text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
-                <button type="submit" className="flex-[2] h-10 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-bold text-xs uppercase shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all">
+                  className="flex-1 h-10 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
+                <button type="submit" className="flex-[2] h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium text-xs shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all">
                   <Save size={14} /> {editingCategoryId ? 'Salvar Alterações' : 'Criar Categoria'}
                 </button>
               </div>
@@ -1068,20 +1068,20 @@ export default function FinanceSettings() {
           <div className="bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between gap-3 mb-3">
               <div>
-                <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-1">Estrutura de Categorias (DRE)</h3>
+                <h3 className="text-[12px] font-semibold text-slate-500 mb-1">Estrutura de Categorias (DRE)</h3>
                 <p className="text-[10px] font-medium text-slate-400">Setas reordenam · <span className="text-[#0071e3]">+</span> cria subcategoria · lápis edita.</p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <button type="button" onClick={expandAll} title="Expandir tudo"
-                  className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-[9px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
+                  className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-[11px] font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
                   <ListTree size={12} /> Expandir
                 </button>
                 <button type="button" onClick={collapseAll} title="Recolher tudo"
-                  className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-[9px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
+                  className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-[11px] font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
                   <FolderTree size={12} /> Recolher
                 </button>
                 <button type="button" onClick={() => { resetCategoryForm(); setCatModalOpen(true); }}
-                  className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[10px] font-semibold uppercase tracking-wide text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] transition-colors">
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[12px] font-semibold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] transition-colors">
                   <Plus size={14} /> Nova Categoria
                 </button>
               </div>
@@ -1091,9 +1091,9 @@ export default function FinanceSettings() {
               {categories.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center py-12 gap-2">
                   <div className="w-12 h-12 rounded-2xl bg-slate-100 grid place-items-center text-slate-300"><FolderTree size={22} /></div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Nenhuma categoria cadastrada</p>
+                  <p className="text-xs font-medium text-slate-400">Nenhuma categoria cadastrada</p>
                   <button type="button" onClick={() => { resetCategoryForm(); setCatModalOpen(true); }}
-                    className="mt-1 text-[11px] font-semibold text-[#0071e3] hover:text-indigo-700 uppercase tracking-wide">+ Criar primeira categoria</button>
+                    className="mt-1 text-[12.5px] font-semibold text-[#0071e3] hover:text-indigo-700">+ Criar primeira categoria</button>
                 </div>
               ) : (
                 childrenOf(null).map((c, i) => renderCategoryNode(c, 0, childrenOf(null), i))
@@ -1108,20 +1108,20 @@ export default function FinanceSettings() {
         <div className="bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div>
-              <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-1">Centros de Custo</h3>
+              <h3 className="text-[12px] font-semibold text-slate-500 mb-1">Centros de Custo</h3>
               <p className="text-[10px] font-medium text-slate-400">Dimensão obrigatória dos lançamentos · <span className="text-[#0071e3]">+</span> cria subcentro · lápis edita.</p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               <button type="button" onClick={expandAllCc} title="Expandir tudo"
-                className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-[9px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
+                className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-[11px] font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
                 <ListTree size={12} /> Expandir
               </button>
               <button type="button" onClick={collapseAllCc} title="Recolher tudo"
-                className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-[9px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
+                className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-[11px] font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">
                 <FolderTree size={12} /> Recolher
               </button>
               <button type="button" onClick={() => { resetCcForm(); setCcModalOpen(true); }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[10px] font-semibold uppercase tracking-wide text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] transition-colors">
+                className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[12px] font-semibold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] transition-colors">
                 <Plus size={14} /> Novo Centro
               </button>
             </div>
@@ -1131,9 +1131,9 @@ export default function FinanceSettings() {
             {costCenters.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-16 gap-2">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100 grid place-items-center text-slate-300"><FolderTree size={22} /></div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Nenhum centro de custo</p>
+                <p className="text-xs font-medium text-slate-400">Nenhum centro de custo</p>
                 <button type="button" onClick={() => { resetCcForm(); setCcModalOpen(true); }}
-                  className="mt-1 text-[11px] font-semibold text-[#0071e3] hover:text-indigo-700 uppercase tracking-wide">+ Criar primeiro centro</button>
+                  className="mt-1 text-[12.5px] font-semibold text-[#0071e3] hover:text-indigo-700">+ Criar primeiro centro</button>
               </div>
             ) : (
               ccChildrenOf(null).map((c, i) => renderCcNode(c, 0, ccChildrenOf(null), i))
@@ -1194,8 +1194,8 @@ export default function FinanceSettings() {
                   </div>
                   <div className="pt-1 flex gap-2">
                     <button type="button" onClick={() => { setCcModalOpen(false); resetCcForm(); }}
-                      className="flex-1 h-10 rounded-xl text-xs font-bold uppercase text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
-                    <button type="submit" className="flex-[2] h-10 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-bold text-xs uppercase shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all">
+                      className="flex-1 h-10 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
+                    <button type="submit" className="flex-[2] h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium text-xs shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all">
                       <Save size={14} /> {editingCcId ? 'Salvar Alterações' : 'Criar Centro'}
                     </button>
                   </div>
@@ -1211,11 +1211,11 @@ export default function FinanceSettings() {
         <div className="bg-white/70 backdrop-blur-lg border border-black/[.085] rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div>
-              <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-1">Contas Bancárias</h3>
+              <h3 className="text-[12px] font-semibold text-slate-500 mb-1">Contas Bancárias</h3>
               <p className="text-[10px] font-medium text-slate-400">Caixas e contas usadas nos lançamentos e conciliação.</p>
             </div>
             <button type="button" onClick={() => { resetAccForm(); setAccModalOpen(true); }}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[10px] font-semibold uppercase tracking-wide text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] transition-colors">
+              className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[12px] font-semibold text-white bg-[#0071e3] hover:bg-[#0077ed] shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] transition-colors">
               <Plus size={14} /> Nova Conta
             </button>
           </div>
@@ -1224,7 +1224,7 @@ export default function FinanceSettings() {
             {bankAccounts.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-16 gap-2">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100 grid place-items-center text-slate-300"><CreditCard size={22} /></div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Nenhuma conta cadastrada</p>
+                <p className="text-xs font-medium text-slate-400">Nenhuma conta cadastrada</p>
               </div>
             ) : bankAccounts.map(a => {
               const bal = parseFloat(a.current_balance || 0);
@@ -1299,8 +1299,8 @@ export default function FinanceSettings() {
                     <p className="text-[9px] text-slate-400 mt-1 ml-1">Se maior que zero, a tela de contas mostra também o disponível (saldo + limite).</p>
                   </div>
                   <div className="pt-1 flex gap-2">
-                    <button type="button" onClick={() => { setAccModalOpen(false); resetAccForm(); }} className="flex-1 h-10 rounded-xl text-xs font-bold uppercase text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
-                    <button type="submit" className="flex-[2] h-10 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl font-bold text-xs uppercase shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all"><Save size={14} /> {editingAccId ? 'Salvar' : 'Criar Conta'}</button>
+                    <button type="button" onClick={() => { setAccModalOpen(false); resetAccForm(); }} className="flex-1 h-10 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
+                    <button type="submit" className="flex-[2] h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium text-xs shadow-md shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-2 transition-all"><Save size={14} /> {editingAccId ? 'Salvar' : 'Criar Conta'}</button>
                   </div>
                 </form>
               </div>

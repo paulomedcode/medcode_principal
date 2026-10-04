@@ -574,7 +574,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             
             {/* Valor */}
             <div className="md:col-span-2">
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">
                 {withholdActive ? 'Valor bruto da nota (R$)' : installmentOn ? 'Valor total — será dividido nas parcelas (R$)' : 'Valor (R$)'}
               </label>
               <CurrencyInput
@@ -590,7 +590,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
               <div className="md:col-span-2">
                 <div className="bg-emerald-50/40 border border-emerald-100 rounded-xl p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wide">
+                    <span className="text-[12px] font-semibold text-emerald-700">
                       {payments.length === 1 ? 'Baixa registrada' : `${payments.length} baixas registradas`}
                     </span>
                     <span className="text-[10px] font-bold text-slate-500 tabular-nums">
@@ -621,7 +621,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
               <div className="md:col-span-2">
                 <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                   <label className="flex items-center justify-between cursor-pointer select-none">
-                    <span className="flex items-center gap-2 text-[11px] font-black text-slate-700 uppercase tracking-wide">
+                    <span className="flex items-center gap-2 text-[12.5px] font-semibold text-slate-700">
                       <Percent size={14} className="text-amber-500" /> Deduzir impostos retidos na fonte
                       <span className="text-slate-300 font-medium normal-case tracking-normal">(IRRF, PIS, COFINS, CSLL…)</span>
                     </span>
@@ -643,11 +643,11 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl h-9 border border-slate-200 shrink-0">
                           <button type="button" onClick={() => { setWithholdBy('percent'); setWithholdVal(WITHHOLD_DEFAULT_PCT); setCompTaxPct('2.08'); }}
-                            className={`px-3 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${withholdBy === 'percent' ? 'bg-amber-500 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
+                            className={`px-3 rounded-lg text-[12px] font-semibold transition-all ${withholdBy === 'percent' ? 'bg-amber-500 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
                             Por %
                           </button>
                           <button type="button" onClick={() => { setWithholdBy('value'); setWithholdVal(''); }}
-                            className={`px-3 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${withholdBy === 'value' ? 'bg-amber-500 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
+                            className={`px-3 rounded-lg text-[12px] font-semibold transition-all ${withholdBy === 'value' ? 'bg-amber-500 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
                             Em R$
                           </button>
                         </div>
@@ -702,14 +702,14 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                 {/* Imposto complementar (pago depois via DARF) — % sobre o bruto, provisionado no DRE */}
                 <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm mt-3">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="flex items-center gap-2 text-[11px] font-black text-slate-700 uppercase tracking-wide">
+                    <span className="flex items-center gap-2 text-[12.5px] font-semibold text-slate-700">
                       <Percent size={14} className="text-indigo-500" /> Imposto complementar
                       <span className="text-slate-300 font-medium normal-case tracking-normal">(pago depois via DARF)</span>
                     </span>
                     <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl h-9 border border-slate-200 shrink-0">
                       {[['2.08', '2,08%'], ['2.38', '2,38% AME'], ['8.23', '8,23%'], ['', 'Sem']].map(([v, l]) => (
                         <button type="button" key={l} onClick={() => setCompTaxPct(v)}
-                          className={`px-2.5 rounded-lg text-[10px] font-black uppercase tracking-wide tabular-nums transition-all ${compTaxPct === v ? 'bg-indigo-500 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
+                          className={`px-2.5 rounded-lg text-[12px] font-semibold tabular-nums transition-all ${compTaxPct === v ? 'bg-indigo-500 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
                           {l}
                         </button>
                       ))}
@@ -729,7 +729,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Conta Bancária */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Conta Bancária</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Conta Bancária</label>
               <select
                 value={formData.account_id}
                 onChange={e => setFormData({ ...formData, account_id: e.target.value })}
@@ -745,7 +745,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Categoria — quando há rateio, a categoria é definida por linha (abaixo). */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Categoria</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Categoria</label>
               {splitOn ? (
                 <div className={`${baseInputStyle} flex items-center gap-1.5 text-violet-600 font-bold cursor-not-allowed bg-violet-50/60 border-violet-100`}>
                   <Split size={13} /> Dividida por rateio (abaixo)
@@ -763,7 +763,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Origem / Destino: cliente (entrada) ou fornecedor (saída). */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block flex items-center gap-1.5">
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block flex items-center gap-1.5">
                 {counterpartyLabel(formData.type)} <span className="text-slate-300 font-medium normal-case">(Origem/Destino)</span>
               </label>
               <SearchableSelect
@@ -782,7 +782,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Data do Lançamento */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Data do Lançamento</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Data do Lançamento</label>
               <input
                 type="date"
                 required
@@ -794,7 +794,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Vencimento (contas a pagar/receber) — obrigatório */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Vencimento</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Vencimento</label>
               <input
                 type="date"
                 required
@@ -807,7 +807,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             {/* Competência (mês de referência) — a que mês o lançamento se refere.
                 Nasce no mês corrente; setas ‹ › andam de mês em mês. */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Competência (mês ref.)</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Competência (mês ref.)</label>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -836,7 +836,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Método de Pagamento */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Método</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Método</label>
               <select
                 value={formData.payment_method}
                 onChange={e => setFormData({ ...formData, payment_method: e.target.value })}
@@ -850,7 +850,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                 PARCIAL é dirigido pelas baixas: aqui fica travado (mude via modal de Baixas). */}
             {paidAmount > 0.0049 ? (
               <div>
-                <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Status</label>
+                <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Status</label>
                 <div className={`${baseInputStyle} flex items-center font-black ${formData.status === 'PAGO' ? 'text-emerald-600' : 'text-sky-600'}`}>
                   {formData.status === 'PAGO' ? 'Realizado' : 'Parcial'}
                 </div>
@@ -858,7 +858,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
               </div>
             ) : !(!transactionId && recurring) ? (
               <div>
-                <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Status</label>
+                <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Status</label>
                 <select
                   value={formData.status}
                   onChange={e => setFormData({ ...formData, status: e.target.value })}
@@ -870,7 +870,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
               </div>
             ) : (
               <div>
-                <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Status</label>
+                <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Status</label>
                 <div className={`${baseInputStyle} flex items-center text-amber-500 font-black cursor-not-allowed bg-slate-50`}>
                   A Realizar (Pendente)
                 </div>
@@ -879,7 +879,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Centro de Custo (obrigatório) */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Centro de Custo</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Centro de Custo</label>
               <SearchableSelect
                 options={costCenterSelectOptions()}
                 value={formData.cost_center_id}
@@ -891,7 +891,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Projeto (opcional): receita ou custo do projeto — alimenta a margem dele. */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Projeto (Opcional)</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Projeto (Opcional)</label>
               <SearchableSelect
                 options={projetos
                   .filter(p => !['CONCLUIDO', 'CANCELADO'].includes(p.status) || p.id === formData.projeto_id)
@@ -905,7 +905,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Nº Documento / Nota Fiscal */}
             <div>
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Nº Doc / NF (Opcional)</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Nº Doc / NF (Opcional)</label>
               <input
                 type="text"
                 value={formData.doc_number}
@@ -917,7 +917,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
 
             {/* Descrição */}
             <div className="md:col-span-2">
-              <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Descrição do Lançamento</label>
+              <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Descrição do Lançamento</label>
               <input
                 type="text"
                 required
@@ -932,11 +932,11 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             <div className="md:col-span-2">
               <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-2 text-[11px] font-black text-slate-700 uppercase tracking-wide">
+                  <span className="flex items-center gap-2 text-[12.5px] font-semibold text-slate-700">
                     <Paperclip size={14} className="text-sky-500" /> Anexos
                     <span className="text-slate-300 font-medium normal-case tracking-normal">(boleto, NF, comprovante…)</span>
                   </span>
-                  <label className={`h-8 px-3 flex items-center gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all cursor-pointer ${uploadingAtt ? 'bg-slate-100 text-slate-400 cursor-wait' : 'bg-sky-50 text-sky-600 border border-sky-100 hover:bg-sky-100'}`}>
+                  <label className={`h-8 px-3 flex items-center gap-1.5 rounded-xl text-[12px] font-semibold transition-all cursor-pointer ${uploadingAtt ? 'bg-slate-100 text-slate-400 cursor-wait' : 'bg-sky-50 text-sky-600 border border-sky-100 hover:bg-sky-100'}`}>
                     {uploadingAtt ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
                     {uploadingAtt ? 'Enviando…' : 'Anexar arquivo'}
                     <input
@@ -988,7 +988,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
               <div className="md:col-span-2">
                 <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                   <label className="flex items-center justify-between cursor-pointer select-none">
-                    <span className="flex items-center gap-2 text-[11px] font-black text-slate-700 uppercase tracking-wide">
+                    <span className="flex items-center gap-2 text-[12.5px] font-semibold text-slate-700">
                       <Split size={14} className="text-violet-500" /> Dividir em categorias (rateio)
                     </span>
                     <input
@@ -1005,11 +1005,11 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl h-8 border border-slate-200">
                           <button type="button" onClick={() => setSplitBy('value')}
-                            className={`px-3 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${splitBy === 'value' ? 'bg-violet-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
+                            className={`px-3 rounded-lg text-[12px] font-semibold transition-all ${splitBy === 'value' ? 'bg-violet-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
                             Por valor
                           </button>
                           <button type="button" onClick={() => setSplitBy('percent')}
-                            className={`px-3 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all flex items-center gap-1 ${splitBy === 'percent' ? 'bg-violet-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
+                            className={`px-3 rounded-lg text-[12px] font-semibold transition-all flex items-center gap-1 ${splitBy === 'percent' ? 'bg-violet-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
                             <Percent size={11} /> Por %
                           </button>
                         </div>
@@ -1065,7 +1065,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                       ))}
 
                       <button type="button" onClick={addSplitLine}
-                        className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-violet-600 hover:text-violet-700">
+                        className="flex items-center gap-1 text-[12px] font-semibold text-violet-600 hover:text-violet-700">
                         <Plus size={13} /> Adicionar categoria
                       </button>
                       <p className="text-[10px] font-medium text-slate-400 leading-snug">
@@ -1090,7 +1090,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                   {installmentOn && (
                     <div className="mt-3 grid grid-cols-2 gap-3 items-end">
                       <div>
-                        <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Nº de parcelas</label>
+                        <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Nº de parcelas</label>
                         <input type="number" min="2" max="360" value={installmentCount}
                           onChange={e => setInstallmentCount(e.target.value)}
                           className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500" />
@@ -1122,7 +1122,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
               <div className="md:col-span-2">
                 <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                   <label className="flex items-center justify-between cursor-pointer select-none">
-                    <span className="flex items-center gap-2 text-[11px] font-black text-slate-700 uppercase tracking-wide">
+                    <span className="flex items-center gap-2 text-[12.5px] font-semibold text-slate-700">
                       <Repeat size={14} className="text-indigo-500" /> Repetir (conta fixa)
                     </span>
                     <input
@@ -1136,7 +1136,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                   {recurring && (
                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Frequência</label>
+                        <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Frequência</label>
                         <select
                           value={frequency}
                           onChange={e => setFrequency(e.target.value)}
@@ -1148,32 +1148,32 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                         </select>
                       </div>
                       <div>
-                        <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Repetir até</label>
+                        <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Repetir até</label>
                         <div className="flex gap-1 bg-slate-100 p-0.5 rounded-xl h-10 border border-slate-200">
                           <button type="button" onClick={() => setEndMode('forever')}
-                            className={`flex-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${endMode === 'forever' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
+                            className={`flex-1 rounded-lg text-[12px] font-semibold transition-all ${endMode === 'forever' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
                             Sempre
                           </button>
                           <button type="button" onClick={() => setEndMode('date')}
-                            className={`flex-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${endMode === 'date' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
+                            className={`flex-1 rounded-lg text-[12px] font-semibold transition-all ${endMode === 'date' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
                             Até data
                           </button>
                           <button type="button" onClick={() => setEndMode('count')}
-                            className={`flex-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${endMode === 'count' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
+                            className={`flex-1 rounded-lg text-[12px] font-semibold transition-all ${endMode === 'count' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}>
                             Nº de vezes
                           </button>
                         </div>
                       </div>
                       {endMode === 'date' && (
                         <div className="sm:col-span-2">
-                          <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Data final da repetição</label>
+                          <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Data final da repetição</label>
                           <input type="date" value={recEndDate} onChange={e => setRecEndDate(e.target.value)} className={baseInputStyle} />
                         </div>
                       )}
                       {endMode === 'count' && (
                         <div className="sm:col-span-2 grid grid-cols-2 gap-3 items-end">
                           <div>
-                            <label className="text-[10px] font-semibold text-[#86868b] uppercase tracking-[.04em] ml-1 mb-1 block">Repetir quantas vezes?</label>
+                            <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Repetir quantas vezes?</label>
                             <input type="number" min="2" max="360" value={recCount}
                               onChange={e => setRecCount(e.target.value)}
                               className={baseInputStyle} placeholder="Ex: 6, 10, 12" />
@@ -1213,7 +1213,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             <button
               type="submit"
               disabled={loading || saving}
-              className="h-10 px-6 bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold rounded-xl text-[11.5px] transition-colors shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center gap-2 disabled:opacity-60"
+              className="h-10 px-6 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-[11.5px] transition-colors shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center gap-2 disabled:opacity-60"
             >
               {saving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
               {(() => {
@@ -1244,20 +1244,20 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             <p className="text-xs font-medium text-slate-500 mb-4">Esta conta se repete. Onde você quer aplicar as mudanças? (Parcelas já realizadas não são alteradas.)</p>
             <div className="flex flex-col gap-2">
               <button type="button" disabled={saving} onClick={() => persist('this')}
-                className="w-full h-11 px-4 text-left text-xs font-black uppercase tracking-wide text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors disabled:opacity-60">
+                className="w-full h-11 px-4 text-left text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors disabled:opacity-60">
                 Só esta ocorrência
               </button>
               <button type="button" disabled={saving} onClick={() => persist('future')}
-                className="w-full h-11 px-4 text-left text-xs font-black uppercase tracking-wide text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors disabled:opacity-60">
+                className="w-full h-11 px-4 text-left text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors disabled:opacity-60">
                 Esta e as próximas
               </button>
               <button type="button" disabled={saving} onClick={() => persist('all')}
-                className="w-full h-11 px-4 text-left text-xs font-black uppercase tracking-wide text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors disabled:opacity-60">
+                className="w-full h-11 px-4 text-left text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors disabled:opacity-60">
                 Toda a série
               </button>
             </div>
             <button type="button" disabled={saving} onClick={() => setScopeDialog(false)}
-              className="mt-3 w-full text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-wide">
+              className="mt-3 w-full text-[12.5px] font-medium text-slate-400 hover:text-slate-600">
               Cancelar
             </button>
           </div>

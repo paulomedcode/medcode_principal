@@ -331,7 +331,7 @@ export default function FinanceDashboard() {
         <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
           <TrendingUp className="text-[#0071e3]" size={18} /> Financeiro MedCode
         </h1>
-        <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+        <label className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-500">
           Contas a vencer em
           <select value={horizon} onChange={e => setHorizon(parseInt(e.target.value, 10))}
             title="Janela dos cards de contas a pagar/receber, contada a partir de hoje"
@@ -371,11 +371,11 @@ export default function FinanceDashboard() {
               <div className="bg-white border border-black/[.085] rounded-2xl p-4 shadow-sm flex flex-col flex-[2] min-h-[200px]">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Landmark size={15} className="text-[#0071e3]" />
-                  <h3 className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">Saldo das Contas</h3>
+                  <h3 className="text-[12px] font-semibold text-slate-600">Saldo das Contas</h3>
                 </div>
                 <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar min-h-0">
                   {accounts.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase">Nenhuma conta cadastrada</div>
+                    <div className="h-full flex items-center justify-center text-[12px] font-medium text-slate-400">Nenhuma conta cadastrada</div>
                   ) : accounts.map(a => {
                     const bal = parseFloat(a.current_balance || 0);
                     const limit = parseFloat(a.overdraft_limit || 0);
@@ -384,7 +384,7 @@ export default function FinanceDashboard() {
                       <div key={a.id} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
                         <div className="min-w-0 pr-2">
                           <span className="text-[10px] font-bold text-slate-700 truncate block leading-tight">{a.name}</span>
-                          {pend > 0 && <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wide">{pend} concil. pendente{pend === 1 ? '' : 's'}</span>}
+                          {pend > 0 && <span className="text-[11px] font-medium text-amber-500">{pend} concil. pendente{pend === 1 ? '' : 's'}</span>}
                         </div>
                         <div className="shrink-0 text-right">
                           <span className={`text-[10px] font-semibold tabular-nums block ${bal < 0 ? 'text-rose-600' : 'text-slate-800'}`}>{fmt(bal)}</span>
@@ -395,7 +395,7 @@ export default function FinanceDashboard() {
                   })}
                 </div>
                 <div className="mt-2 pt-2 border-t border-black/[.085] flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Total</span>
+                  <span className="text-[12px] font-semibold text-slate-500">Total</span>
                   <div className="text-right">
                     <span className={`text-sm font-semibold tabular-nums block ${accountsTotal < 0 ? 'text-rose-600' : 'text-indigo-700'}`}>{fmt(accountsTotal)}</span>
                     {accountsLimitTotal > 0 && <span className="text-[9px] font-bold tabular-nums text-slate-400 block">c/ limite {fmt(accountsTotal + accountsLimitTotal)}</span>}
@@ -451,7 +451,7 @@ export default function FinanceDashboard() {
 }
 
 function Empty({ text }) {
-  return <div className="h-full flex items-center justify-center text-[11px] font-bold text-slate-400 uppercase">{text}</div>;
+  return <div className="h-full flex items-center justify-center text-[12.5px] font-medium text-slate-400">{text}</div>;
 }
 
 function SummaryRow({ r, selectable = false, checked = false, onToggle }) {
@@ -506,7 +506,7 @@ function SummaryCard({ title, subtitle, icon, accent, data, emptyText, onClick, 
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           {icon}
-          <h3 className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">{title}</h3>
+          <h3 className="text-[12px] font-semibold text-slate-600">{title}</h3>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {idsDoCard.length > 0 && (
@@ -518,24 +518,24 @@ function SummaryCard({ title, subtitle, icon, accent, data, emptyText, onClick, 
                 if (todasMarcadas) selection.clear();
                 else selection.selectAll(idsDoCard);
               }}
-              className="text-[9px] font-semibold uppercase tracking-wider text-[#0071e3] hover:bg-[#0071e3]/[.08] px-1.5 py-0.5 rounded-md transition-colors whitespace-nowrap"
+              className="text-[11px] font-semibold text-[#0071e3] hover:bg-[#0071e3]/[.08] px-1.5 py-0.5 rounded-md transition-colors whitespace-nowrap"
             >
               {todasMarcadas ? 'Limpar' : `Marcar ${idsDoCard.length}`}
             </button>
           )}
-          <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-50 border border-black/[.06] px-1.5 py-0.5 rounded-md">{subtitle}</span>
+          <span className="text-[11px] font-semibold text-slate-400 bg-slate-50 border border-black/[.06] px-1.5 py-0.5 rounded-md">{subtitle}</span>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar min-h-0">
         {data.rows.length === 0 && data.priorRows.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-center text-[10px] font-bold text-slate-400 uppercase px-2">{emptyText}</div>
+          <div className="h-full flex items-center justify-center text-center text-[12px] font-medium text-slate-400 px-2">{emptyText}</div>
         ) : (
           <>
             {data.rows.map(r => <SummaryRow key={r.id} r={r} selectable={selectable} checked={!!sel?.has(r.id)} onToggle={selection?.toggle} />)}
             {data.priorRows.length > 0 && (
               <div className="mt-2">
                 <div className="flex items-center justify-between gap-2 px-1.5 py-1 mb-0.5 bg-rose-50/70 border border-rose-100 rounded-md">
-                  <span className="text-[9px] font-semibold text-rose-600 uppercase tracking-wider flex items-center gap-1 min-w-0">
+                  <span className="text-[11px] font-semibold text-rose-600 flex items-center gap-1 min-w-0">
                     <AlertCircle size={10} className="shrink-0" />
                     <span className="truncate">Vencidos (em atraso)</span>
                   </span>
@@ -567,12 +567,12 @@ function SummaryCard({ title, subtitle, icon, accent, data, emptyText, onClick, 
         </div>
       )}
       {data.overdue > 0 && (
-        <div className="mt-1.5 text-[9px] font-bold text-amber-600 uppercase tracking-wide flex items-center gap-1">
+        <div className="mt-1.5 text-[11px] font-medium text-amber-600 flex items-center gap-1">
           <AlertCircle size={10} /> {fmt(data.overdue)} vencido(s) em atraso
         </div>
       )}
       <div className="mt-2 pt-2 border-t border-black/[.085] flex items-center justify-between">
-        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Total</span>
+        <span className="text-[12px] font-semibold text-slate-500">Total</span>
         <span className={`text-sm font-semibold tabular-nums ${totalColor}`}>{fmt(data.total)}</span>
       </div>
     </div>

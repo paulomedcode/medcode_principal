@@ -278,11 +278,11 @@ export default function FluxoCaixa() {
               placeholder="Todas as contas" searchPlaceholder="Buscar conta…" />
           </div>
           <button onClick={handlePrint} title="Imprimir o fluxo do período"
-            className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[10px] uppercase tracking-wide shadow-sm flex items-center gap-1.5 transition-all">
+            className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[12px] shadow-sm flex items-center gap-1.5 transition-all">
             <Printer size={14} /> Imprimir
           </button>
           <button onClick={handleExport} title="Exportar o fluxo e o detalhe para Excel"
-            className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[10px] uppercase tracking-wide shadow-sm flex items-center gap-1.5 transition-all">
+            className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[12px] shadow-sm flex items-center gap-1.5 transition-all">
             <Download size={14} /> Exportar
           </button>
         </div>
@@ -412,10 +412,10 @@ function TopCard({ title, icon, items, tone, empty }) {
     <div className="bg-white border border-black/[.085] rounded-2xl p-4 shadow-sm">
       <div className="flex items-center gap-1.5 mb-3">
         {icon}
-        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">{title}</h3>
+        <h3 className="text-[12px] font-semibold text-slate-500">{title}</h3>
       </div>
       {items.length === 0 ? (
-        <div className="text-[11px] font-bold text-slate-400 py-6 text-center uppercase">{empty}</div>
+        <div className="text-[12.5px] font-medium text-slate-400 py-6 text-center">{empty}</div>
       ) : (
         <div className="space-y-2">
           {items.map((i, idx) => (
@@ -438,7 +438,7 @@ function TopCard({ title, icon, items, tone, empty }) {
 function Kpi({ label, value, color, highlight }) {
   return (
     <div className={`rounded-2xl border p-3 shadow-sm ${highlight ? 'bg-slate-900 border-slate-900' : 'bg-white border-black/[.085]'}`}>
-      <div className="text-[9px] font-semibold uppercase tracking-widest text-slate-400">{label}</div>
+      <div className="text-[11px] font-semibold text-slate-400">{label}</div>
       <div className={`text-lg font-semibold tabular-nums mt-1 ${highlight ? 'text-white' : color}`}>{value}</div>
     </div>
   );

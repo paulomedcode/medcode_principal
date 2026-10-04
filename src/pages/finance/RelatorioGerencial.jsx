@@ -26,7 +26,7 @@ function Kpi({ label, value, color, icon }) {
   return (
     <div className={`${s.box} border px-3.5 py-2.5 rounded-xl shadow-sm flex items-center justify-between gap-2`}>
       <div className="min-w-0">
-        <span className={`text-[9px] font-semibold uppercase tracking-wider ${s.label} block leading-none`}>{label}</span>
+        <span className={`text-[11px] font-semibold ${s.label} block leading-none`}>{label}</span>
         <p className={`text-base font-semibold ${s.value} mt-1 tabular-nums leading-none`}>{value}</p>
       </div>
       <div className="shrink-0">{icon}</div>
@@ -126,7 +126,7 @@ export default function RelatorioGerencial() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
             <div className="lg:col-span-8 bg-white border border-black/[.085] rounded-2xl p-4 shadow-sm flex flex-col h-[280px]">
-              <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Evolução Receitas vs Despesas</h3>
+              <h3 className="text-[12px] font-semibold text-slate-500 mb-2">Evolução Receitas vs Despesas</h3>
               <div className="flex-1 min-h-0">
                 {data.compare.length === 0 ? <Empty /> : (
                   <ResponsiveContainer width="100%" height="100%">
@@ -150,7 +150,7 @@ export default function RelatorioGerencial() {
             </div>
 
             <div className="lg:col-span-4 bg-white border border-black/[.085] rounded-2xl p-4 shadow-sm flex flex-col h-[280px]">
-              <h3 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Despesas por Categoria</h3>
+              <h3 className="text-[12px] font-semibold text-slate-500 mb-2">Despesas por Categoria</h3>
               <div className="flex-1 min-h-0">
                 {data.categorias.length === 0 ? <Empty /> : (
                   <ResponsiveContainer width="100%" height="100%">
@@ -181,5 +181,5 @@ export default function RelatorioGerencial() {
 }
 
 function Empty() {
-  return <div className="h-full flex items-center justify-center text-[11px] font-bold text-slate-400 uppercase">Sem dados no período</div>;
+  return <div className="h-full flex items-center justify-center text-[12.5px] font-medium text-slate-400">Sem dados no período</div>;
 }

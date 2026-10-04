@@ -547,11 +547,11 @@ export default function FinanceConciliation() {
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <button onClick={handlePrint} title="Imprimir a lista atual do extrato"
-            className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[10px] uppercase tracking-wide shadow-sm flex items-center gap-1.5 transition-all">
+            className="h-9 px-3 bg-white hover:bg-slate-50 border border-black/[.085] text-slate-600 rounded-lg font-semibold text-[12px] shadow-sm flex items-center gap-1.5 transition-all">
             <Printer size={14} /> Imprimir
           </button>
           {canEdit && (
-            <label className="h-9 px-4 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg font-bold text-[11px] uppercase shadow-sm flex items-center gap-1.5 cursor-pointer select-none transition-all">
+            <label className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-[12.5px] shadow-sm flex items-center gap-1.5 cursor-pointer select-none transition-all">
               <Upload size={14} /> Importar OFX
               <input type="file" accept=".ofx" onChange={handleFileUpload} className="hidden" />
             </label>
@@ -574,14 +574,14 @@ export default function FinanceConciliation() {
           <div className="bg-white border border-black/[.085] rounded-2xl shadow-sm px-4 py-2.5 mb-3 shrink-0 flex items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">{title}</span>
+                <span className="text-[12px] font-semibold text-slate-500">{title}</span>
                 <span className="text-[11px] font-semibold tabular-nums text-slate-700">{done} de {totalBar} · {pct}%</span>
               </div>
               <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${pct}%` }} />
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0 text-[10px] font-bold uppercase tracking-wide">
+            <div className="flex items-center gap-3 shrink-0 text-[12px] font-medium">
               <span className="text-emerald-600">{done} conciliados</span>
               <span className="text-amber-600">{backlog ? stats.pending : stats.batchPending} pendentes</span>
               {!backlog && stats.batchIgnored > 0 && <span className="text-slate-400">{stats.batchIgnored} ignorados</span>}
@@ -597,28 +597,28 @@ export default function FinanceConciliation() {
         <div className="lg:col-span-7 bg-white border border-black/[.085] rounded-2xl shadow-sm flex flex-col min-h-[300px] overflow-hidden">
           <div className="border-b border-black/[.06] shrink-0">
             <div className="flex items-center justify-between gap-2 px-3 h-10">
-              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              <span className="text-[12px] font-semibold text-slate-500">
                 {showIgnored ? 'Itens Ignorados' : 'Extrato Importado (Banco)'}
               </span>
               <div className="flex items-center gap-1.5">
                 {canEdit && !showIgnored && selectedIds.size > 0 && (
                   <>
                     <button onClick={() => setConfirmTarget(selectedRows)}
-                      className="h-7 px-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 shadow-sm"><Zap size={12} /> Lançar {selectedIds.size}</button>
+                      className="h-7 px-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-[12px] font-semibold flex items-center gap-1 shadow-sm"><Zap size={12} /> Lançar {selectedIds.size}</button>
                     <button onClick={doIgnoreSelected}
-                      className="h-7 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1"><EyeOff size={12} /> Ignorar {selectedIds.size}</button>
+                      className="h-7 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md text-[12px] font-semibold flex items-center gap-1"><EyeOff size={12} /> Ignorar {selectedIds.size}</button>
                   </>
                 )}
                 {!showIgnored && selectedIds.size === 0 && (
                   <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] font-semibold">{importedTxs.length} pendentes</span>
                 )}
                 <button onClick={() => { setShowIgnored(s => !s); setSelectedIds(new Set()); setGroupKey(null); }}
-                  className={`h-7 px-2.5 rounded-md text-[10px] font-semibold uppercase tracking-wider transition-colors ${showIgnored ? 'bg-[#0071e3] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>
+                  className={`h-7 px-2.5 rounded-md text-[12px] font-semibold transition-colors ${showIgnored ? 'bg-[#0071e3] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>
                   {showIgnored ? 'Voltar' : 'Ignorados'}
                 </button>
                 {canEdit && !showIgnored && importedTxs.length > 0 && (
                   <button onClick={doClearStatement} title="Apagar todo o extrato não conciliado desta conta"
-                    className="h-7 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1"><Trash2 size={12} /> Limpar</button>
+                    className="h-7 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md text-[12px] font-semibold flex items-center gap-1"><Trash2 size={12} /> Limpar</button>
                 )}
               </div>
             </div>
@@ -632,7 +632,7 @@ export default function FinanceConciliation() {
                 <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5 shrink-0">
                   {[['all', `Todos ${counts.all}`], ['in', `Receb. ${counts.rec}`], ['out', `Pag. ${counts.pag}`]].map(([k, lbl]) => (
                     <button key={k} onClick={() => setImpType(k)}
-                      className={`px-2 h-6 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-all ${impType === k ? 'bg-white shadow-sm text-[#0071e3]' : 'text-slate-500 hover:text-slate-700'}`}>{lbl}</button>
+                      className={`px-2 h-6 rounded-md text-[12px] font-semibold transition-all ${impType === k ? 'bg-white shadow-sm text-[#0071e3]' : 'text-slate-500 hover:text-slate-700'}`}>{lbl}</button>
                   ))}
                 </div>
               )}
@@ -642,11 +642,11 @@ export default function FinanceConciliation() {
                 Modo "Desc + valor" junta contas recorrentes idênticas (mesmo valor todo mês). */}
             {!showIgnored && (importedTxs.length > 0) && (
               <div className="flex flex-wrap items-center gap-1.5 px-3 pb-2 -mt-0.5">
-                <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider shrink-0">Grupos:</span>
+                <span className="text-[11px] font-semibold text-slate-400 shrink-0">Grupos:</span>
                 <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5 shrink-0">
                   {[['desc', 'Descrição'], ['descval', 'Desc + valor']].map(([k, lbl]) => (
                     <button key={k} onClick={() => { setGroupBy(k); setGroupKey(null); setSelectedIds(new Set()); }}
-                      className={`px-2 h-5 rounded-md text-[9px] font-semibold uppercase tracking-wide transition-all ${groupBy === k ? 'bg-white shadow-sm text-[#0071e3]' : 'text-slate-500 hover:text-slate-700'}`}>{lbl}</button>
+                      className={`px-2 h-5 rounded-md text-[11px] font-semibold transition-all ${groupBy === k ? 'bg-white shadow-sm text-[#0071e3]' : 'text-slate-500 hover:text-slate-700'}`}>{lbl}</button>
                   ))}
                 </div>
                 {descGroups.length === 0 ? (
@@ -667,7 +667,7 @@ export default function FinanceConciliation() {
                 })}
                 {groupKey && (
                   <button onClick={() => { setGroupKey(null); setSelectedIds(new Set()); }}
-                    className="shrink-0 h-6 px-2 rounded-full text-[10px] font-semibold uppercase text-slate-400 hover:text-rose-500">Limpar</button>
+                    className="shrink-0 h-6 px-2 rounded-full text-[12px] font-semibold text-slate-400 hover:text-rose-500">Limpar</button>
                 )}
               </div>
             )}
@@ -676,7 +676,7 @@ export default function FinanceConciliation() {
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><Loader2 size={26} className="text-[#0071e3] animate-spin" /></div>
           ) : viewList.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-[11px] font-bold uppercase gap-2 px-6 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-[12.5px] font-medium gap-2 px-6 text-center">
               <FileText size={28} className="text-slate-300" />
               {showIgnored ? 'Nenhum item ignorado.' : importedTxs.length === 0 ? 'Nenhum extrato pendente. Importe um arquivo OFX.' : 'Nada encontrado com esses filtros.'}
             </div>
@@ -715,14 +715,14 @@ export default function FinanceConciliation() {
                           <div className="flex items-center justify-end gap-1.5">
                             {showIgnored ? (
                               canEdit && <button onClick={() => doUnignore(tx)} title="Restaurar para a fila de conciliação"
-                                className="h-6 px-2 bg-slate-100 hover:bg-[#0071e3] hover:text-white text-slate-600 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-colors flex items-center gap-1"><RotateCcw size={11} /> Restaurar</button>
+                                className="h-6 px-2 bg-slate-100 hover:bg-[#0071e3] hover:text-white text-slate-600 rounded-md text-[12px] font-semibold transition-colors flex items-center gap-1"><RotateCcw size={11} /> Restaurar</button>
                             ) : (
                               <>
                                 {best >= 45 && <SignalBars score={best} />}
                                 {canEdit && (
                                   <>
                                     <button onClick={() => setConfirmTarget([tx])} title="Lançar no sistema (cria novo)"
-                                      className="h-6 px-2 bg-indigo-50 hover:bg-[#0071e3] hover:text-white text-[#0071e3] rounded-md text-[10px] font-semibold uppercase tracking-wide transition-colors">Lançar</button>
+                                      className="h-6 px-2 bg-indigo-50 hover:bg-[#0071e3] hover:text-white text-[#0071e3] rounded-md text-[12px] font-semibold transition-colors">Lançar</button>
                                     <button onClick={() => setMatchTx(tx)} title={best > 0 ? `Conciliar — possível par (${scoreLabel(best)})` : 'Buscar par no sistema'}
                                       className={`p-1 rounded-md transition-colors relative ${isMatch ? 'bg-[#0071e3] text-white' : best >= 65 ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100' : 'text-slate-400 hover:text-[#0071e3] hover:bg-indigo-50'}`}><Link2 size={13} /></button>
                                     <button onClick={() => doIgnore(tx)} title="Ignorar este item do extrato (não vira lançamento)"
@@ -747,14 +747,14 @@ export default function FinanceConciliation() {
         <div ref={matchPanelRef}
           className="lg:col-span-5 bg-white border border-black/[.085] rounded-2xl shadow-sm flex flex-col min-h-[300px] overflow-hidden lg:sticky lg:top-[72px] lg:self-start lg:max-h-[calc(100dvh-88px)]">
           <div className="flex items-center justify-between px-3 h-10 border-b border-black/[.06] shrink-0">
-            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+            <span className="text-[12px] font-semibold text-slate-500">
               {!matchTx && selectedRows.length > 0 ? `Conciliar em lote · ${selectedRows.length} selecionada(s)` : 'Conciliar com Lançamento'}
             </span>
             {/* Com vários marcados → baixa em lote; senão a ação do único selecionado. */}
             {canEdit && matchTx && applyManyPreview ? (
               <button onClick={doApplyMany}
                 title={`Aplica R$ ${fmtMoney(applyManyPreview.total)} da linha em ${applyManyPreview.covered} lançamento(s)`}
-                className="h-7 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                className="h-7 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-md text-[12px] font-semibold flex items-center gap-1.5 shadow-sm">
                 <Split size={12} /> Baixar {applyManyPreview.covered} · R$ {fmtMoney(applyManyPreview.total)}
               </button>
             ) : canEdit && matchTx && selectedSystemTx && applyInfo && (
@@ -762,7 +762,7 @@ export default function FinanceConciliation() {
                 {applyInfo.scenario === 'exact' ? (
                   <button onClick={doReconcile}
                     title="Valores batem — concilia integral e trava o lançamento"
-                    className="h-7 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                    className="h-7 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[12px] font-semibold flex items-center gap-1.5 shadow-sm">
                     <Check size={12} strokeWidth={3} /> Reconciliar
                   </button>
                 ) : (
@@ -770,7 +770,7 @@ export default function FinanceConciliation() {
                     title={applyInfo.scenario === 'bank_more'
                       ? `Quita o lançamento (R$ ${fmtMoney(applyInfo.apply)}); a linha do banco continua com R$ ${fmtMoney(applyInfo.bankAfter)}`
                       : `Baixa parcial de R$ ${fmtMoney(applyInfo.apply)} — o lançamento fica parcial`}
-                    className="h-7 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                    className="h-7 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-md text-[12px] font-semibold flex items-center gap-1.5 shadow-sm">
                     <Split size={12} /> {applyInfo.scenario === 'bank_more' ? `Baixar R$ ${fmtMoney(applyInfo.apply)}` : 'Baixa parcial'}
                   </button>
                 )}
@@ -778,7 +778,7 @@ export default function FinanceConciliation() {
             )}
             {canEdit && !matchTx && selectedRows.length > 0 && (
               <button onClick={doReconcileBatch} disabled={!batchToReconcile.length}
-                className="h-7 px-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-colors">
+                className="h-7 px-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-md text-[12px] font-semibold flex items-center gap-1.5 shadow-sm transition-colors">
                 <Check size={12} strokeWidth={3} /> Reconciliar {batchToReconcile.length || ''}
               </button>
             )}
@@ -825,7 +825,7 @@ export default function FinanceConciliation() {
                           )}
                         </div>
                       ) : (
-                        <div className="mt-1.5 pl-2 text-[10px] font-bold text-amber-600 uppercase tracking-wide">Sem par sugerido — use “Lançar”.</div>
+                        <div className="mt-1.5 pl-2 text-[12px] font-medium text-amber-600">Sem par sugerido — use “Lançar”.</div>
                       )}
                     </div>
                   );
@@ -836,14 +836,14 @@ export default function FinanceConciliation() {
             /* LISTA de lançamentos internos sem conciliação (não há linha do banco pra puxá-los) */
             <div className="flex-1 flex flex-col overflow-hidden">
               <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-black/[.06] shrink-0">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#0071e3]">Lançamentos sem conciliação · {systemTxs.length}</span>
-                <button onClick={() => setViewOrphans(false)} className="h-6 px-2 rounded-md text-[10px] font-semibold uppercase tracking-wide text-slate-400 hover:text-[#0071e3] hover:bg-indigo-50 flex items-center gap-1 transition-colors">
+                <span className="text-[12px] font-semibold text-[#0071e3]">Lançamentos sem conciliação · {systemTxs.length}</span>
+                <button onClick={() => setViewOrphans(false)} className="h-6 px-2 rounded-md text-[12px] font-semibold text-slate-400 hover:text-[#0071e3] hover:bg-indigo-50 flex items-center gap-1 transition-colors">
                   <X size={12} /> Voltar
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1.5">
                 {systemTxs.length === 0 ? (
-                  <div className="text-center py-10 text-slate-400 text-[11px] font-bold uppercase">Tudo conciliado nesta conta.</div>
+                  <div className="text-center py-10 text-slate-400 text-[12.5px] font-medium">Tudo conciliado nesta conta.</div>
                 ) : systemTxs.map(sys => {
                   const cp = counterpartyName(sys) || sys.description;
                   return (
@@ -872,13 +872,13 @@ export default function FinanceConciliation() {
                 <div className="relative overflow-hidden rounded-2xl border border-black/[.085] bg-white p-3 shadow-sm">
                   <div className="absolute -right-2 -top-2 h-12 w-12 rounded-full bg-slate-100/80" />
                   <FileText size={14} className="text-slate-300 absolute right-2.5 top-2.5" />
-                  <div className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 relative">Extrato pendente</div>
+                  <div className="text-[11px] font-semibold text-slate-400 relative">Extrato pendente</div>
                   <div className="text-2xl font-semibold tabular-nums text-slate-800 mt-1 leading-none relative">{importedTxs.length}</div>
                 </div>
                 <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/80 to-white p-3 shadow-sm">
                   <div className="absolute -right-2 -top-2 h-12 w-12 rounded-full bg-emerald-100/50" />
                   <Zap size={14} className="text-emerald-300 absolute right-2.5 top-2.5" />
-                  <div className="text-[9px] font-semibold uppercase tracking-widest text-emerald-500 relative">Com par sugerido</div>
+                  <div className="text-[11px] font-semibold text-emerald-500 relative">Com par sugerido</div>
                   <div className="text-2xl font-semibold tabular-nums text-emerald-600 mt-1 leading-none relative">{strongMatches}</div>
                 </div>
                 <button type="button" onClick={() => { if (systemTxs.length) { setSelectedIds(new Set()); setMatchTx(null); setViewOrphans(true); } }}
@@ -886,18 +886,18 @@ export default function FinanceConciliation() {
                   className="relative overflow-hidden text-left rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-white p-3 shadow-sm hover:border-[#0071e3]/40 hover:shadow-md disabled:hover:border-indigo-100 disabled:hover:shadow-sm disabled:cursor-default transition-all">
                   <div className="absolute -right-2 -top-2 h-12 w-12 rounded-full bg-indigo-100/50" />
                   <Link2 size={14} className="text-indigo-300 absolute right-2.5 top-2.5" />
-                  <div className="text-[9px] font-semibold uppercase tracking-widest text-[#0071e3] relative flex items-center gap-1">Sem conciliação {systemTxs.length > 0 && <span className="text-[#0071e3] normal-case font-bold">(ver)</span>}</div>
+                  <div className="text-[11px] font-semibold text-[#0071e3] relative flex items-center gap-1">Sem conciliação {systemTxs.length > 0 && <span className="text-[#0071e3] normal-case font-bold">(ver)</span>}</div>
                   <div className="text-2xl font-semibold tabular-nums text-[#0071e3] mt-1 leading-none relative">{systemTxs.length}</div>
                 </button>
                 <div className="relative overflow-hidden rounded-2xl border border-black/[.085] bg-white p-3 shadow-sm">
                   <div className="absolute -right-2 -top-2 h-12 w-12 rounded-full bg-slate-100/80" />
                   <Check size={14} className="text-slate-300 absolute right-2.5 top-2.5" />
-                  <div className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 relative">Conciliados (últ. extrato)</div>
+                  <div className="text-[11px] font-semibold text-slate-400 relative">Conciliados (últ. extrato)</div>
                   <div className="text-2xl font-semibold tabular-nums text-slate-700 mt-1 leading-none relative">{stats.batchReconciled}</div>
                 </div>
               </div>
               <div className="rounded-xl border border-black/[.085] bg-white p-3.5">
-                <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-2">
+                <div className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 mb-2">
                   <HelpCircle size={13} className="text-[#0071e3]" /> Como conciliar
                 </div>
                 <ol className="text-[11px] font-medium text-slate-500 space-y-1.5 leading-snug list-decimal ml-4">
@@ -914,7 +914,7 @@ export default function FinanceConciliation() {
               <div className="px-3 py-2 bg-slate-50/80 border-b border-black/[.085] shrink-0">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <span className="text-[9px] font-semibold uppercase text-slate-400 tracking-widest">Linha do banco · {fmtDate(matchTx.transaction_date)}</span>
+                    <span className="text-[11px] font-semibold text-slate-400">Linha do banco · {fmtDate(matchTx.transaction_date)}</span>
                     <div className="text-[12px] font-semibold text-slate-800 truncate leading-tight">{matchTx.description}</div>
                   </div>
                   <div className="text-right shrink-0">
@@ -959,13 +959,13 @@ export default function FinanceConciliation() {
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <label className="flex items-center gap-1 min-w-0">
-                    <span className="text-[9px] font-semibold uppercase text-slate-400 shrink-0">Mês</span>
+                    <span className="text-[11px] font-semibold text-slate-400 shrink-0">Mês</span>
                     <input type="month" title="Mês do vencimento" value={candFilters.mes}
                       onChange={e => setCandFilters(f => ({ ...f, mes: e.target.value }))}
                       className="h-7 px-1.5 w-full min-w-0 bg-white border border-black/[.085] rounded-md text-[10.5px] text-slate-600 outline-none focus:border-indigo-400" />
                   </label>
                   <label className="flex items-center gap-1 min-w-0">
-                    <span className="text-[9px] font-semibold uppercase text-sky-500 shrink-0">Comp.</span>
+                    <span className="text-[11px] font-semibold text-sky-500 shrink-0">Comp.</span>
                     <input type="month" title="Competência (mês de referência; sem competência, vale o mês da data)" value={candFilters.comp}
                       onChange={e => setCandFilters(f => ({ ...f, comp: e.target.value }))}
                       className="h-7 px-1.5 w-full min-w-0 bg-white border border-black/[.085] rounded-md text-[10.5px] text-slate-600 outline-none focus:border-indigo-400" />
@@ -973,13 +973,13 @@ export default function FinanceConciliation() {
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <label className="flex items-center gap-1 min-w-0">
-                    <span className="text-[9px] font-semibold uppercase text-slate-400 shrink-0">De</span>
+                    <span className="text-[11px] font-semibold text-slate-400 shrink-0">De</span>
                     <input type="date" title="Lançamentos a partir de" value={candFilters.from}
                       onChange={e => setCandFilters(f => ({ ...f, from: e.target.value }))}
                       className="h-7 px-1.5 w-full min-w-0 bg-white border border-black/[.085] rounded-md text-[10.5px] text-slate-600 outline-none focus:border-indigo-400" />
                   </label>
                   <label className="flex items-center gap-1 min-w-0">
-                    <span className="text-[9px] font-semibold uppercase text-slate-400 shrink-0">Até</span>
+                    <span className="text-[11px] font-semibold text-slate-400 shrink-0">Até</span>
                     <input type="date" title="Lançamentos até" value={candFilters.to}
                       onChange={e => setCandFilters(f => ({ ...f, to: e.target.value }))}
                       className="h-7 px-1.5 w-full min-w-0 bg-white border border-black/[.085] rounded-md text-[10.5px] text-slate-600 outline-none focus:border-indigo-400" />
@@ -1204,9 +1204,9 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
             <div className="min-w-0">
               <h3 className="text-[15px] font-semibold text-slate-900 tracking-tight leading-none">Confirmar Lançamento</h3>
               <div className="flex items-center gap-2 mt-1.5">
-                <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{items.length} {items.length === 1 ? 'transação' : 'transações'}</span>
-                <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">→ Pago</span>
-                <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${total >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{items.length} {items.length === 1 ? 'transação' : 'transações'}</span>
+                <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">→ Pago</span>
+                <span className={`text-[12px] font-semibold px-2 py-0.5 rounded-full border ${total >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
                   líquido R$ {fmtMoney(total)}
                 </span>
               </div>
@@ -1219,33 +1219,33 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
         <div className="px-5 py-3.5 border-b border-black/[.06] bg-slate-50/80 shrink-0">
           <div className="flex items-center gap-1.5 mb-2.5">
             <span className="h-5 w-5 rounded-md bg-indigo-100 grid place-items-center"><Sliders size={11} className="text-[#0071e3]" /></span>
-            <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-widest">Padrões</span>
+            <span className="text-[11px] font-semibold text-slate-500">Padrões</span>
             <span className="text-[9px] font-bold text-slate-400 normal-case tracking-normal">— preenchem todas as linhas de uma vez</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
             <div className="sm:col-span-4">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Contrato / Centro de Custo</label>
+              <label className="text-[11px] font-medium text-slate-400 ml-1 mb-1 block">Contrato / Centro de Custo</label>
               <SearchableSelect options={ccOptions} value={defCostCenter} onChange={setDefCostCenter}
                 placeholder="Contrato / centro" searchPlaceholder="Buscar contrato…" size="sm" />
             </div>
             <div className="sm:col-span-4">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Categoria padrão</label>
+              <label className="text-[11px] font-medium text-slate-400 ml-1 mb-1 block">Categoria padrão</label>
               <SearchableSelect options={singleType ? catOptionsByType[singleType] : []} value={defCategory} onChange={setDefCategory}
                 allowEmpty emptyLabel={singleType ? 'Sem categoria' : 'Tipos mistos — por linha'} searchPlaceholder="Buscar categoria…" size="sm" />
             </div>
             <div className="sm:col-span-4">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Fornecedor / Pagador</label>
+              <label className="text-[11px] font-medium text-slate-400 ml-1 mb-1 block">Fornecedor / Pagador</label>
               <SearchableSelect options={partyOptions} value={defParty} onChange={setDefParty}
                 allowEmpty emptyLabel="— por linha" placeholder="Fornecedor / pagador" searchPlaceholder="Buscar fornecedor/pagador…"
                 onCreate={onCreateParty} createLabel="Cadastrar" size="sm" />
             </div>
             <div className="sm:col-span-3">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Competência</label>
+              <label className="text-[11px] font-medium text-slate-400 ml-1 mb-1 block">Competência</label>
               <input type="month" value={defRefMonth} onChange={e => setDefRefMonth(e.target.value)}
                 className="w-full h-8 px-2 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold text-slate-600 outline-none focus:border-[#0071e3]" />
             </div>
             <div className="sm:col-span-3">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Método</label>
+              <label className="text-[11px] font-medium text-slate-400 ml-1 mb-1 block">Método</label>
               <select value={defMethod} onChange={e => setDefMethod(e.target.value)}
                 className="w-full h-8 px-2 bg-white border border-black/[.085] rounded-lg text-[11px] font-bold text-slate-700 outline-none focus:border-[#0071e3] cursor-pointer">
                 {PAYMENT_METHODS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -1253,7 +1253,7 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
             </div>
             <div className="sm:col-span-6">
               <button type="button" onClick={applyDefaults}
-                className="w-full h-8 px-2 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg text-[10px] font-semibold uppercase tracking-wide shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-1.5 transition-all">
+                className="w-full h-8 px-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[12px] font-semibold shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center justify-center gap-1.5 transition-all">
                 <Check size={12} strokeWidth={3} /> Aplicar a todas</button>
             </div>
           </div>
@@ -1271,7 +1271,7 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
                 <div className="flex items-center gap-3">
                   <div className={`shrink-0 w-11 rounded-xl border py-1 text-center leading-none ${inflow ? 'bg-emerald-50/60 border-emerald-100' : 'bg-rose-50/60 border-rose-100'}`}>
                     <span className="block text-[15px] font-semibold text-slate-800 tabular-nums">{dd}</span>
-                    <span className={`block text-[8px] font-semibold uppercase tracking-widest mt-0.5 ${inflow ? 'text-emerald-500' : 'text-rose-400'}`}>{mm}</span>
+                    <span className={`block text-[10.5px] font-semibold mt-0.5 ${inflow ? 'text-emerald-500' : 'text-rose-400'}`}>{mm}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <input value={it.description} onChange={e => upd(it.id, { description: e.target.value })}
@@ -1289,13 +1289,13 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
                     <span className={`text-sm font-semibold ${inflow ? 'text-emerald-500' : 'text-rose-500'}`}>{inflow ? '+' : '−'}</span>
                     <span className={`w-24 text-[13.5px] font-semibold text-right tabular-nums ${inflow ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(it.amount)}</span>
                   </div>
-                  <label className={`flex items-center gap-1 h-10 px-2.5 rounded-xl border cursor-pointer select-none text-[10px] font-semibold uppercase tracking-wide shrink-0 self-start transition-colors ${it.asTransfer ? 'bg-[#0071e3] border-[#0071e3] text-white shadow-[0_1px_2px_rgba(0,113,227,.35)]' : 'bg-white border-black/[.085] text-slate-500 hover:border-[#0071e3]/40'}`}>
+                  <label className={`flex items-center gap-1 h-10 px-2.5 rounded-xl border cursor-pointer select-none text-[12px] font-semibold shrink-0 self-start transition-colors ${it.asTransfer ? 'bg-[#0071e3] border-[#0071e3] text-white shadow-[0_1px_2px_rgba(0,113,227,.35)]' : 'bg-white border-black/[.085] text-slate-500 hover:border-[#0071e3]/40'}`}>
                     <input type="checkbox" checked={it.asTransfer} onChange={e => upd(it.id, { asTransfer: e.target.checked, splits: e.target.checked ? null : it.splits })} className="hidden" />
                     <ArrowRightLeft size={12} /> Transf.
                   </label>
                   {!it.asTransfer && (
                     <button type="button" onClick={() => (it.splits ? stopSplit(it.id) : startSplit(it))}
-                      className={`flex items-center gap-1 h-10 px-2.5 rounded-xl border text-[10px] font-semibold uppercase tracking-wide shrink-0 self-start transition-colors ${it.splits ? 'bg-[#0071e3] border-[#0071e3] text-white shadow-[0_1px_2px_rgba(0,113,227,.35)]' : 'bg-white border-black/[.085] text-slate-500 hover:border-[#0071e3]/40'}`}>
+                      className={`flex items-center gap-1 h-10 px-2.5 rounded-xl border text-[12px] font-semibold shrink-0 self-start transition-colors ${it.splits ? 'bg-[#0071e3] border-[#0071e3] text-white shadow-[0_1px_2px_rgba(0,113,227,.35)]' : 'bg-white border-black/[.085] text-slate-500 hover:border-[#0071e3]/40'}`}>
                       <Split size={12} /> Dividir
                     </button>
                   )}
@@ -1303,7 +1303,7 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
 
                 {it.asTransfer ? (
                   <div className="mt-3">
-                    <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide ml-0.5 mb-1 block">{counterLabel}</label>
+                    <label className="text-[11px] font-semibold text-slate-400 ml-0.5 mb-1 block">{counterLabel}</label>
                     <div className="max-w-sm">
                       <SearchableSelect options={accountOptions} value={it.counterAccountId} onChange={v => upd(it.id, { counterAccountId: v })}
                         placeholder={counterLabel} searchPlaceholder="Buscar conta…" />
@@ -1318,7 +1318,7 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
                     {/* Grid de campos com rótulos */}
                     <div className="mt-3.5 pt-3 border-t border-dashed border-black/[.085] grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2.5">
                       <div>
-                        <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide ml-0.5 mb-1 block">Categoria <span className="text-rose-400">*</span></label>
+                        <label className="text-[11px] font-semibold text-slate-400 ml-0.5 mb-1 block">Categoria <span className="text-rose-400">*</span></label>
                         {it.splits ? (
                           <div className="h-9 px-3 rounded-lg border border-indigo-100 bg-indigo-50/40 flex items-center text-[11px] font-bold text-[#0071e3]">Rateio em {it.splits.length} categorias ↓</div>
                         ) : (
@@ -1327,28 +1327,28 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
                         )}
                       </div>
                       <div>
-                        <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide ml-0.5 mb-1 block">Método</label>
+                        <label className="text-[11px] font-semibold text-slate-400 ml-0.5 mb-1 block">Método</label>
                         <select value={it.method} onChange={e => upd(it.id, { method: e.target.value })}
                           className="w-full h-9 px-3 bg-white border border-black/[.085] rounded-lg text-xs font-bold text-slate-600 outline-none focus:border-[#0071e3] cursor-pointer">
                           {PAYMENT_METHODS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                         </select>
                       </div>
                       <div>
-                        <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide ml-0.5 mb-1 block">Contrato / Centro de custo <span className="text-rose-400">*</span></label>
+                        <label className="text-[11px] font-semibold text-slate-400 ml-0.5 mb-1 block">Contrato / Centro de custo <span className="text-rose-400">*</span></label>
                         <SearchableSelect options={ccOptions} value={it.costCenterId} onChange={v => upd(it.id, { costCenterId: v })}
                           placeholder="Contrato / centro" searchPlaceholder="Buscar contrato…" />
                       </div>
                       <div>
-                        <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide ml-0.5 mb-1 block">Competência (mês ref.)</label>
+                        <label className="text-[11px] font-semibold text-slate-400 ml-0.5 mb-1 block">Competência (mês ref.)</label>
                         <input type="month" value={it.referenceMonth} onChange={e => upd(it.id, { referenceMonth: e.target.value })}
                           className="w-full h-9 px-3 bg-white border border-black/[.085] rounded-lg text-xs font-bold text-slate-600 outline-none focus:border-[#0071e3]" />
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5 ml-0.5 mb-1">
-                          <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide block">Fornecedor / Pagador <span className="text-rose-400">*</span></label>
+                          <label className="text-[11px] font-semibold text-slate-400 block">Fornecedor / Pagador <span className="text-rose-400">*</span></label>
                           {it.partySuggested && it.partyId && (
                             <span title={it.payee ? `Sugerido pelo extrato: ${it.payee}` : 'Sugerido pelo extrato'}
-                              className="text-[8px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-indigo-50 text-[#0071e3] border border-indigo-100 leading-none">sugerido</span>
+                              className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50 text-[#0071e3] border border-indigo-100 leading-none">sugerido</span>
                           )}
                         </div>
                         <SearchableSelect options={partyOptions} value={it.partyId} onChange={v => upd(it.id, { partyId: v, partySuggested: false })}
@@ -1367,7 +1367,7 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
                         <div className="mt-3 rounded-xl border border-indigo-100 bg-black/[.02] p-3 space-y-1.5">
                           <div className="flex items-center gap-1.5 mb-1">
                             <span className="h-4 w-4 rounded bg-indigo-100 grid place-items-center"><Split size={10} className="text-[#0071e3]" /></span>
-                            <span className="text-[9px] font-semibold text-[#0071e3] uppercase tracking-widest">Rateio em categorias</span>
+                            <span className="text-[11px] font-semibold text-[#0071e3]">Rateio em categorias</span>
                           </div>
                           {it.splits.map((s, idx) => (
                             <div key={idx} className="flex items-center gap-2">
@@ -1383,7 +1383,7 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
                             </div>
                           ))}
                           <div className="flex items-center justify-between pt-0.5">
-                            <button type="button" onClick={() => addSplitRow(it.id)} className="text-[10px] font-semibold uppercase tracking-wide text-[#0071e3] hover:text-indigo-700 flex items-center gap-1"><Plus size={12} /> Categoria</button>
+                            <button type="button" onClick={() => addSplitRow(it.id)} className="text-[12px] font-semibold text-[#0071e3] hover:text-indigo-700 flex items-center gap-1"><Plus size={12} /> Categoria</button>
                             <span className={`text-[10px] font-bold tabular-nums ${ok ? 'text-emerald-600' : 'text-rose-500'}`}>
                               Soma {fmtMoney(sum)} / {fmtMoney(tot)}{ok ? ' ✓' : ` · falta ${fmtMoney(diff)}`}
                             </span>
@@ -1405,9 +1405,9 @@ function ConfirmLaunch({ rows, categories, costCenters, accounts, parties, onCre
             <span className={`text-sm font-semibold tabular-nums ${total >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>R$ {fmtMoney(total)}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={onClose} className="h-10 px-4 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl uppercase tracking-wide transition-colors">Cancelar</button>
+            <button onClick={onClose} className="h-10 px-4 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
             <button onClick={confirm}
-              className="h-10 px-6 bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold rounded-xl text-xs uppercase tracking-wide shadow-lg shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center gap-2 transition-all active:scale-[0.98]">
+              className="h-10 px-6 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs shadow-lg shadow-[0_1px_2px_rgba(0,113,227,.35)] flex items-center gap-2 transition-all active:scale-[0.98]">
               <Check size={15} strokeWidth={3} /> Confirmar {items.length}
             </button>
           </div>
