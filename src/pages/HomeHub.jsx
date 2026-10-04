@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
     Search, Plus, Building2, Target, FolderKanban, ClipboardList, DollarSign, CalendarClock, Check,
-    AlertTriangle, ChevronRight, Loader2, Repeat, Sparkles, Flag,
+    AlertTriangle, ChevronRight, Loader2, Repeat, Sparkles, Flag, Radar,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermission } from '../contexts/PermissionContext';
@@ -16,6 +16,7 @@ import {
 } from '../services/crm';
 import { resumoServicos, statusProjeto, tipoAtividade, fmtBRL, fmtData } from '../config/servicos';
 import { todayISO } from '../utils/date';
+import { statusProspeccao } from '../config/prospeccao';
 import { useOpcoesNovo, abrirNovo } from '../components/novo';
 
 /*
@@ -49,6 +50,7 @@ const TIPO_ITEM = {
     retorno: { icone: CalendarClock, cor: 'bg-amber-50 text-amber-600', rotulo: 'Retorno' },
     receber: { icone: DollarSign, cor: 'bg-emerald-50 text-emerald-600', rotulo: 'Receber' },
     prazo: { icone: Flag, cor: 'bg-rose-50 text-rose-600', rotulo: 'Prazo' },
+    prospeccao: { icone: Radar, cor: 'bg-lime-50 text-lime-700', rotulo: 'Prospecção' },
 };
 
 const Chip = ({ rotulo, valor, detalhe, tom = 'text-slate-900', alerta, onClick }) => (
@@ -78,6 +80,8 @@ export default function HomeHub() {
         editarProjetos: hasPermission('Editar Projetos'),
         financeiro: hasPermission('Acessar Financeiro'),
         compromissos: hasPermission('Acessar Compromissos'),
+        prospeccao: hasPermission('Acessar Prospecção'),
+        editarProspeccao: hasPermission('Editar Prospecção'),
         editarClientes: hasPermission('Editar Clientes') || hasPermission('Editar Vendas') || hasPermission('Editar Financeiro'),
     };
     const veCrm = pode.clientes || pode.vendas || pode.projetos;
@@ -92,7 +96,7 @@ export default function HomeHub() {
         const hoje = todayISO();
         const vazio = Promise.resolve([]);
         const seguro = (p) => p.catch((e) => { console.warn(e); return []; });
-        const [tarefas, passos, projetos, etapas, ops, receber, recorr, feed] = await Promise.all([
+        const [tarefas, passos, projetos, etapas, ops, receber, recorr, feed, prosp] = await Promise.all([
             pode.compromissos && currentUser?.id ? seguro(tarefasAtribuidas(currentUser.id)) : vazio,
             veCrm && currentUser?.id ? seguro(proximosPassos({ autorId: currentUser.id })) : vazio,
             veCrm ? seguro(listarProjetos()) : vazio,
@@ -105,11 +109,18 @@ export default function HomeHub() {
             pode.financeiro ? seguro(supabase.from('finance_recurrences').select('amount, frequency, end_date')
                 .eq('is_active', true).eq('type', 'ENTRADA').then((r) => r.data || [])) : vazio,
             veCrm ? seguro(atividadesRecentes(8)) : vazio,
+            // Retornos combinados na Prospecção (meus ou sem dono), até a semana que vem.
+            pode.prospeccao && currentUser?.id ? seguro(supabase.from('prospeccao_leads')
+                .select('id, nome, categoria, cidade, status, proximo_contato_em, responsavel_id')
+                .not('proximo_contato_em', 'is', null).lte('proximo_contato_em', addDias(hoje, 7))
+                .not('status', 'in', '(DESCARTADO,FECHADO,PRODUCAO)')
+                .or(`responsavel_id.is.null,responsavel_id.eq.${currentUser.id}`)
+                .order('proximo_contato_em').then((r) => r.data || [])) : vazio,
         ]);
         const ativos = projetos.filter((p) => ['PLANEJAMENTO', 'EM_ANDAMENTO', 'EM_REVISAO', 'PAUSADO'].includes(p.status));
         const progresso = await progressoDasEntregas(ativos.map((p) => p.workspace_page_id)).catch(() => ({}));
-        setD({ hoje, tarefas, passos, projetos, ativos, etapas, ops, receber, recorr, feed, progresso });
-    }, [currentUser?.id, veCrm, pode.compromissos, pode.vendas, pode.financeiro]);
+        setD({ hoje, tarefas, passos, projetos, ativos, etapas, ops, receber, recorr, feed, progresso, prosp });
+    }, [currentUser?.id, veCrm, pode.compromissos, pode.vendas, pode.financeiro, pode.prospeccao]);
 
     useEffect(() => { carregar(); }, [carregar]);
 
@@ -138,6 +149,12 @@ export default function HomeHub() {
                 abrir: a.projeto_id ? `/projetos/${a.projeto_id}` : a.oportunidade_id ? `/vendas?abrir=${a.oportunidade_id}` : `/clientes/${a.party_id}`,
                 concluir: { tipo: 'retorno', id: a.id },
             })),
+            ...d.prosp.map((l) => ({
+                id: `prosp:${l.id}`, tipo: 'prospeccao', titulo: `Retornar: ${l.nome}`, data: l.proximo_contato_em,
+                contexto: [statusProspeccao(l.status).label, l.categoria, l.cidade].filter(Boolean).join(' · '),
+                abrir: `/prospeccao?abrir=${l.id}`,
+                concluir: pode.editarProspeccao ? { tipo: 'prospeccao', id: l.id } : undefined,
+            })),
             ...d.receber.map((t) => ({
                 id: `fin:${t.id}`, tipo: 'receber', titulo: `Receber ${fmtBRL(Number(t.amount) - Number(t.paid_amount || 0))}`,
                 data: t.due_date, contexto: `${t.finance_parties?.name || ''}${t.finance_parties?.name ? ' · ' : ''}${t.description}`,
@@ -149,7 +166,7 @@ export default function HomeHub() {
             })),
         ];
         return lista.sort((a, b) => (a.data + (a.hora || '')).localeCompare(b.data + (b.hora || '')));
-    }, [d, currentUser?.id]);
+    }, [d, currentUser?.id, pode.editarProspeccao]);
 
     const grupos = useMemo(() => {
         if (!d) return { atrasado: [], hoje: [], semana: [] };
@@ -173,6 +190,10 @@ export default function HomeHub() {
         setConcluindo(item.id);
         try {
             if (item.concluir.tipo === 'retorno') await concluirProximoPasso(item.concluir.id);
+            else if (item.concluir.tipo === 'prospeccao') {
+                const { error } = await supabase.from('prospeccao_leads').update({ proximo_contato_em: null }).eq('id', item.concluir.id);
+                if (error) throw error;
+            }
             else {
                 const r = await concluirLembrete(item.concluir.rowId, currentUser);
                 if (!r.ok) { toast.error(r.motivo); return; }
@@ -181,6 +202,7 @@ export default function HomeHub() {
                 ...x,
                 passos: x.passos.filter((a) => `crm:${a.id}` !== item.id),
                 tarefas: x.tarefas.filter((t) => t.id !== item.id),
+                prosp: x.prosp.filter((l) => `prosp:${l.id}` !== item.id),
             }));
             toast.success('Feito!');
         } catch (e) {
@@ -308,7 +330,7 @@ export default function HomeHub() {
                                         {aba === 'atrasado' ? 'Nada atrasado. 👏' : aba === 'hoje' ? 'Dia livre por aqui.' : 'Semana tranquila.'}
                                     </p>
                                     <p className="text-[11.5px] font-semibold text-slate-400 max-w-sm">
-                                        Aqui aparecem as tarefas das entregas atribuídas a você, os retornos combinados com clientes, os recebimentos e os prazos dos seus projetos.
+                                        Aqui aparecem as tarefas das entregas atribuídas a você, os retornos combinados com clientes e leads da prospecção, os recebimentos e os prazos dos seus projetos.
                                     </p>
                                 </div>
                             ) : (

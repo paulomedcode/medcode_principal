@@ -82,6 +82,16 @@ export default function Funil() {
         setSearchParams({}, { replace: true });
     }, [abrirParam, ops, setSearchParams]);
 
+    // ?nova=<party_id> vindo da Prospecção: nova oportunidade já com a empresa.
+    const novaParam = searchParams.get('nova');
+    const [novaParaEmpresa, setNovaParaEmpresa] = useState(null);
+    useEffect(() => {
+        if (!novaParam || carregando) return;
+        setNovaParaEmpresa(novaParam);
+        setEditar(null);
+        setSearchParams({}, { replace: true });
+    }, [novaParam, carregando, setSearchParams]);
+
     const etapaGanho = etapas.find((e) => e.tipo === 'GANHO');
     const etapaPerdido = etapas.find((e) => e.tipo === 'PERDIDO');
     const primeiraAberta = etapas.find((e) => e.tipo === 'ABERTA');
@@ -312,9 +322,10 @@ export default function Funil() {
 
             {editar !== undefined && (
                 <OportunidadeModal oportunidade={editar} etapas={etapas} empresas={empresas}
-                    onClose={() => setEditar(undefined)}
+                    partyIdFixo={editar === null ? novaParaEmpresa || undefined : undefined}
+                    onClose={() => { setEditar(undefined); setNovaParaEmpresa(null); }}
                     onEmpresaCriada={(row) => setEmpresas((l) => [...l, row].sort((a, b) => a.name.localeCompare(b.name)))}
-                    onSaved={() => { setEditar(undefined); aposMudar(); }} />
+                    onSaved={() => { setEditar(undefined); setNovaParaEmpresa(null); aposMudar(); }} />
             )}
             {ganhar && (
                 <GanharModal oportunidade={ganhar} onClose={() => setGanhar(null)}

@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { logAction } from '../utils/logger';
-import { salvarEmpresa } from './crm';
+import { salvarEmpresa, registrarAtividade } from './crm';
+import { statusProspeccao } from '../config/prospeccao';
 
 /*
  * Prospecção: lista crua de possíveis clientes.
@@ -89,8 +90,11 @@ export async function registrarTentativa(lead, canal, autorId) {
     return row;
 }
 
-/** Cria a empresa no CRM (como LEAD) com os dados do lead e grava o vínculo. */
-export async function converterEmCliente(lead) {
+/**
+ * Cria a empresa no CRM (como LEAD) com os dados do lead, grava o vínculo e
+ * leva o histórico da prospecção para a linha do tempo do cliente.
+ */
+export async function converterEmCliente(lead, autorId) {
     const notas = [lead.notas, lead.maps_url && `Google Maps: ${lead.maps_url}`,
         lead.endereco && `Endereço: ${lead.endereco}`].filter(Boolean).join('\n');
     const empresa = await salvarEmpresa({
@@ -99,6 +103,15 @@ export async function converterEmCliente(lead) {
         cidade: lead.cidade, uf: lead.uf, responsavel_id: lead.responsavel_id, notes: notas || null,
     });
     const row = ok(await supabase.from('prospeccao_leads').update({ party_id: empresa.id }).eq('id', lead.id).select().single());
+    const eventos = await listarEventos(lead.id).catch(() => []);
+    const resumo = [
+        `Status na prospecção: ${statusProspeccao(lead.status).label} · ${lead.tentativas || 0} tentativa(s) de contato`,
+        lead.origem && `Origem: ${lead.origem}`,
+        ...eventos.filter((e) => e.tipo === 'NOTA').reverse()
+            .map((e) => `• ${new Date(e.created_at).toLocaleDateString('pt-BR')}: ${e.texto}`),
+    ].filter(Boolean).join('\n');
+    await registrarAtividade({ party_id: empresa.id, tipo: 'SISTEMA', titulo: 'Veio da Prospecção', descricao: resumo }, autorId)
+        .catch((e) => console.warn('Histórico da prospecção não foi para o cliente', e));
     await logAction('PROSPECÇÃO', `Converteu em cliente: ${lead.nome}`);
     return { lead: row, empresa };
 }

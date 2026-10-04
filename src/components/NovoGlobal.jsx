@@ -12,7 +12,7 @@ import Gaveta from './ui/Gaveta';
 /*
  * "Novo" de qualquer tela. Abre pelo evento "medcode:novo":
  *   - sem detalhe → gaveta com as opções (o "＋" da barra inferior do celular);
- *   - { tipo: 'lead' | 'oportunidade' | 'projeto' | 'tarefa' | 'lancamento' } → vai direto.
+ *   - { tipo: 'prospeccao' | 'lead' | 'oportunidade' | 'projeto' | 'tarefa' | 'lancamento' } → vai direto.
  * Cada opção só aparece para quem pode criar aquilo.
  */
 
@@ -26,6 +26,7 @@ export default function NovoGlobal() {
     const escolher = (id) => {
         setEscolhendo(false);
         if (id === 'tarefa') return navigate('/compromissos');
+        if (id === 'prospeccao') return navigate('/prospeccao?novo=1');
         if (id === 'lancamento') return navigate('/finance/transacoes?novo=1');
         setCriar(id);
     };

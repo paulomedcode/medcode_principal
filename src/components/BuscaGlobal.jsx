@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Building2, Target, FolderKanban, CornerDownLeft, Loader2 } from 'lucide-react';
+import { Search, Building2, Target, FolderKanban, CornerDownLeft, Loader2, Radar } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { usePermission } from '../contexts/PermissionContext';
 import { PERMISSION_MODULES } from '../config/permissions';
 import { rotuloServicos } from '../config/servicos';
+import { statusProspeccao } from '../config/prospeccao';
 
 /*
  * Busca global — Ctrl/⌘ + K ou a lupa da barra superior (evento
@@ -49,15 +50,20 @@ export default function BuscaGlobal() {
             setBuscando(true);
             const like = `%${q.replace(/[%_]/g, '')}%`;
             const veEmpresas = hasPermission('Acessar Clientes') || hasPermission('Acessar Vendas') || hasPermission('Acessar Financeiro');
-            const [emp, ops, projs] = await Promise.all([
+            const digitos = q.replace(/\D/g, '');
+            const [emp, ops, projs, prosp] = await Promise.all([
                 veEmpresas ? supabase.from('finance_parties').select('id, name, nome_fantasia, kind').or(`name.ilike.${like},nome_fantasia.ilike.${like},document.ilike.${like}`).limit(6) : { data: [] },
                 hasPermission('Acessar Vendas') ? supabase.from('crm_oportunidades').select('id, titulo, servico, servicos, empresa:finance_parties(name)').ilike('titulo', like).limit(6) : { data: [] },
                 (hasPermission('Acessar Projetos') || hasPermission('Acessar Clientes')) ? supabase.from('projetos').select('id, nome, servico, servicos, empresa:finance_parties(name)').ilike('nome', like).limit(6) : { data: [] },
+                hasPermission('Acessar Prospecção') ? supabase.from('prospeccao_leads').select('id, nome, categoria, cidade, status')
+                    .or(`nome.ilike.${like},categoria.ilike.${like}${digitos.length >= 4 ? `,telefone.ilike.%${digitos.slice(-4)}%` : ''}`)
+                    .is('party_id', null).limit(6) : { data: [] },
             ]);
             const podeAbrirCliente = hasPermission('Acessar Clientes');
             setResultados([
                 ...(emp.data || []).map((e) => ({ id: `emp:${e.id}`, tipo: 'Empresa', icone: Building2, titulo: e.name, sub: e.nome_fantasia || (e.kind === 'LEAD' ? 'Lead' : e.kind === 'FORNECEDOR' ? 'Fornecedor' : 'Cliente'), destino: podeAbrirCliente ? `/clientes/${e.id}` : '/finance/transacoes' })),
                 ...(ops.data || []).map((o) => ({ id: `op:${o.id}`, tipo: 'Oportunidade', icone: Target, titulo: o.titulo, sub: `${rotuloServicos(o)} · ${o.empresa?.name || ''}`, destino: `/vendas?abrir=${o.id}` })),
+                ...(prosp.data || []).map((l) => ({ id: `prosp:${l.id}`, tipo: 'Prospecção', icone: Radar, titulo: l.nome, sub: [statusProspeccao(l.status).label, l.categoria, l.cidade].filter(Boolean).join(' · '), destino: `/prospeccao?abrir=${l.id}` })),
                 ...(projs.data || []).map((p) => ({ id: `proj:${p.id}`, tipo: 'Projeto', icone: FolderKanban, titulo: p.nome, sub: `${rotuloServicos(p)} · ${p.empresa?.name || ''}`, destino: `/projetos/${p.id}` })),
             ]);
             setSel(0);
@@ -89,7 +95,7 @@ export default function BuscaGlobal() {
                 <div className="flex items-center gap-3 px-4 h-14 border-b border-black/[.06]">
                     <Search size={18} className="text-slate-400" />
                     <input ref={inputRef} autoFocus value={termo} onChange={(e) => setTermo(e.target.value)}
-                        placeholder="Buscar cliente, oportunidade, projeto ou módulo…"
+                        placeholder="Buscar cliente, lead, oportunidade, projeto ou módulo…"
                         className="flex-1 bg-transparent outline-none text-[14px] font-semibold text-slate-800 placeholder:text-slate-400" />
                     {buscando && <Loader2 size={16} className="animate-spin text-slate-300" />}
                     <kbd className="text-[10px] font-bold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">Esc</kbd>

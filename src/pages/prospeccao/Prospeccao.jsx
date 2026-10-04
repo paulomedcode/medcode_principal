@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Radar, Plus, Search, Upload, List, Columns3, CalendarClock, Trash2, X, Building2, ArrowUpDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { STATUS_PROSPECCAO, statusProspeccao, tempoDesde } from '../../config/prospeccao';
@@ -71,6 +72,8 @@ export default function Prospeccao() {
     const podeEditar = hasPermission('Editar Prospecção');
     const podeExcluir = hasPermission('Excluir Prospecção');
     const podeConverter = hasPermission('Editar Clientes') || hasPermission('Editar Vendas') || hasPermission('Editar Financeiro');
+    const podeVender = hasPermission('Editar Vendas');
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [leads, setLeads] = useState([]);
     const [carregando, setCarregando] = useState(true);
@@ -85,6 +88,7 @@ export default function Prospeccao() {
     const [limite, setLimite] = useState(LIMITE);
     const [selecionados, setSelecionados] = useState(() => new Set());
     const [abertoId, setAbertoId] = useState(null);
+    const [ordemFicha, setOrdemFicha] = useState([]);
     const [importar, setImportar] = useState(false);
     const [novo, setNovo] = useState(false);
     const [excluir, setExcluir] = useState(null);         // lista de ids
@@ -100,6 +104,16 @@ export default function Prospeccao() {
     useEffect(() => { carregar(); }, [carregar]);
     useEffect(() => { try { localStorage.setItem('prospeccao.visao', visao); } catch { /* sem storage */ } }, [visao]);
     useEffect(() => { setLimite(LIMITE); }, [fStatus, busca, fCategoria, fCidade, fOrigem, fContato, ordem]);
+
+    // ?abrir=<id> (busca, Central do dia) e ?novo=1 (o "＋" de qualquer tela).
+    const abrirParam = searchParams.get('abrir');
+    const novoParam = searchParams.get('novo');
+    useEffect(() => {
+        if (novoParam) { setNovo(true); setSearchParams({}, { replace: true }); return; }
+        if (!abrirParam || carregando) return;
+        if (leads.some((l) => l.id === abrirParam)) { setOrdemFicha([abrirParam]); setAbertoId(abrirParam); }
+        setSearchParams({}, { replace: true });
+    }, [abrirParam, novoParam, carregando, leads, setSearchParams]);
 
     const atualizarLocal = useCallback((row) => setLeads((ls) => ls.map((l) => (l.id === row.id ? { ...l, ...row } : l))), []);
 
@@ -238,9 +252,13 @@ export default function Prospeccao() {
         return n;
     });
 
-    // Ficha: navega dentro da lista filtrada atual.
-    const idxAberto = lista.findIndex((l) => l.id === abertoId);
-    const leadAberto = idxAberto >= 0 ? lista[idxAberto] : leads.find((l) => l.id === abertoId);
+    // Ficha: navega na ordem da lista do momento em que foi aberta. Congelada de
+    // propósito — trocar o status tira o lead do filtro, e a sequência de
+    // triagem não pode pular nem se perder por isso.
+    const abrir = (id) => { setOrdemFicha(lista.map((l) => l.id)); setAbertoId(id); };
+    const idxAberto = ordemFicha.indexOf(abertoId);
+    const leadAberto = leads.find((l) => l.id === abertoId);
+    const irPara = (i) => setAbertoId(ordemFicha[i]);
 
     const soltar = (status) => {
         const lead = arrastando;
@@ -399,7 +417,7 @@ export default function Prospeccao() {
                                         <div key={l.id} draggable={podeEditar}
                                             onDragStart={(e) => { setArrastando(l); e.dataTransfer.effectAllowed = 'move'; }}
                                             onDragEnd={() => { setArrastando(null); setSobre(null); }}
-                                            onClick={() => setAbertoId(l.id)}
+                                            onClick={() => abrir(l.id)}
                                             className={`bg-white border border-black/[.085] rounded-xl p-2.5 shadow-sm cursor-pointer hover:border-[#0071e3]/50 ${arrastando?.id === l.id ? 'opacity-40' : ''}`}>
                                             <div className="flex items-start gap-1">
                                                 <p className="flex-1 text-[12px] font-bold text-slate-800 leading-snug line-clamp-2">{l.nome}</p>
@@ -435,7 +453,7 @@ export default function Prospeccao() {
                             {visiveis.map((l) => {
                                 const st = statusProspeccao(l.status);
                                 return (
-                                    <div key={l.id} onClick={() => setAbertoId(l.id)} className="px-4 py-3 active:bg-slate-50">
+                                    <div key={l.id} onClick={() => abrir(l.id)} className="px-4 py-3 active:bg-slate-50">
                                         <div className="flex items-start gap-2">
                                             <span className="w-1 self-stretch rounded-full shrink-0" style={{ background: st.cor }} />
                                             <div className="flex-1 min-w-0">
@@ -479,7 +497,7 @@ export default function Prospeccao() {
                                 </thead>
                                 <tbody className="divide-y divide-black/[.055]">
                                     {visiveis.map((l) => (
-                                        <tr key={l.id} onClick={() => setAbertoId(l.id)}
+                                        <tr key={l.id} onClick={() => abrir(l.id)}
                                             className={`group text-xs cursor-pointer transition-colors ${selecionados.has(l.id) ? 'bg-[#0071e3]/5' : 'hover:bg-[#f5f5f7]'}`}>
                                             <td className="py-2 pl-4 pr-1" onClick={(e) => e.stopPropagation()}>
                                                 <input type="checkbox" checked={selecionados.has(l.id)} onChange={() => alternarSel(l.id)} />
@@ -538,14 +556,14 @@ export default function Prospeccao() {
                 <FichaLead
                     lead={leadAberto}
                     posicao={idxAberto >= 0 ? idxAberto + 1 : 1}
-                    total={idxAberto >= 0 ? lista.length : 1}
-                    onAnterior={idxAberto > 0 ? () => setAbertoId(lista[idxAberto - 1].id) : undefined}
-                    onProximo={idxAberto >= 0 && idxAberto < lista.length - 1 ? () => setAbertoId(lista[idxAberto + 1].id) : undefined}
+                    total={idxAberto >= 0 ? ordemFicha.length : 1}
+                    onAnterior={idxAberto > 0 ? () => irPara(idxAberto - 1) : undefined}
+                    onProximo={idxAberto >= 0 && idxAberto < ordemFicha.length - 1 ? () => irPara(idxAberto + 1) : undefined}
                     onClose={() => setAbertoId(null)}
                     onAlterado={atualizarLocal}
                     onTentativa={(canal) => tentativa(leadAberto, canal)}
                     onExcluir={(l) => setExcluir([l.id])}
-                    podeEditar={podeEditar} podeExcluir={podeExcluir} podeConverter={podeConverter}
+                    podeEditar={podeEditar} podeExcluir={podeExcluir} podeConverter={podeConverter} podeVender={podeVender}
                 />
             )}
 
@@ -556,7 +574,7 @@ export default function Prospeccao() {
 
             {novo && (
                 <NovoLead onClose={() => setNovo(false)}
-                    onSalvo={(row) => { setLeads((ls) => [row, ...ls]); setNovo(false); setAbertoId(row.id); }} />
+                    onSalvo={(row) => { setLeads((ls) => [row, ...ls]); setNovo(false); setOrdemFicha([row.id]); setAbertoId(row.id); }} />
             )}
 
             <ConfirmDialog open={!!excluir} busy={excluindo}

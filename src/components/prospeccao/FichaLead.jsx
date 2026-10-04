@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    X, ChevronLeft, ChevronRight, PhoneOutgoing, CalendarClock, StickyNote, Trash2, Building2, ArrowRightLeft, Loader2, Copy, Send,
+    X, ChevronLeft, ChevronRight, PhoneOutgoing, Target, CalendarClock, StickyNote, Trash2, Building2, ArrowRightLeft, Loader2, Copy, Send,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { STATUS_PROSPECCAO, statusProspeccao, tempoDesde } from '../../config/prospeccao';
@@ -48,7 +48,7 @@ const ROTULO_EVENTO = { CONTATO: 'Tentativa de contato', NOTA: 'Nota' };
  * teclas 1–9 trocam o status.
  */
 export default function FichaLead({ lead, posicao, total, onAnterior, onProximo, onClose, onAlterado, onExcluir, onTentativa,
-    podeEditar, podeExcluir, podeConverter }) {
+    podeEditar, podeExcluir, podeConverter, podeVender }) {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const usuarios = useUsuarios();
@@ -61,8 +61,9 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
     const carregarEventos = useCallback(async () => {
         try { setEventos(await listarEventos(lead.id)); } catch (e) { console.error(e); }
     }, [lead.id]);
-    // Recarrega também quando status/tentativas mudam (o banco grava o histórico).
-    useEffect(() => { carregarEventos(); }, [carregarEventos, lead.status, lead.tentativas]);
+    // Recarrega quando a linha volta do banco (updated_at muda): o histórico de
+    // status é gravado pelo banco, então só existe depois da resposta.
+    useEffect(() => { carregarEventos(); }, [carregarEventos, lead.updated_at]);
 
     const salvar = useCallback(async (dados) => {
         const antes = lead;
@@ -107,7 +108,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
     const converter = async () => {
         setConvertendo(true);
         try {
-            const { lead: row, empresa } = await converterEmCliente(lead);
+            const { lead: row, empresa } = await converterEmCliente(lead, currentUser?.id);
             onAlterado(row);
             toast.success(`${empresa.name} agora está em Clientes.`);
         } catch (e) {
@@ -219,7 +220,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                                 {eventos.map((ev) => (
                                     <li key={ev.id} className="group flex gap-2 text-[12px]">
                                         <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                                            style={{ background: ev.tipo === 'STATUS' ? statusProspeccao(ev.para).cor : ev.tipo === 'NOTA' ? '#0071e3' : '#64748b' }} />
+                                            style={{ background: ev.tipo === 'STATUS' ? statusProspeccao(ev.para).cor : ev.tipo === 'NOTA' ? '#0071e3' : ev.tipo === 'SISTEMA' ? '#10b981' : '#64748b' }} />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-semibold text-slate-700 whitespace-pre-wrap break-words">
                                                 {ev.tipo === 'STATUS'
@@ -228,7 +229,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                                             </p>
                                             <p className="text-[10.5px] font-semibold text-slate-400">{fmtDataHora(ev.created_at)}{ev.autor?.name && ` · ${ev.autor.name}`}</p>
                                         </div>
-                                        {ev.tipo !== 'STATUS' && (ev.autor_id === currentUser?.id || podeExcluir) && (
+                                        {['NOTA', 'CONTATO'].includes(ev.tipo) && (ev.autor_id === currentUser?.id || podeExcluir) && (
                                             <button onClick={() => apagarEvento(ev)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500"><Trash2 size={12} /></button>
                                         )}
                                     </li>
@@ -281,11 +282,17 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
 
                 {/* Rodapé */}
                 <div className="bg-white border-t border-black/[.06] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-2 shrink-0">
-                    {lead.party_id ? (
+                    {lead.party_id ? (<>
                         <button onClick={() => navigate(`/clientes/${lead.party_id}`)} className="h-9 px-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold flex items-center gap-1.5">
-                            <Building2 size={14} /> Ver em Clientes
+                            <Building2 size={14} /> Ver cliente
                         </button>
-                    ) : podeConverter && (
+                        {podeVender && (
+                            <button onClick={() => navigate(`/vendas?nova=${lead.party_id}`)} title="Abre uma oportunidade no funil de Vendas para esta empresa"
+                                className="h-9 px-3 rounded-lg bg-[#0071e3] text-white text-[11px] font-bold flex items-center gap-1.5">
+                                <Target size={14} /> Criar oportunidade
+                            </button>
+                        )}
+                    </>) : podeConverter && (
                         <button onClick={converter} disabled={convertendo} title="Cria a empresa em Clientes (como Lead) para abrir oportunidade no Vendas"
                             className="h-9 px-3 rounded-lg bg-white border border-black/[.085] text-slate-700 hover:border-[#0071e3] text-[11px] font-bold flex items-center gap-1.5">
                             {convertendo ? <Loader2 size={14} className="animate-spin" /> : <ArrowRightLeft size={14} />} Converter em cliente

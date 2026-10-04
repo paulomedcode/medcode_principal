@@ -52,7 +52,7 @@ export default function ImportarLeads({ existentes, onClose, onImportados }) {
 
     const carregarPlanilha = (wb, nomeArquivo) => {
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const linhas = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: true })
+        const linhas = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false })
             .filter((l) => l.some((c) => String(c).trim() !== ''));
         if (linhas.length < 2) { toast.error('A planilha precisa de uma linha de títulos e ao menos um lead.'); return; }
         const cabecalho = linhas[0].map((h, i) => String(h || `Coluna ${i + 1}`).trim());
@@ -64,12 +64,14 @@ export default function ImportarLeads({ existentes, onClose, onImportados }) {
         if (!arquivo) return;
         try {
             const buf = await arquivo.arrayBuffer();
-            carregarPlanilha(XLSX.read(buf, { type: 'array' }), arquivo.name);
+            // CSV sem adivinhar tipo: "4,8" não pode virar 48 nem telefone virar número.
+            const csv = /\.(csv|tsv|txt)$/i.test(arquivo.name);
+            carregarPlanilha(XLSX.read(buf, { type: 'array', raw: csv }), arquivo.name);
         } catch (e) { console.error(e); toast.error('Não consegui ler esse arquivo.'); }
     };
 
     const lerColado = () => {
-        try { carregarPlanilha(XLSX.read(colado, { type: 'string' }), 'Colado'); }
+        try { carregarPlanilha(XLSX.read(colado, { type: 'string', raw: true }), 'Colado'); }
         catch (e) { console.error(e); toast.error('Não consegui ler o texto colado.'); }
     };
 
