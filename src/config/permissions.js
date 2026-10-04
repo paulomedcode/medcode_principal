@@ -68,6 +68,21 @@ export const PERMISSION_MODULES = [
         ],
     },
     {
+        id: 'prospeccao',
+        label: 'Prospecção',
+        desc: 'Lista de possíveis clientes e abordagem',
+        route: '/prospeccao',
+        icon: 'Radar',
+        gradient: 'from-lime-400 to-green-500',
+        accent: 'lime',
+        accessKey: 'Acessar Prospecção',
+        permissions: [
+            { id: 'Acessar Prospecção', label: 'Acessar o módulo', desc: 'Vê a lista de leads e o histórico, sem alterar' },
+            { id: 'Editar Prospecção', label: 'Importar, cadastrar e mudar status', desc: 'Inclui registrar tentativa de contato e notas' },
+            { id: 'Excluir Prospecção', label: 'Excluir leads' },
+        ],
+    },
+    {
         id: 'vendas',
         home: 'vendas',
         label: 'Vendas',

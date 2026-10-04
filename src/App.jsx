@@ -23,6 +23,7 @@ import Painel from './pages/Painel';
 import Clientes from './pages/crm/Clientes';
 import ClienteDetalhe from './pages/crm/ClienteDetalhe';
 import Funil from './pages/vendas/Funil';
+import Prospeccao from './pages/prospeccao/Prospeccao';
 import Projetos from './pages/projetos/Projetos';
 import ProjetoDetalhe from './pages/projetos/ProjetoDetalhe';
 // Workspace (Compromisso/Notion) carrega o editor BlockNote, que é pesado:
@@ -163,6 +164,12 @@ const App = () => {
                     <Route path="/clientes/:id" element={
                       <PermissionRoute requiredPermission="Acessar Clientes">
                         <ClienteDetalhe />
+                      </PermissionRoute>
+                    } />
+
+                    <Route path="/prospeccao" element={
+                      <PermissionRoute requiredPermission="Acessar Prospecção">
+                        <Prospeccao />
                       </PermissionRoute>
                     } />
 

@@ -1,11 +1,11 @@
 import { useLocation } from 'react-router-dom';
-import { LayoutDashboard, Building2, Target, FolderKanban, DollarSign, ClipboardList, Home } from 'lucide-react';
+import { LayoutDashboard, Building2, Target, FolderKanban, DollarSign, ClipboardList, Home, Radar } from 'lucide-react';
 import { usePermission } from '../contexts/PermissionContext';
 import { PERMISSION_MODULES } from '../config/permissions';
 
 // Módulos da navegação (barra superior, menu e barra inferior do celular).
 // Sai do catálogo de permissões: quem não abre o módulo não vê o item.
-const ICONES_MODULO = { painel: LayoutDashboard, clientes: Building2, vendas: Target, projetos: FolderKanban, financeiro: DollarSign, compromissos: ClipboardList };
+const ICONES_MODULO = { painel: LayoutDashboard, clientes: Building2, prospeccao: Radar, vendas: Target, projetos: FolderKanban, financeiro: DollarSign, compromissos: ClipboardList };
 
 export function useModulosNav() {
     const { hasPermission } = usePermission();
