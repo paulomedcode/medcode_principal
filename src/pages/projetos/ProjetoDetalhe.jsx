@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Edit2, Trash2, ClipboardList, Loader2, Building2, Target, Repeat, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
-    obterProjeto, salvarProjeto, excluirProjeto, financeiroDoProjeto, mensalidadesDoProjeto, criarPaginaDeEntregas,
+    obterProjeto, salvarProjeto, excluirProjeto, financeiroDoProjeto, mensalidadesDoProjeto, criarPaginaDeEntregas, andamentoDasEntregas,
 } from '../../services/crm';
 import { STATUS_PROJETO, resumoServicos, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
@@ -14,6 +14,7 @@ import Atividades from '../../components/crm/Atividades';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { PAGINA, CARD, Etiqueta, Carregando } from '../../components/crm/ui';
 import { resumoFinanceiro } from '../../components/crm/dados';
+import { OPT_COLORS } from '../../components/workspace/databaseUtils';
 
 const STATUS_LANC = {
     PAGO: 'bg-emerald-50 text-emerald-700 border-emerald-100',
@@ -39,6 +40,7 @@ export default function ProjetoDetalhe() {
     const [editando, setEditando] = useState(false);
     const [confirmar, setConfirmar] = useState(false);
     const [criandoEntregas, setCriandoEntregas] = useState(false);
+    const [andamento, setAndamento] = useState([]);
 
     const carregar = useCallback(async () => {
         try {
@@ -57,6 +59,12 @@ export default function ProjetoDetalhe() {
     }, [id, veFinanceiro]);
 
     useEffect(() => { carregar(); }, [carregar]);
+
+    // Resumo do quadro de entregas: quantas tarefas em cada coluna.
+    useEffect(() => {
+        if (!projeto?.workspace_page_id) return;
+        andamentoDasEntregas(projeto.workspace_page_id).then(setAndamento).catch((e) => console.warn(e));
+    }, [projeto?.workspace_page_id]);
 
     const fin = useMemo(() => resumoFinanceiro(lancamentos), [lancamentos]);
 
@@ -137,23 +145,44 @@ export default function ProjetoDetalhe() {
 
                     <div className={`${CARD} p-4`}>
                         <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight mb-2 flex items-center gap-1.5"><ClipboardList size={13} /> Entregas</h3>
-                        {projeto.workspace_page_id ? (
-                            <button onClick={() => navigate(`/compromissos?abrir=${projeto.workspace_page_id}`)} disabled={!veCompromissos}
-                                className="w-full h-10 bg-fuchsia-50 hover:bg-fuchsia-100 text-fuchsia-700 rounded-xl text-[12.5px] font-medium flex items-center justify-center gap-1.5 disabled:opacity-50">
-                                <ExternalLink size={13} /> Abrir quadro de entregas
-                            </button>
-                        ) : (
+                        {projeto.workspace_page_id ? (() => {
+                            const total = andamento.reduce((t, c) => t + c.qtd, 0);
+                            const feitas = andamento.find((c) => /conclu/i.test(c.nome))?.qtd || 0;
+                            const pct = total ? Math.round((feitas / total) * 100) : 0;
+                            return (<>
+                                <div className="flex items-baseline justify-between mb-1.5">
+                                    <span className="text-[12.5px] text-slate-600">{total ? `${feitas} de ${total} concluídas` : 'Nenhuma tarefa no quadro'}</span>
+                                    {total > 0 && <span className="text-[12.5px] font-semibold text-slate-800 tabular-nums">{pct}%</span>}
+                                </div>
+                                <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden mb-3">
+                                    <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${pct}%` }} />
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                                    {andamento.map((c) => (
+                                        <div key={c.id || 'sem'} className="rounded-lg border border-black/[.06] px-2.5 py-2">
+                                            <p className="text-[11.5px] text-slate-500 flex items-center gap-1.5 truncate">
+                                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${(OPT_COLORS[c.cor] || OPT_COLORS.gray).dot}`} />{c.nome}
+                                            </p>
+                                            <p className="text-[17px] font-semibold text-slate-900 tabular-nums">{c.qtd}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button onClick={() => navigate(`/compromissos?abrir=${projeto.workspace_page_id}`)} disabled={!veCompromissos}
+                                    className="w-full h-9 bg-white border border-black/[.09] hover:border-slate-300 text-slate-700 rounded-lg text-[12.5px] font-medium flex items-center justify-center gap-1.5 disabled:opacity-50">
+                                    <ExternalLink size={13} /> Abrir quadro de entregas
+                                </button>
+                            </>);
+                        })() : (
                             <>
-                                <p className="text-[11px] font-semibold text-slate-400 mb-2">Ainda sem quadro de entregas.</p>
+                                <p className="text-[12px] text-slate-400 mb-2">Ainda sem quadro de entregas.</p>
                                 {podeEditar && veCompromissos && (
                                     <button onClick={criarEntregas} disabled={criandoEntregas}
-                                        className="w-full h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[12.5px] font-medium flex items-center justify-center gap-1.5 disabled:opacity-60">
+                                        className="w-full h-9 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[12.5px] font-medium flex items-center justify-center gap-1.5 disabled:opacity-60">
                                         {criandoEntregas ? <Loader2 size={13} className="animate-spin" /> : <ClipboardList size={13} />} Criar quadro de {s.label}
                                     </button>
                                 )}
                             </>
                         )}
-                        <p className="text-[10px] font-semibold text-slate-400 mt-2">Fases: {s.fases.join(' → ')}</p>
                     </div>
 
                     {veFinanceiro && (

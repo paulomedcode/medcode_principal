@@ -361,6 +361,33 @@ export async function progressoDasEntregas(pageIds = []) {
     return out;
 }
 
+/**
+ * Quantas tarefas em cada coluna do quadro de entregas (o Status), na ordem do
+ * quadro. Devolve [{ id, nome, cor, qtd }] — inclui "Sem status" se houver.
+ */
+export async function andamentoDasEntregas(pageId) {
+    if (!pageId) return [];
+    const [{ data: props, error: e1 }, { data: linhas, error: e2 }] = await Promise.all([
+        supabase.from('workspace_db_properties').select('id, options').eq('database_id', pageId).eq('name', 'Status').limit(1),
+        supabase.from('workspace_pages').select('id').eq('parent_id', pageId).is('deleted_at', null),
+    ]);
+    if (e1) throw e1;
+    if (e2) throw e2;
+    const prop = props?.[0];
+    const colunas = (prop?.options || []).map((o) => ({ id: o.id, nome: o.name, cor: o.color, qtd: 0 }));
+    if (!prop || !(linhas || []).length) return colunas;
+    const { data: valores, error: e3 } = await supabase.from('workspace_db_values')
+        .select('row_id, value').eq('property_id', prop.id).in('row_id', linhas.map((l) => l.id));
+    if (e3) throw e3;
+    const porLinha = new Map((valores || []).map((v) => [v.row_id, v.value]));
+    let semStatus = 0;
+    linhas.forEach((l) => {
+        const c = colunas.find((x) => x.id === porLinha.get(l.id));
+        if (c) c.qtd += 1; else semStatus += 1;
+    });
+    return semStatus ? [...colunas, { id: null, nome: 'Sem status', cor: 'gray', qtd: semStatus }] : colunas;
+}
+
 /** Últimas atividades registradas (feed da tela inicial). */
 export async function atividadesRecentes(limite = 8) {
     return ok(await supabase.from('crm_atividades')
