@@ -564,7 +564,7 @@ export default function DatabaseView({
           <LayoutToggle layout={layout} onChange={changeLayout} />
           {canImportAgenda && (
             <button onClick={runImport} disabled={importing} title="Trazer os compromissos da agenda atual"
-              className="flex items-center gap-1.5 px-2.5 h-7 text-[11.5px] font-semibold text-slate-500 border border-slate-200 rounded-lg hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors disabled:opacity-50">
+              className="flex items-center gap-1.5 px-2.5 h-7 text-[11.5px] font-semibold text-slate-500 border border-slate-200 rounded-lg hover:text-slate-900 hover:border-slate-300 hover:bg-blue-50 transition-colors disabled:opacity-50">
               {importing ? <span className="ws-skel w-3.5 h-3.5 rounded-full" /> : <Download size={13} />} Importar agenda
             </button>
           )}
@@ -611,10 +611,10 @@ export default function DatabaseView({
 function LayoutToggle({ layout, onChange }) {
   return (
     <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
-      <button onClick={() => onChange('tabs')} className={`flex items-center gap-1 h-6 px-2 rounded-md text-[11px] font-bold transition-colors ${layout === 'tabs' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+      <button onClick={() => onChange('tabs')} className={`flex items-center gap-1 h-6 px-2 rounded-md text-[12px] font-medium transition-colors ${layout === 'tabs' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
         <Table2 size={12} /> Abas
       </button>
-      <button onClick={() => onChange('stacked')} className={`flex items-center gap-1 h-6 px-2 rounded-md text-[11px] font-bold transition-colors ${layout === 'stacked' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+      <button onClick={() => onChange('stacked')} className={`flex items-center gap-1 h-6 px-2 rounded-md text-[12px] font-medium transition-colors ${layout === 'stacked' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
         <Layers size={12} /> Empilhado
       </button>
     </div>
@@ -633,7 +633,7 @@ function ViewTab({ view, active, onSelect, onRename, onDelete, canDelete, podeRe
       <button
         onClick={() => (active && podeRenomear ? setMenu((v) => !v) : onSelect())}
         ref={ref}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[12.5px] font-semibold border-b-2 -mb-px transition-colors ${active ? 'text-blue-600 border-blue-500' : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-800 dark:hover:text-slate-200'}`}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[12.5px] font-semibold border-b-2 -mb-px transition-colors ${active ? 'text-slate-900 border-slate-900' : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-800 dark:hover:text-slate-200'}`}
       >
         <Icon size={14} /> {view.name}
         {active && podeRenomear && <ChevronDown size={11} className="opacity-50" />}
@@ -666,7 +666,7 @@ function AddViewButton({ onAdd }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <button ref={ref} onClick={() => setOpen((v) => !v)} title="Nova visão" className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors">
+      <button ref={ref} onClick={() => setOpen((v) => !v)} title="Nova visão" className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors">
         <Plus size={16} />
       </button>
       {open && (
@@ -708,22 +708,22 @@ function ColumnsManager({ props, onSaved, onDeleted, onCreate }) {
       {open && (
         <Popover anchorRef={btnRef} onClose={() => { if (!editing && !creating) setOpen(false); }} width={230}>
           <div className="p-1.5">
-            <p className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Editar coluna</p>
+            <p className="px-2 py-1 text-[12px] font-medium text-slate-400">Editar coluna</p>
             <div className="flex flex-col gap-0.5 max-h-64 overflow-y-auto">
               {props.map((p) => (
                 <button
                   key={p.id}
                   onClick={(e) => setEditing(editing?.prop?.id === p.id ? null : { prop: p, anchor: e.currentTarget })}
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] font-semibold text-left transition-colors ${editing?.prop?.id === p.id ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] font-semibold text-left transition-colors ${editing?.prop?.id === p.id ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
                   <span className="flex-1 truncate">{p.name}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase shrink-0">{PROP_TYPE_LABELS[p.type] || p.type}</span>
+                  <span className="text-[12px] font-medium text-slate-400 shrink-0">{PROP_TYPE_LABELS[p.type] || p.type}</span>
                 </button>
               ))}
               {props.length === 0 && <p className="px-2 py-2 text-[12px] font-semibold text-slate-400">Nenhuma coluna ainda.</p>}
             </div>
             <button ref={newRef} onClick={() => setCreating(true)}
-              className="mt-1 flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+              className="mt-1 flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
               <Plus size={13} /> Nova coluna
             </button>
           </div>
@@ -848,7 +848,7 @@ function TableView({
               <th className="ws-th px-0 text-center">
                 {podeEditarEstrutura && (
                   <>
-                    <button ref={addColRef} onClick={() => setAddingCol(true)} title="Nova coluna" className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 transition-colors"><Plus size={14} /></button>
+                    <button ref={addColRef} onClick={() => setAddingCol(true)} title="Nova coluna" className="p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-200/50 transition-colors"><Plus size={14} /></button>
                     {addingCol && <NewColumnMenu anchorRef={addColRef} onClose={() => setAddingCol(false)} onCreate={onAddColumn} />}
                   </>
                 )}
@@ -1137,14 +1137,14 @@ function BoardView({ rows, props, users, excerpts, groupById, onCell, onAddRow, 
               ))}
               {over && hint.index >= items.length && <div className="ws-drop-ph" />}
             </div>
-            <button onClick={async () => { const r = await onAddRow(col.id ? { [groupProp.id]: col.id } : {}); if (r) onOpenRow?.(r.id); }} className="flex items-center gap-1 w-full px-1 py-1.5 mt-0.5 text-[11.5px] font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+            <button onClick={async () => { const r = await onAddRow(col.id ? { [groupProp.id]: col.id } : {}); if (r) onOpenRow?.(r.id); }} className="flex items-center gap-1 w-full px-1 py-1.5 mt-0.5 text-[11.5px] font-semibold text-slate-400 hover:text-slate-900 transition-colors">
               <Plus size={13} /> Nova tarefa
             </button>
           </div>
         );
       })}
       {OPTION_TYPES.has(groupProp.type) && podeEditarEstrutura && (
-        <button onClick={addBoardColumn} className="w-[180px] shrink-0 h-10 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-[12px] font-bold text-slate-400 hover:text-blue-600 hover:border-blue-300 transition-colors">
+        <button onClick={addBoardColumn} className="w-[180px] shrink-0 h-10 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-[12px] font-bold text-slate-400 hover:text-slate-900 hover:border-slate-300 transition-colors">
           <Plus size={14} /> Nova coluna
         </button>
       )}
@@ -1255,7 +1255,7 @@ function RowPeek({ rowId, props, users, createdBy, onClose, onCell, onTitle, onD
     <div className="fixed inset-0 z-[1100] flex justify-end bg-slate-900/25 backdrop-blur-[2px]" onClick={onClose}>
       <div className="w-full max-w-2xl h-full bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto ws-cmd-in" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 px-7 py-2.5 flex items-center justify-between z-10">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.12em]">Tarefa</span>
+          <span className="text-[12px] font-semibold text-slate-400 tracking-[0.12em]">Tarefa</span>
           <div className="flex items-center gap-0.5">
             {page && (jaConcluida ? (
               <span className="flex items-center gap-1 mr-1 px-2 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[11px] font-bold">
@@ -1295,7 +1295,7 @@ function RowPeek({ rowId, props, users, createdBy, onClose, onCell, onTitle, onD
               ))}
             </div>
             <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
-              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.12em] mb-1.5">Observações e andamento</div>
+              <div className="text-[12px] font-semibold text-slate-400 tracking-[0.12em] mb-1.5">Observações e andamento</div>
               <Suspense fallback={<div className="space-y-2"><div className="ws-skel h-4 w-full" /><div className="ws-skel h-4 w-5/6" /></div>}>
                 <BlockEditor
                   key={page.id} initialContent={page.content}

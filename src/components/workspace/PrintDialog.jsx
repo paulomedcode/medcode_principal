@@ -176,7 +176,7 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
         <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-3">
           <div className="flex items-end gap-3 flex-wrap">
             <label className="flex-1 min-w-[240px]">
-              <span className="block text-[10px] font-semibold text-slate-400 uppercase tracking-[0.12em] mb-1">Título do relatório</span>
+              <span className="block text-[12px] font-semibold text-slate-400 tracking-[0.12em] mb-1">Título do relatório</span>
               <input
                 value={titulo}
                 onChange={(e) => setTituloManual(e.target.value)}
@@ -184,7 +184,7 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
               />
             </label>
             <div>
-              <span className="block text-[10px] font-semibold text-slate-400 uppercase tracking-[0.12em] mb-1">Folha A4</span>
+              <span className="block text-[12px] font-semibold text-slate-400 tracking-[0.12em] mb-1">Folha A4</span>
               <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
                 {[['landscape', 'Paisagem'], ['portrait', 'Retrato']].map(([v, label]) => (
                   <button
@@ -198,7 +198,7 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
 
           {/* Colunas */}
           <div>
-            <span className="block text-[10px] font-semibold text-slate-400 uppercase tracking-[0.12em] mb-1.5">Colunas</span>
+            <span className="block text-[12px] font-semibold text-slate-400 tracking-[0.12em] mb-1.5">Colunas</span>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="h-7 px-2.5 flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 text-[12px] font-bold text-slate-400" title="A tarefa é sempre impressa">Tarefa</span>
               {props.map((p) => (
@@ -281,7 +281,7 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
             <button
               onClick={imprimir}
               disabled={selecionadas.length === 0 || (incluirNotas && carregandoNotas)}
-              className="flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-blue-600 text-white text-[12.5px] font-bold hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-slate-900 text-white text-[12.5px] font-medium hover:bg-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Printer size={14} /> Imprimir
             </button>

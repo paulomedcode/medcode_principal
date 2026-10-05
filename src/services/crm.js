@@ -267,9 +267,11 @@ export async function financeiroDaEmpresa(partyId) {
 // Página de entregas (módulo Compromissos)
 //
 // Cada projeto ganha um database "Entregas" dentro da pasta "Projetos" do
-// workspace, com as fases dos serviços vendidos como colunas do quadro e as
-// tarefas-modelo já cadastradas. Com mais de um serviço, as fases se somam
-// (sem repetir) e cada tarefa leva o emoji do serviço a que pertence.
+// workspace, com as tarefas-modelo já cadastradas. As colunas do quadro são o
+// ANDAMENTO (A fazer → Fazendo → Em revisão → Concluído), iguais em todo
+// projeto — o mesmo jeito do Vendas e da Prospecção. A fase do serviço
+// (Briefing, Design…) vai como etiqueta no cartão. Com mais de um serviço, as
+// fases se somam (sem repetir) e cada tarefa leva o emoji do serviço.
 // ---------------------------------------------------------------------------
 const PASTA_PROJETOS = 'Projetos';
 
@@ -284,6 +286,8 @@ async function pastaDeProjetos(userId) {
 }
 
 const CORES_FASE = ['gray', 'blue', 'purple', 'yellow', 'orange', 'green', 'pink'];
+/** Andamento de uma tarefa de entrega = as colunas do quadro. */
+export const STATUS_ENTREGA = [['A fazer', 'gray'], ['Fazendo', 'blue'], ['Em revisão', 'purple'], ['Concluído', 'green']];
 const opt = (name, color) => ({ id: globalThis.crypto?.randomUUID?.() || `opt-${Math.random().toString(36).slice(2)}`, name, color });
 
 export async function criarPaginaDeEntregas(projeto, { userId = null } = {}) {
@@ -297,7 +301,7 @@ export async function criarPaginaDeEntregas(projeto, { userId = null } = {}) {
     });
 
     const fases = resumoServicos(projeto).fases.map((f, i) => opt(f, CORES_FASE[i % CORES_FASE.length]));
-    const status = [opt('A fazer', 'gray'), opt('Fazendo', 'blue'), opt('Concluído', 'green')];
+    const status = STATUS_ENTREGA.map(([nome, cor]) => opt(nome, cor));
     const props = [];
     const specs = [
         { name: 'Fase', type: 'select', options: fases },
@@ -310,7 +314,7 @@ export async function criarPaginaDeEntregas(projeto, { userId = null } = {}) {
     }
     const [pFase, pStatus, pResp, pPrazo] = props;
 
-    await ws.createView({ databaseId: db.id, name: 'Quadro', type: 'board', position: 0, config: { groupBy: pFase.id } });
+    await ws.createView({ databaseId: db.id, name: 'Quadro', type: 'board', position: 0, config: { groupBy: pStatus.id } });
     await ws.createView({ databaseId: db.id, name: 'Tabela', type: 'table', position: 1, config: {} });
     await ws.createView({ databaseId: db.id, name: 'Calendário', type: 'calendar', position: 2, config: { dateProp: pPrazo.id } });
 

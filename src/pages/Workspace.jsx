@@ -508,14 +508,14 @@ export default function Workspace() {
           espaço vai para o conteúdo, que é o que importa. */}
       {!sidebarAberta && (
         <div className="w-12 shrink-0 border-r border-slate-200/70 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl flex flex-col items-center py-3 gap-1">
-          <button onClick={() => setSidebarAberta(true)} title="Mostrar páginas" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 transition-colors">
+          <button onClick={() => setSidebarAberta(true)} title="Mostrar páginas" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
             <PanelLeftOpen size={17} />
           </button>
-          <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 transition-colors">
+          <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
             <Command size={16} />
           </button>
           {podeCriarPagina && (
-            <button onClick={() => handleCreate(null)} title="Nova página" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 transition-colors">
+            <button onClick={() => handleCreate(null)} title="Nova página" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
               <Plus size={17} />
             </button>
           )}
@@ -535,16 +535,16 @@ export default function Workspace() {
             <ArrowLeft size={16} />
           </button>
           <span className="text-[13px] font-black text-slate-800 dark:text-slate-100 tracking-tight flex-1 px-1">Compromisso</span>
-          <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 transition-colors">
+          <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
             <Command size={15} />
           </button>
           {podeCriarBanco && (
-            <button onClick={() => handleCreateDatabase(null)} title="Novo database (tabela/kanban/calendário)" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 transition-colors">
+            <button onClick={() => handleCreateDatabase(null)} title="Novo database (tabela/kanban/calendário)" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
               <Database size={15} />
             </button>
           )}
           {podeCriarPagina && (
-            <button onClick={() => handleCreate(null)} title="Nova página" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 transition-colors">
+            <button onClick={() => handleCreate(null)} title="Nova página" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
               <Plus size={17} />
             </button>
           )}
@@ -569,7 +569,7 @@ export default function Workspace() {
           {tree.length === 0 ? (
             <div className="mt-2 flex flex-col gap-1">
               {podeCriarBanco && (
-                <button onClick={() => handleCreateDatabase(null)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors">
+                <button onClick={() => handleCreateDatabase(null)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200/70 transition-colors">
                   <Database size={15} /> Criar agenda (database)
                 </button>
               )}
@@ -644,7 +644,7 @@ export default function Workspace() {
                     <button key={e} onClick={() => handleSetIcon(e)} className="text-xl hover:bg-slate-100 rounded-md p-1 transition-colors">{e}</button>
                   ))}
                   {currentPage.icon && (
-                    <button onClick={() => handleSetIcon(null)} className="col-span-8 mt-1 text-[11px] font-bold text-slate-400 hover:text-rose-500 uppercase tracking-wider">Remover ícone</button>
+                    <button onClick={() => handleSetIcon(null)} className="col-span-8 mt-1 text-[12.5px] font-medium text-slate-400 hover:text-rose-500">Remover ícone</button>
                   )}
                 </div>
               )}
@@ -756,7 +756,7 @@ function TreeNode({ node, depth, flat, expanded, selectedId, onSelect, onToggle,
         onDrop={(e) => { if (!draggable) return; e.preventDefault(); e.stopPropagation(); dnd.onDrop(node); }}
         onDragEnd={() => draggable && dnd.onDragEnd()}
         className={`group relative flex items-center gap-1 pr-1 rounded-lg cursor-pointer transition-colors
-          ${isSelected ? 'bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800'}
+          ${isSelected ? 'bg-slate-200/60 dark:bg-blue-500/15 text-slate-900 dark:text-blue-300 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800'}
           ${isDragging ? 'opacity-40' : ''}
           ${hint === 'inside' ? 'ring-2 ring-blue-400 ring-inset' : ''}`}
         style={{ paddingLeft: 6 + depth * 14 }}
@@ -783,7 +783,7 @@ function TreeNode({ node, depth, flat, expanded, selectedId, onSelect, onToggle,
           <button
             onClick={(e) => { e.stopPropagation(); onCreateChild(node.id); }}
             title="Adicionar subpágina"
-            className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-slate-200/60 transition-all"
+            className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-200/60 transition-all"
           >
             <Plus size={13} />
           </button>
@@ -822,9 +822,9 @@ function TreeNode({ node, depth, flat, expanded, selectedId, onSelect, onToggle,
 // Auxiliares
 // ----------------------------------------------------------------------------
 function SaveBadge({ state }) {
-  if (state === 'saving') return <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><Loader2 size={12} className="animate-spin" /> Salvando</span>;
-  if (state === 'saved') return <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-500 uppercase tracking-wider"><Cloud size={12} /> Salvo</span>;
-  if (state === 'dirty') return <span className="flex items-center gap-1.5 text-[11px] font-bold text-amber-500 uppercase tracking-wider"><CloudOff size={12} /> Editando</span>;
+  if (state === 'saving') return <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-slate-400"><Loader2 size={12} className="animate-spin" /> Salvando</span>;
+  if (state === 'saved') return <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-emerald-500"><Cloud size={12} /> Salvo</span>;
+  if (state === 'dirty') return <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-amber-500"><CloudOff size={12} /> Editando</span>;
   return <span className="h-4" />;
 }
 
@@ -842,7 +842,7 @@ function EmptyState({ onCreate, onCreateDatabase, hasPages, podeCriarPagina, pod
       </p>
       <div className="mt-5 flex items-center gap-2">
         {podeCriarBanco && (
-          <button onClick={onCreateDatabase} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all">
+          <button onClick={onCreateDatabase} className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-all">
             <Database size={16} /> Criar agenda
           </button>
         )}
@@ -882,18 +882,18 @@ function VisibilityPicker({ value, legacyCategoriaId, categorias, onChange }) {
   return (
     <div className="relative">
       <button ref={ref} onClick={() => setOpen((v) => !v)} title="Quem vê esta página"
-        className={`flex items-center gap-1.5 h-6 px-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-colors max-w-[220px] ${tone}`}>
+        className={`flex items-center gap-1.5 h-6 px-2 rounded-lg text-[12.5px] font-medium transition-colors max-w-[220px] ${tone}`}>
         <Icon size={12} className="shrink-0" /> <span className="truncate">{label}</span>
       </button>
       {open && (
         <Popover anchorRef={ref} onClose={() => setOpen(false)} width={244}>
           <div className="p-1.5">
-            <p className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quem pode ver</p>
+            <p className="px-2 py-1 text-[12px] font-medium text-slate-400">Quem pode ver</p>
             <VisRow icon={Globe} iconClass="text-slate-400" text="Toda a equipe" active={scope.scope === 'all'} onClick={() => { onChange({ scope: 'all' }); setOpen(false); }} />
             <VisRow icon={Lock} iconClass="text-amber-500" text="Somente eu" active={scope.scope === 'private'} onClick={() => { onChange({ scope: 'private' }); setOpen(false); }} />
             {categorias.length > 0 && (
               <>
-                <p className="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Por equipe (marque várias)</p>
+                <p className="px-2 pt-2 pb-1 text-[12px] font-medium text-slate-400">Por equipe (marque várias)</p>
                 <div className="max-h-48 overflow-y-auto">
                   {categorias.map((c) => (
                     <VisRow key={c.id} icon={Users2} iconClass="text-violet-400" text={c.nome} active={ids.includes(c.id)} onClick={() => toggleCat(c.id)} />
@@ -957,7 +957,7 @@ function CommandPalette({ pages, onClose, onSelect, onNewPage, onNewDatabase }) 
           <kbd className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">ESC</kbd>
         </div>
         <div className="max-h-[52vh] overflow-y-auto p-1.5">
-          {results.length > 0 && <p className="px-2 pt-1.5 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Páginas</p>}
+          {results.length > 0 && <p className="px-2 pt-1.5 pb-1 text-[12px] font-medium text-slate-400">Páginas</p>}
           {items.map((it, i) => {
             const active = i === clampedIdx;
             if (it.kind === 'page') {
@@ -967,7 +967,7 @@ function CommandPalette({ pages, onClose, onSelect, onNewPage, onNewDatabase }) 
                   className={`flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left transition-colors ${active ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
                   <span className="w-5 text-center text-[15px] shrink-0">{p.icon || (p.type === 'database' ? <Database size={15} className="inline text-slate-400" /> : <FileText size={15} className="inline text-slate-400" />)}</span>
                   <span className="flex-1 text-[13px] font-semibold text-slate-700 truncate">{p.title || 'Sem título'}</span>
-                  {p.type === 'database' && <span className="text-[10px] font-bold text-slate-400 uppercase">Database</span>}
+                  {p.type === 'database' && <span className="text-[12px] font-medium text-slate-400">Database</span>}
                   {active && <CornerDownLeft size={13} className="text-blue-400" />}
                 </button>
               );
@@ -976,7 +976,7 @@ function CommandPalette({ pages, onClose, onSelect, onNewPage, onNewDatabase }) 
             const isFirstAction = i === results.length;
             return (
               <div key={a.key}>
-                {isFirstAction && <p className="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ações</p>}
+                {isFirstAction && <p className="px-2 pt-2 pb-1 text-[12px] font-medium text-slate-400">Ações</p>}
                 <button onMouseEnter={() => setIdx(i)} onClick={() => run(i)}
                   className={`flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left transition-colors ${active ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
                   <a.icon size={15} className="text-blue-500 shrink-0" />
@@ -1031,7 +1031,7 @@ function TrashModal({ onClose, onChanged, podeExcluirPaginas, podeExcluirBancos 
           {items === null ? (
             <div className="py-10 flex justify-center"><Loader2 className="animate-spin text-blue-500" size={22} /></div>
           ) : items.length === 0 ? (
-            <p className="py-10 text-center text-slate-400 text-sm font-bold uppercase tracking-widest">Lixeira vazia</p>
+            <p className="py-10 text-center text-slate-400 text-sm font-medium">Lixeira vazia</p>
           ) : (
             items.map((it) => (
               <div key={it.id} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">

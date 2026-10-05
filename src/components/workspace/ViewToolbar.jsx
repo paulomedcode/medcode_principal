@@ -20,14 +20,14 @@ export default function ViewToolbar({ props, users, filters, sorts, onFilters, o
       <button
         ref={filterRef}
         onClick={() => setOpenFilter((v) => !v)}
-        className={`flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[12px] font-bold transition-colors ${nF ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-100'}`}
+        className={`flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[12px] font-bold transition-colors ${nF ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:bg-slate-100'}`}
       >
         <SlidersHorizontal size={13} /> Filtros{nF ? ` · ${nF}` : ''}
       </button>
       <button
         ref={sortRef}
         onClick={() => setOpenSort((v) => !v)}
-        className={`flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[12px] font-bold transition-colors ${nS ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-100'}`}
+        className={`flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[12px] font-bold transition-colors ${nS ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:bg-slate-100'}`}
       >
         <ArrowUpDown size={13} /> Ordenar{nS ? ` · ${nS}` : ''}
       </button>
@@ -88,7 +88,7 @@ function FilterPanel({ anchorRef, props, users, filters, onChange, onClose }) {
             })}
           </div>
         )}
-        <button onClick={add} className="mt-1.5 flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+        <button onClick={add} className="mt-1.5 flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
           <Plus size={13} /> Adicionar filtro
         </button>
       </div>
@@ -157,7 +157,7 @@ function SortPanel({ anchorRef, props, sorts, onChange, onClose }) {
             ))}
           </div>
         )}
-        <button onClick={add} className="mt-1.5 flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+        <button onClick={add} className="mt-1.5 flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
           <Plus size={13} /> Adicionar ordenação
         </button>
       </div>

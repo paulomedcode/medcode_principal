@@ -136,7 +136,7 @@ function LinkedDatabaseComponent({ block, editor }) {
               <button
                 onClick={reset}
                 title="Trocar banco/visão deste bloco"
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-sm text-[10px] font-bold text-slate-500 dark:text-slate-300 hover:text-blue-600 transition-colors"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-sm text-[10px] font-bold text-slate-500 dark:text-slate-300 hover:text-slate-900 transition-colors"
               >
                 <RefreshCw size={11} /> Trocar fonte
               </button>
@@ -230,21 +230,21 @@ function Picker({ title, subtitle, loading, emptyMsg, onBack, onRemove, children
             <p>/<h1..h6>/<li> dentro do editor, e isso atropelaria as classes
             de tamanho deste bloco. */}
         <div>
-          <div className="text-[13px] font-bold text-slate-700 flex items-center gap-2 uppercase tracking-wider">
+          <div className="text-[13px] font-medium text-slate-700 flex items-center gap-2">
             <Database size={16} className="text-blue-500" /> {title}
           </div>
           {subtitle && <div className="text-[11px] font-medium text-slate-400 mt-1 max-w-md">{subtitle}</div>}
         </div>
         <div className="shrink-0 flex items-center gap-3">
           {onBack && (
-            <button onClick={onBack} className="text-[11px] font-bold text-slate-400 hover:text-slate-700 uppercase tracking-wider pointer-events-auto">
+            <button onClick={onBack} className="text-[12.5px] font-medium text-slate-400 hover:text-slate-700 pointer-events-auto">
               Voltar
             </button>
           )}
           {/* Bloco ainda sem fonte não tem nada a perder — e sem esta saída ele
               ficaria preso na página, já que o teclado não apaga quadro. */}
           {onRemove && (
-            <button onClick={onRemove} title="Remover este bloco da página" className="text-[11px] font-bold text-slate-400 hover:text-rose-600 uppercase tracking-wider pointer-events-auto">
+            <button onClick={onRemove} title="Remover este bloco da página" className="text-[12.5px] font-medium text-slate-400 hover:text-rose-600 pointer-events-auto">
               Remover
             </button>
           )}
@@ -266,7 +266,7 @@ function Option({ icon, emoji, label, hint, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-bold text-slate-600 hover:bg-white hover:shadow-sm hover:text-blue-600 border border-transparent hover:border-slate-200 rounded-lg text-left transition-all"
+      className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-bold text-slate-600 hover:bg-white hover:shadow-sm hover:text-slate-900 border border-transparent hover:border-slate-200 rounded-lg text-left transition-all"
     >
       {emoji ? <span className="text-[15px] w-4 text-center shrink-0">{emoji}</span> : <Icon size={15} className="text-slate-400 shrink-0" />}
       <span className="flex-1 truncate">{label}</span>

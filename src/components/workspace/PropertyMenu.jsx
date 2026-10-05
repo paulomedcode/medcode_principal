@@ -71,7 +71,7 @@ export default function PropertyMenu({ prop, anchorRef, onClose, onSaved, onDele
         />
 
         <div className="mt-2">
-          <label className="block px-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tipo</label>
+          <label className="block px-1 text-[12px] font-medium text-slate-400 mb-1">Tipo</label>
           <select
             value={type}
             onChange={(e) => changeType(e.target.value)}
@@ -84,13 +84,13 @@ export default function PropertyMenu({ prop, anchorRef, onClose, onSaved, onDele
 
         {isOptionType && (
           <div className="mt-2 border-t border-slate-100 pt-2">
-            <label className="block px-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Opções</label>
+            <label className="block px-1 text-[12px] font-medium text-slate-400 mb-1">Opções</label>
             <div className="flex flex-col gap-1 max-h-56 overflow-y-auto">
               {options.map((o) => (
                 <OptionRow key={o.id} option={o} onRename={renameOption} onCommit={() => saveOptions(options)} onRecolor={recolorOption} onRemove={removeOption} />
               ))}
             </div>
-            <button onClick={addOption} className="mt-1 flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+            <button onClick={addOption} className="mt-1 flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
               <Plus size={13} /> Nova opção
             </button>
           </div>
@@ -124,7 +124,7 @@ function OptionRow({ option, onRename, onCommit, onRecolor, onRemove }) {
       {palette && (
         <Popover anchorRef={dotRef} onClose={() => setPalette(false)} width={196}>
           <div className="p-2">
-            <div className="px-0.5 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cor da opção</div>
+            <div className="px-0.5 pb-1.5 text-[12px] font-medium text-slate-400">Cor da opção</div>
             <div className="grid grid-cols-6 gap-1.5">
               {COLOR_KEYS.map((c) => (
                 <button
@@ -178,7 +178,7 @@ export function NewColumnMenu({ anchorRef, onClose, onCreate }) {
         <select value={type} onChange={(e) => setType(e.target.value)} className="w-full h-8 px-2 mt-1.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-400">
           {SELECTABLE_PROP_TYPES.map((t) => <option key={t} value={t}>{PROP_TYPE_LABELS[t]}</option>)}
         </select>
-        <button onClick={create} className="w-full h-8 mt-1.5 rounded-lg bg-blue-600 text-white text-[12px] font-bold hover:bg-blue-700 transition-colors">Criar coluna</button>
+        <button onClick={create} className="w-full h-8 mt-1.5 rounded-lg bg-slate-900 text-white text-[12.5px] font-medium hover:bg-slate-800 transition-colors">Criar coluna</button>
       </div>
     </Popover>
   );
