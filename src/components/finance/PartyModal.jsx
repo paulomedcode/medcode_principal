@@ -64,10 +64,10 @@ export default function PartyModal({ initialName = '', defaultKind = 'CLIENTE', 
           </div>
           <div>
             <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Tipo</label>
-            <div className="grid grid-cols-4 gap-1">
+            <div className="grid grid-cols-2 gap-1">
               {TIPOS.map(([v, l]) => (
                 <button key={v} type="button" onClick={() => setKind(v)}
-                  className={`h-8 rounded-lg text-[12px] font-medium border transition-colors ${kind === v ? 'bg-[#0071e3] border-[#0071e3] text-white' : 'bg-white border-black/[.085] text-slate-500 hover:border-[#0071e3]/40'}`}>{l}</button>
+                  className={`h-8 px-2 whitespace-nowrap rounded-lg text-[12.5px] font-medium border transition-colors ${kind === v ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-black/[.09] text-slate-600 hover:border-slate-300'}`}>{l}</button>
               ))}
             </div>
           </div>
