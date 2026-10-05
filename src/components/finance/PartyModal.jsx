@@ -5,7 +5,8 @@ import { maskTelefone, maskDocumento } from '../../utils/masks';
 
 // Cadastro rápido de empresa/pessoa — abre por cima de outra janela quando o
 // nome digitado num campo de cliente/fornecedor não existe. Só o básico
-// (nome, telefone, e-mail); o resto se completa depois em Clientes.
+// (nome, telefone, e-mail e uma observação livre — segundo telefone, com quem
+// falar, melhor horário); o resto se completa depois em Clientes.
 // onSave(data) cria e resolve; onCancel fecha sem criar.
 const TIPOS = [['LEAD', 'Em negociação'], ['CLIENTE', 'Cliente'], ['FORNECEDOR', 'Fornecedor'], ['AMBOS', 'Ambos']];
 
@@ -16,6 +17,7 @@ export default function PartyModal({ initialName = '', defaultKind = 'CLIENTE', 
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [document, setDocument] = useState('');
+  const [notes, setNotes] = useState('');
   const [kind, setKind] = useState(defaultKind);
   const [saving, setSaving] = useState(false);
 
@@ -30,6 +32,7 @@ export default function PartyModal({ initialName = '', defaultKind = 'CLIENTE', 
         telefone: telefone.trim() || null,
         email: email.trim() || null,
         document: document.trim() || null,
+        notes: notes.trim() || null,
         tipo_pessoa: document.replace(/\D/g, '').length === 11 ? 'PF' : 'PJ',
       });
     } finally { setSaving(false); }
@@ -63,6 +66,12 @@ export default function PartyModal({ initialName = '', defaultKind = 'CLIENTE', 
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="contato@empresa.com.br" className={inputCls} />
           </div>
           <div>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Observações</label>
+            <textarea rows={2} value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder="Outro telefone, com quem falar, melhor horário…"
+              className="w-full px-3 py-2 bg-white border border-black/[.085] rounded-lg text-sm text-slate-700 outline-none focus:border-[#0071e3] resize-none" />
+          </div>
+          <div>
             <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Tipo</label>
             <div className="grid grid-cols-2 gap-1">
               {TIPOS.map(([v, l]) => (
@@ -71,7 +80,7 @@ export default function PartyModal({ initialName = '', defaultKind = 'CLIENTE', 
               ))}
             </div>
           </div>
-          <p className="text-[10.5px] font-semibold text-slate-400">Os demais dados (endereço, segmento, contatos) você completa depois em Clientes.</p>
+          <p className="text-[10.5px] font-semibold text-slate-400">Os demais dados (endereço, segmento, contatos) você completa depois em Clientes — as observações aparecem lá também.</p>
         </div>
         <div className="p-4 border-t border-black/[.06] flex justify-end gap-2">
           <button type="button" onClick={onCancel} className="h-9 px-4 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">Cancelar</button>
