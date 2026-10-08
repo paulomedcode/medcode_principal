@@ -12,6 +12,7 @@ import { Campo, inputCls, textareaCls, Etiqueta } from '../crm/ui';
 import useTravaRolagem from '../../hooks/useTravaRolagem';
 import { Estrelas, Contatos, NotaGoogle } from './pecas';
 import VirarOportunidade from './VirarOportunidade';
+import Roteiros from './Roteiros';
 
 const hojeMais = (dias) => {
     const d = new Date(); d.setDate(d.getDate() + dias);
@@ -211,6 +212,14 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                             </div>
                         </div>
                     </section>
+
+                    {/* Roteiros de abordagem */}
+                    {!convertido && (
+                        <section>
+                            <p className="text-[11.5px] font-medium text-slate-500 mb-1.5 ml-1">Roteiros de abordagem</p>
+                            <Roteiros lead={lead} onContato={podeEditar ? onTentativa : undefined} />
+                        </section>
+                    )}
 
                     {/* Nota rápida + histórico */}
                     <section className="bg-white border border-black/[.085] rounded-2xl p-3">

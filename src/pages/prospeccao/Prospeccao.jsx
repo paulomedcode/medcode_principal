@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { UserSearch, Plus, Search, Upload, List, Columns3, CalendarClock, Trash2, X, Building2, ArrowUpDown } from 'lucide-react';
+import { UserSearch, Plus, Search, Upload, List, Columns3, CalendarClock, Trash2, X, Building2, ArrowUpDown, MessagesSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { STATUS_PROSPECCAO, STATUS_MANUAIS, statusProspeccao, tempoDesde } from '../../config/prospeccao';
 import {
@@ -12,6 +12,7 @@ import { usePermission } from '../../contexts/PermissionContext';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import FichaLead from '../../components/prospeccao/FichaLead';
 import ImportarLeads from '../../components/prospeccao/ImportarLeads';
+import Roteiros from '../../components/prospeccao/Roteiros';
 import { Estrelas, Contatos, NotaGoogle } from '../../components/prospeccao/pecas';
 import {
     PAGINA, CARD, CHIPS, FiltrosCelular, Etiqueta, Carregando, Vazio, Janela, Campo, inputCls, btnPrimario, btnSecundario,
@@ -93,6 +94,7 @@ export default function Prospeccao() {
     const [abertoId, setAbertoId] = useState(null);
     const [ordemFicha, setOrdemFicha] = useState([]);
     const [importar, setImportar] = useState(false);
+    const [roteiros, setRoteiros] = useState(false);
     const [novo, setNovo] = useState(false);
     const [excluir, setExcluir] = useState(null);         // lista de ids
     const [excluindo, setExcluindo] = useState(false);
@@ -290,14 +292,19 @@ export default function Prospeccao() {
                         </button>
                     ))}
                 </div>
+                <div className="ml-auto flex items-center gap-2">
+                    <button onClick={() => setRoteiros(true)} className="h-9 px-3 rounded-lg bg-white border border-black/[.085] text-slate-700 text-[12.5px] font-medium flex items-center gap-1.5 hover:border-[#0071e3]">
+                        <MessagesSquare size={14} /> Roteiros
+                    </button>
                 {podeEditar && (
-                    <div className="ml-auto flex items-center gap-2">
+                    <>
                         <button onClick={() => setImportar(true)} className="h-9 px-3 rounded-lg bg-white border border-black/[.085] text-slate-700 text-[12.5px] font-medium flex items-center gap-1.5 hover:border-[#0071e3]">
                             <Upload size={14} /> Importar
                         </button>
                         <button onClick={() => setNovo(true)} className={btnPrimario}><Plus size={15} /> Novo lead</button>
-                    </div>
+                    </>
                 )}
+                </div>
             </div>
 
             {/* Status */}
@@ -557,6 +564,13 @@ export default function Prospeccao() {
                     onExcluir={(l) => setExcluir([l.id])}
                     podeEditar={podeEditar} podeExcluir={podeExcluir} podeVender={podeVender} noVendas={noVendas[leadAberto.party_id]}
                 />
+            )}
+
+            {roteiros && (
+                <Janela titulo="Roteiros de abordagem" icone={MessagesSquare} onClose={() => setRoteiros(false)}>
+                    <p className="text-[12px] font-medium text-slate-500">Na ficha de cada lead os roteiros já vêm com o nome da empresa e o botão para mandar no WhatsApp.</p>
+                    <Roteiros comObjecoes />
+                </Janela>
             )}
 
             {importar && (
