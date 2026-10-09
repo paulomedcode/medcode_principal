@@ -12,8 +12,6 @@
  */
 import { supabase } from './supabase';
 import { gerarPropostaHTML, PADRAO } from '../../medcode-proposta/src/template.js';
-import logoClara from '../../medcode-proposta/assets/logo-clara.webp';
-import logoEscura from '../../medcode-proposta/assets/logo-escura.webp';
 import foto from '../../medcode-proposta/assets/foto.jpg';
 import { textoPadraoDoServico } from '../config/textosServicos';
 
@@ -187,7 +185,7 @@ const absoluta = (url) => new URL(url, window.location.origin).href;
 
 /** HTML da proposta para a pré-visualização (iframe srcdoc). */
 export function htmlDaProposta(dados) {
-    return gerarPropostaHTML(dados, { imagens: { logoClara: absoluta(logoClara), logoEscura: absoluta(logoEscura), foto: absoluta(foto) } });
+    return gerarPropostaHTML(dados, { imagens: { foto: absoluta(foto) } });
 }
 
 // ---------------------------------------------------------------------------
