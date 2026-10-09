@@ -237,7 +237,8 @@ export function gerarPropostaHTML(dados, opcoes = {}) {
       <div class="total-card"><span>Investimento total</span><b>${brl(calc.total)}</b></div>
     </div></div>
     <div class="pay" style="grid-template-columns:repeat(${pag.length},1fr)">${pag.map((k) => opcoesPag[k] || '').join('')}</div>
-    ${notas.length ? `<div class="notes" style="grid-template-columns:repeat(${notas.length},1fr)">${notas.join('')}</div>` : ''}`,
+    ${notas.length ? `<div class="notes" style="grid-template-columns:repeat(${notas.length},1fr)">${notas.join('')}</div>` : ''}
+    ${d.observacoes ? `<p class="obs"><b>Observações</b> ${rich(d.observacoes)}</p>` : ''}`,
   }));
   n++;
 

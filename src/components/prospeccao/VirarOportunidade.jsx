@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, Loader2 } from 'lucide-react';
+import { Target, Trophy, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { listarEtapas } from '../../services/crm';
 import { virarOportunidade } from '../../services/prospeccao';
 import { useAuth } from '../../contexts/AuthContext';
 import CurrencyInput from '../finance/CurrencyInput';
 import { useUsuarios } from '../crm/dados';
+import { GanharModal } from '../crm/OportunidadeModal';
 import { Janela, Campo, ServicosPicker, inputCls, textareaCls, btnPrimario, btnSecundario } from '../crm/ui';
 
 /**
  * Fim da prospecção: o lead respondeu e tem interesse. Cria a empresa e a
  * oportunidade no Vendas de uma vez (RPC prospeccao_virar_oportunidade).
+ * Se o negócio já fechou, emenda direto no "Ganhar" e cria o projeto — a
+ * oportunidade continua existindo (ganha) no Vendas, a jornada é a mesma.
  */
 export default function VirarOportunidade({ lead, onClose, onFeito }) {
     const navigate = useNavigate();
@@ -19,6 +22,7 @@ export default function VirarOportunidade({ lead, onClose, onFeito }) {
     const usuarios = useUsuarios();
     const [etapas, setEtapas] = useState([]);
     const [salvando, setSalvando] = useState(false);
+    const [ganhar, setGanhar] = useState(null); // { row, oportunidade } depois de criar, para fechar já
     const [form, setForm] = useState({
         titulo: `Site — ${lead.nome}`, servicos: ['SITE'], valor: 0, valor_recorrente: 0, etapa_id: '',
         responsavel_id: lead.responsavel_id || currentUser?.id || '', previsao_fechamento: '', notas: '',
@@ -33,14 +37,15 @@ export default function VirarOportunidade({ lead, onClose, onFeito }) {
         }).catch((e) => { console.error(e); toast.error('Não carregou as etapas do funil.'); });
     }, []);
 
-    const salvar = async (abrir) => {
+    const salvar = async (depois) => {
         if (!form.titulo.trim()) { toast.error('Dê um título à oportunidade.'); return; }
         setSalvando(true);
         try {
             const { lead: row, oportunidade } = await virarOportunidade(lead, { ...form, titulo: form.titulo.trim() });
+            if (depois === 'ganhar') { setGanhar({ row, oportunidade }); return; }
             toast.success('Oportunidade criada no Vendas.');
             onFeito(row);
-            if (abrir) navigate(`/vendas?abrir=${oportunidade.id}`);
+            if (depois === 'abrir') navigate(`/vendas?abrir=${oportunidade.id}`);
         } catch (e) {
             console.error(e);
             toast.error(e.code === '42501' ? 'Sem permissão para criar oportunidade.' : 'Não criou a oportunidade.');
@@ -48,12 +53,23 @@ export default function VirarOportunidade({ lead, onClose, onFeito }) {
         }
     };
 
+    if (ganhar) {
+        return (
+            <GanharModal oportunidade={ganhar.oportunidade}
+                onClose={() => { toast('A oportunidade ficou aberta no Vendas.'); onFeito(ganhar.row); }}
+                onGanha={(projeto) => { onFeito(ganhar.row); navigate(`/projetos/${projeto.id}`); }} />
+        );
+    }
+
     return (
         <Janela titulo="Virar oportunidade" icone={Target} onClose={onClose} largura="max-w-xl"
             rodape={<>
                 <button onClick={onClose} className={btnSecundario}>Cancelar</button>
-                <button onClick={() => salvar(true)} disabled={salvando} className={btnSecundario}>Criar e abrir no Vendas</button>
-                <button onClick={() => salvar(false)} disabled={salvando} className={btnPrimario}>
+                <button onClick={() => salvar('abrir')} disabled={salvando} className={btnSecundario}>Criar e abrir no Vendas</button>
+                <button onClick={() => salvar('ganhar')} disabled={salvando} className={btnSecundario} title="O cliente já fechou: cria a oportunidade ganha e o projeto">
+                    <Trophy size={14} /> Já fechou: criar projeto
+                </button>
+                <button onClick={() => salvar()} disabled={salvando} className={btnPrimario}>
                     {salvando ? <Loader2 size={14} className="animate-spin" /> : <Target size={14} />} Criar
                 </button>
             </>}>

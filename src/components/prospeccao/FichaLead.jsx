@@ -51,14 +51,14 @@ const ROTULO_EVENTO = { CONTATO: 'Tentativa de contato', NOTA: 'Nota' };
  * leva para o Vendas — e a ficha passa a mostrar em que etapa ele está lá.
  */
 export default function FichaLead({ lead, posicao, total, onAnterior, onProximo, onClose, onAlterado, onExcluir, onTentativa,
-    podeEditar, podeExcluir, podeVender, noVendas }) {
+    podeEditar, podeExcluir, podeVender, noVendas, virarAoAbrir = false }) {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const usuarios = useUsuarios();
     const [eventos, setEventos] = useState([]);
     const [nota, setNota] = useState('');
     const [salvandoNota, setSalvandoNota] = useState(false);
-    const [virando, setVirando] = useState(false);
+    const [virando, setVirando] = useState(virarAoAbrir && podeVender);
     const convertido = lead.status === 'CONVERTIDO';
     useTravaRolagem();
 
@@ -172,7 +172,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                             {podeVender && (
                                 <button onClick={() => setVirando(true)}
                                     className={`mt-2 w-full h-11 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-all ${lead.status === 'RESPONDEU' ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm' : 'bg-white border border-black/[.085] text-slate-600 hover:border-emerald-400'}`}>
-                                    <Target size={15} /> Virar oportunidade no Vendas
+                                    <Target size={15} /> Tem interesse? Virar oportunidade ou projeto
                                 </button>
                             )}
                         </section>

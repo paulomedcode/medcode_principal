@@ -1332,6 +1332,8 @@ export const financeService = {
       .order('created_at', { ascending: false });
     if (filters.status) query = query.eq('status', filters.status);
     if (filters.oportunidadeId) query = query.eq('oportunidade_id', filters.oportunidadeId);
+    if (filters.partyId) query = query.eq('party_id', filters.partyId);
+    if (filters.semOportunidade) query = query.is('oportunidade_id', null);
     const { data, error } = await query;
     if (error) throw error;
     return data;

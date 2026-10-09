@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FolderKanban, Plus, Search, ChevronRight, AlertTriangle } from 'lucide-react';
+import { FolderKanban, Plus, Search, ChevronRight, ChevronDown, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { listarProjetos } from '../../services/crm';
 import { SERVICOS, STATUS_PROJETO, resumoServicos, temServico, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
@@ -21,6 +21,7 @@ export default function Projetos() {
     const [fServico, setFServico] = useState('');
     const [busca, setBusca] = useState('');
     const [novo, setNovo] = useState(false);
+    const [verEncerrados, setVerEncerrados] = useState(false);
 
     const carregar = async () => {
         try { setProjetos(await listarProjetos()); }
@@ -32,11 +33,15 @@ export default function Projetos() {
     const lista = useMemo(() => {
         const q = busca.trim().toLowerCase();
         return projetos
-            .filter((p) => (filtro === 'ATIVOS' ? ATIVOS.includes(p.status) : filtro ? p.status === filtro : true))
+            .filter((p) => filtro === 'ATIVOS' || p.status === filtro)
             .filter((p) => !fServico || temServico(p, fServico))
             .filter((p) => !q || `${p.nome} ${p.empresa?.name || ''}`.toLowerCase().includes(q))
             .sort((a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999'));
     }, [projetos, filtro, fServico, busca]);
+    // Em "Em curso", concluídos e cancelados ficam num grupo recolhido no fim da lista.
+    const agrupar = filtro === 'ATIVOS';
+    const principais = agrupar ? lista.filter((p) => ATIVOS.includes(p.status)) : lista;
+    const encerrados = agrupar ? lista.filter((p) => !ATIVOS.includes(p.status)) : [];
 
     return (
         <div className={PAGINA}>
@@ -45,8 +50,8 @@ export default function Projetos() {
                     <FolderKanban size={17} className="text-slate-400" /> Projetos
                 </h1>
                 <div className={`${CHIPS} order-last md:order-none w-full md:w-auto`}>
-                    {[{ id: 'ATIVOS', label: 'Em curso' }, ...STATUS_PROJETO, { id: '', label: 'Todos' }].map((s) => (
-                        <button key={s.id || 'todos'} onClick={() => setFiltro(s.id)}
+                    {[{ id: 'ATIVOS', label: 'Em curso' }, ...STATUS_PROJETO].map((s) => (
+                        <button key={s.id} onClick={() => setFiltro(s.id)}
                             className={`shrink-0 px-2.5 h-8 md:h-7 rounded-md text-[12px] font-medium transition-all ${filtro === s.id ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-slate-500 hover:text-slate-800'}`}>
                             {s.label}
                         </button>
@@ -69,15 +74,20 @@ export default function Projetos() {
             <div className={`${CARD} overflow-hidden`}>
                 {carregando ? <Carregando /> : lista.length === 0 ? (
                     <Vazio>{projetos.length === 0 ? 'Nenhum projeto ainda — eles nascem quando uma oportunidade é ganha' : 'Nada com esse filtro'}</Vazio>
+                ) : principais.length === 0 && !verEncerrados ? (<>
+                    <Vazio>Nenhum projeto em curso</Vazio>
+                    <BarraEncerrados qtd={encerrados.length} aberto={false} onClick={() => setVerEncerrados(true)} />
+                </>
                 ) : (<>
                     {/* Celular: cartão por projeto — nome, cliente, status e prazo */}
                     <div className="md:hidden divide-y divide-black/[.055]">
-                        {lista.map((p) => {
+                        {[...principais, ...(verEncerrados ? encerrados : [])].map((p, i) => {
                             const s = resumoServicos(p);
                             const st = statusProjeto(p.status);
                             const atrasado = ATIVOS.includes(p.status) && p.prazo && p.prazo < hoje();
-                            return (
-                                <button key={p.id} type="button" onClick={() => navigate(`/projetos/${p.id}`)} className="w-full text-left px-4 py-3 flex items-start gap-3 active:bg-slate-50">
+                            return (<React.Fragment key={p.id}>
+                                {i === principais.length && <BarraEncerrados qtd={encerrados.length} aberto={verEncerrados} onClick={() => setVerEncerrados((v) => !v)} />}
+                                <button type="button" onClick={() => navigate(`/projetos/${p.id}`)} className={`w-full text-left px-4 py-3 flex items-start gap-3 active:bg-slate-50 ${ATIVOS.includes(p.status) ? '' : 'opacity-70'}`}>
                                     <span className="text-lg leading-none mt-0.5 shrink-0">{s.emoji}</span>
                                     <span className="flex-1 min-w-0">
                                         <span className="block text-[14px] font-bold text-slate-800 truncate">{p.nome}</span>
@@ -96,8 +106,9 @@ export default function Projetos() {
                                         {Number(p.valor_recorrente) > 0 && <span className="block text-[11px] font-semibold text-violet-700 tabular-nums">{fmtBRL(p.valor_recorrente)}/mês</span>}
                                     </span>
                                 </button>
-                            );
+                            </React.Fragment>);
                         })}
+                        {encerrados.length > 0 && !verEncerrados && <BarraEncerrados qtd={encerrados.length} aberto={false} onClick={() => setVerEncerrados(true)} />}
                     </div>
                     <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
@@ -114,12 +125,13 @@ export default function Projetos() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-black/[.055]">
-                                {lista.map((p) => {
+                                {[...principais, ...(verEncerrados ? encerrados : [])].map((p, i) => {
                                     const s = resumoServicos(p);
                                     const st = statusProjeto(p.status);
                                     const atrasado = ATIVOS.includes(p.status) && p.prazo && p.prazo < hoje();
-                                    return (
-                                        <tr key={p.id} onClick={() => navigate(`/projetos/${p.id}`)} className="group hover:bg-[#f5f5f7] transition-colors text-xs cursor-pointer">
+                                    return (<React.Fragment key={p.id}>
+                                        {i === principais.length && <tr><td colSpan={8} className="p-0"><BarraEncerrados qtd={encerrados.length} aberto={verEncerrados} onClick={() => setVerEncerrados((v) => !v)} /></td></tr>}
+                                        <tr onClick={() => navigate(`/projetos/${p.id}`)} className={`group hover:bg-[#f5f5f7] transition-colors text-xs cursor-pointer ${ATIVOS.includes(p.status) ? '' : 'opacity-70'}`}>
                                             <td className="py-2.5 px-4">
                                                 <div className="font-bold text-slate-800 flex items-center gap-1.5"><span>{s.emoji}</span>{p.nome}</div>
                                                 <div className="text-[10.5px] font-semibold text-slate-400">{s.label}</div>
@@ -134,8 +146,9 @@ export default function Projetos() {
                                             <td className="py-2.5 px-3 text-right font-semibold text-violet-700 tabular-nums whitespace-nowrap">{Number(p.valor_recorrente) > 0 ? fmtBRL(p.valor_recorrente) : '—'}</td>
                                             <td className="py-2.5 px-3 text-right"><ChevronRight size={15} className="text-slate-300 group-hover:text-[#0071e3] inline" /></td>
                                         </tr>
-                                    );
+                                    </React.Fragment>);
                                 })}
+                                {encerrados.length > 0 && !verEncerrados && <tr><td colSpan={8} className="p-0"><BarraEncerrados qtd={encerrados.length} aberto={false} onClick={() => setVerEncerrados(true)} /></td></tr>}
                             </tbody>
                         </table>
                     </div>
@@ -144,5 +157,16 @@ export default function Projetos() {
 
             {novo && <ProjetoModal onClose={() => setNovo(false)} onSaved={(row) => { setNovo(false); navigate(`/projetos/${row.id}`); }} />}
         </div>
+    );
+}
+
+/** Linha que abre/fecha o grupo de concluídos e cancelados. */
+function BarraEncerrados({ qtd, aberto, onClick }) {
+    return (
+        <button type="button" onClick={onClick}
+            className="w-full px-4 py-2.5 flex items-center gap-1.5 bg-slate-50/70 border-t border-black/[.06] text-[12px] font-medium text-slate-500 hover:text-slate-800 text-left">
+            <ChevronDown size={14} className={`transition-transform ${aberto ? '' : '-rotate-90'}`} />
+            Concluídos e cancelados <span className="text-slate-400 tabular-nums">· {qtd}</span>
+        </button>
     );
 }

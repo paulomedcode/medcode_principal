@@ -92,6 +92,7 @@ export default function Prospeccao() {
     const [limite, setLimite] = useState(LIMITE);
     const [selecionados, setSelecionados] = useState(() => new Set());
     const [abertoId, setAbertoId] = useState(null);
+    const [virarAoAbrir, setVirarAoAbrir] = useState(false); // arrastou para “No Vendas”: a ficha abre já convertendo
     const [ordemFicha, setOrdemFicha] = useState([]);
     const [importar, setImportar] = useState(false);
     const [roteiros, setRoteiros] = useState(false);
@@ -258,14 +259,17 @@ export default function Prospeccao() {
     const abrir = (id) => { setOrdemFicha(lista.map((l) => l.id)); setAbertoId(id); };
     const idxAberto = ordemFicha.indexOf(abertoId);
     const leadAberto = leads.find((l) => l.id === abertoId);
-    const irPara = (i) => setAbertoId(ordemFicha[i]);
+    const irPara = (i) => { setVirarAoAbrir(false); setAbertoId(ordemFicha[i]); };
 
     const soltar = (status) => {
         const lead = arrastando;
         setArrastando(null); setSobre(null);
         if (!lead || lead.status === status) return;
-        // Virar oportunidade pede título e serviço: é pela ficha, não arrastando.
-        if (status === 'CONVERTIDO') { abrir(lead.id); toast('Use “Virar oportunidade” na ficha.'); return; }
+        // Virar oportunidade pede título e serviço: abre a ficha já com a conversão.
+        if (status === 'CONVERTIDO') {
+            if (!podeVender) { toast('Sem permissão para criar oportunidade no Vendas.'); return; }
+            setVirarAoAbrir(true); abrir(lead.id); return;
+        }
         if (lead.status === 'CONVERTIDO') { toast('Esse lead já está no Vendas.'); return; }
         mudar(lead, { status });
     };
@@ -558,11 +562,12 @@ export default function Prospeccao() {
                     total={idxAberto >= 0 ? ordemFicha.length : 1}
                     onAnterior={idxAberto > 0 ? () => irPara(idxAberto - 1) : undefined}
                     onProximo={idxAberto >= 0 && idxAberto < ordemFicha.length - 1 ? () => irPara(idxAberto + 1) : undefined}
-                    onClose={() => setAbertoId(null)}
+                    onClose={() => { setAbertoId(null); setVirarAoAbrir(false); }}
                     onAlterado={(row) => { atualizarLocal(row); if (row.status === 'CONVERTIDO' && !noVendas[row.party_id]) carregar(); }}
                     onTentativa={(canal) => tentativa(leadAberto, canal)}
                     onExcluir={(l) => setExcluir([l.id])}
                     podeEditar={podeEditar} podeExcluir={podeExcluir} podeVender={podeVender} noVendas={noVendas[leadAberto.party_id]}
+                    virarAoAbrir={virarAoAbrir}
                 />
             )}
 

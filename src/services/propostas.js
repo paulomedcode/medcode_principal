@@ -114,7 +114,7 @@ function trocarMarcadores(v, valores) {
 }
 
 /** Objeto que o template da proposta entende. */
-export function montarDadosProposta({ numero, title, issue_date, valid_until, party, items: itensBrutos, proposta }) {
+export function montarDadosProposta({ numero, title, issue_date, valid_until, notes, party, items: itensBrutos, proposta }) {
     const marcadores = { cliente: nomeCliente(party), contato: proposta?.contato || nomeCliente(party) };
     const p = trocarMarcadores(proposta || {}, marcadores);
     const items = (itensBrutos || []).map((it) => ({ ...it, detalhes: trocarMarcadores(it.detalhes || {}, marcadores) }));
@@ -166,6 +166,7 @@ export function montarDadosProposta({ numero, title, issue_date, valid_until, pa
         naoIncluso: ouPadrao(limpar(p.naoIncluso)),
         fechamento: { titulo: ouPadrao(comTexto(p.fechamento?.titulo)) },
         proximosPassos: ouPadrao(comTexto(p.proximosPassos)),
+        observacoes: (notes || '').trim() || undefined,
     };
 }
 
