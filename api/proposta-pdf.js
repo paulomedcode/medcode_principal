@@ -25,15 +25,19 @@ async function lerCorpo(req) {
   return JSON.parse(Buffer.concat(partes).toString('utf8') || '{}');
 }
 
+// 'ok', 'negado' ou 'sessao' (token vencido ou inválido). Separar os dois
+// últimos importa: sessão vencida não é falta de permissão.
 async function podeGerar(token) {
   const cab = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   const usuario = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: cab });
-  if (!usuario.ok) return false;
+  if (usuario.status === 401 || usuario.status === 403) return 'sessao';
+  if (!usuario.ok) throw new Error(`auth/v1/user respondeu ${usuario.status}`);
   for (const p_permissao of ['Editar Vendas', 'Editar Financeiro']) {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/tem_permissao`, { method: 'POST', headers: cab, body: JSON.stringify({ p_permissao }) });
-    if (r.ok && (await r.json()) === true) return true;
+    if (!r.ok) throw new Error(`tem_permissao respondeu ${r.status}`);
+    if ((await r.json()) === true) return 'ok';
   }
-  return false;
+  return 'negado';
 }
 
 export default async function handler(req, res) {
@@ -44,7 +48,9 @@ export default async function handler(req, res) {
   if (!token) return responder(res, 401, 'Faça login para gerar a proposta.');
 
   try {
-    if (!(await podeGerar(token))) return responder(res, 403, 'Sem permissão para gerar proposta.');
+    const acesso = await podeGerar(token);
+    if (acesso === 'sessao') return responder(res, 401, 'Sua sessão expirou. Entre de novo no sistema e gere a proposta.');
+    if (acesso === 'negado') return responder(res, 403, 'Sem permissão para gerar proposta.');
     const dados = await lerCorpo(req);
     if (!dados?.numero || !Array.isArray(dados.servicos)) return responder(res, 400, 'Dados da proposta incompletos.');
 
