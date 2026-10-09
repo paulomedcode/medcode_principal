@@ -93,8 +93,10 @@ export default function Painel() {
                 .gte('payment_date', `${hoje.slice(0, 8)}01`).lte('payment_date', hoje)) : vazio,
             veFinanceiro ? q(supabase.from('finance_transactions').select('amount, type, projeto_id').not('projeto_id', 'is', null).is('transfer_group_id', null)) : vazio,
             veProspeccao ? listarLeads() : vazio,
-        ]).then(([etapas, ops, projetos, recorr, abertos, pagamentos, porProjeto, leads]) => {
-            setD({ hoje, etapas, ops, projetos, recorr, abertos, pagamentos, porProjeto, leads });
+            // Propostas pendentes feitas fora do Vendas (pelo projeto ou pelo financeiro).
+            veVendas ? q(supabase.from('finance_quotes').select('total_amount').eq('status', 'PENDENTE').is('oportunidade_id', null)) : vazio,
+        ]).then(([etapas, ops, projetos, recorr, abertos, pagamentos, porProjeto, leads, avulsas]) => {
+            setD({ hoje, etapas, ops, projetos, recorr, abertos, pagamentos, porProjeto, leads, avulsas });
         }).catch((e) => { console.error(e); toast.error('Erro ao carregar os números.'); setD({ erro: true }); });
     }, [veVendas, veProjetos, veFinanceiro, veClientes, veProspeccao]);
 
@@ -156,8 +158,10 @@ export default function Painel() {
             vencidoReceber: receber.filter((t) => t.due_date < hoje).reduce((s, t) => s + saldo(t), 0),
             pagar30: pagar.reduce((s, t) => s + saldo(t), 0),
             recebidoMes,
-            abertoValor: abertas.reduce((s, o) => s + Number(o.valor || 0), 0),
+            abertoValor: abertas.reduce((s, o) => s + Number(o.valor || 0), 0) + d.avulsas.reduce((s, x) => s + Number(x.total_amount || 0), 0),
             abertoQtd: abertas.length,
+            avulsasQtd: d.avulsas.length,
+            avulsasValor: d.avulsas.reduce((s, x) => s + Number(x.total_amount || 0), 0),
             ponderado: abertas.reduce((s, o) => s + Number(o.valor || 0) * (etapaDe(o)?.probabilidade || 0) / 100, 0),
             meses, funil, porServico, margem,
             ativos: ativos.length,
@@ -177,7 +181,7 @@ export default function Painel() {
     if (!d) return <Carregando />;
     if (!k) return <p className="text-sm font-semibold text-slate-500">Não foi possível montar os números.</p>;
 
-    const maxFunil = Math.max(0, ...k.funil.map((e) => e.valor));
+    const maxFunil = Math.max(0, k.avulsasValor, ...k.funil.map((e) => e.valor));
     const maxServico = Math.max(0, ...k.porServico.map((s) => s.valor));
     const temVendas = k.meses.some((m) => m.qtd > 0);
 
@@ -191,7 +195,7 @@ export default function Painel() {
                     detalhe={k.vencidoReceber > 0 ? `${fmtBRL(k.vencidoReceber)} vencido` : 'nada vencido'}
                     tom={k.vencidoReceber > 0 ? 'text-amber-600' : 'text-slate-900'} onClick={() => navigate('/finance/contas-receber')} />}
                 {veFinanceiro && <Numero rotulo="A pagar · 30 dias" valor={fmtBRL(k.pagar30)} onClick={() => navigate('/finance/contas-pagar')} />}
-                {veVendas && <Numero rotulo="Em negociação" valor={fmtBRL(k.abertoValor)} detalhe={`${k.abertoQtd} oportunidade(s) · ponderado ${compacto(k.ponderado)}`} onClick={() => navigate('/vendas')} />}
+                {veVendas && <Numero rotulo="Em negociação" valor={fmtBRL(k.abertoValor)} detalhe={`${k.abertoQtd} oportunidade(s)${k.avulsasQtd ? ` + ${k.avulsasQtd} proposta(s)` : ''} · ponderado ${compacto(k.ponderado)}`} onClick={() => navigate('/vendas')} />}
                 {(veProjetos || veVendas || veClientes) && <Numero rotulo="Projetos em curso" valor={k.ativos}
                     detalhe={k.atrasados ? `${k.atrasados} atrasado(s)` : 'nenhum atrasado'} tom={k.atrasados ? 'text-rose-600' : 'text-slate-900'} onClick={veProjetos ? () => navigate('/projetos') : undefined} />}
             </div>
@@ -221,6 +225,7 @@ export default function Painel() {
                         {k.funil.length === 0 ? <p className="text-[11.5px] font-semibold text-slate-400">Sem etapas.</p> : (
                             <div className="space-y-3">
                                 {k.funil.map((e) => <BarraRotulada key={e.id} rotulo={e.nome} valor={e.valor} max={maxFunil} cor={e.cor} detalhe={`${e.qtd}`} />)}
+                                {k.avulsasQtd > 0 && <BarraRotulada rotulo="Propostas fora do funil" valor={k.avulsasValor} max={maxFunil} cor="#94a3b8" detalhe={`${k.avulsasQtd}`} />}
                             </div>
                         )}
                     </Bloco>

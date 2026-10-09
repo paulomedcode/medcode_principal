@@ -11,6 +11,7 @@ import CurrencyInput from '../../components/finance/CurrencyInput';
 import SearchableSelect from '../../components/finance/SearchableSelect';
 import useCadastroRapido from '../../components/crm/useCadastroRapido';
 import PropostaEditor from '../../components/propostas/PropostaEditor';
+import { salvarOportunidade } from '../../services/crm';
 import PdfsProposta, { VisualizadorProposta } from '../../components/propostas/PdfsProposta';
 import {
   propostaCompleta, detalhesVazios, subtotalItens, descontoDe, montarDadosProposta, htmlDaProposta, contatoPrincipal
@@ -293,6 +294,10 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
       let id = quote?.id;
       if (isEdit) await financeService.updateQuote(quote.id, header, payloadItems);
       else id = (await financeService.createQuote({ ...header, status: 'PENDENTE' }, payloadItems))?.id;
+      // A oportunidade passa a valer o que a última proposta salva diz — é o
+      // valor que o funil e a aba Números somam em "Em negociação".
+      const opId = oportunidade?.id || quote?.oportunidade_id;
+      if (opId && total > 0) await salvarOportunidade({ id: opId, valor: total }).catch((e) => console.warn('valor da oportunidade', e));
       toast.success(isEdit ? 'Orçamento atualizado!' : 'Orçamento criado!');
       onSaved({ id, gerarPdf });
     } catch (err) { console.error(err); toast.error('Erro ao salvar orçamento.'); }
