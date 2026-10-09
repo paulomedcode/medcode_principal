@@ -222,10 +222,16 @@ export async function gerarPdfDoOrcamento(quoteId) {
     const dados = montarDadosProposta({ ...q, party: q.finance_parties, items, proposta: propostaCompleta(q.proposta, contexto) });
     if (!dados.servicos.length) throw new Error('O orçamento não tem itens.');
 
-    const { data: { session } } = await supabase.auth.getSession();
+    // getSession() devolve a sessão guardada mesmo vencida (ex.: depois do Mac
+    // dormir); o servidor recusaria. Renova antes se faltar menos de 1 minuto.
+    let { data: { session } } = await supabase.auth.getSession();
+    if (!session || session.expires_at * 1000 < Date.now() + 60_000) {
+        ({ data: { session } } = await supabase.auth.refreshSession());
+    }
+    if (!session) throw new Error('Sua sessão expirou. Entre de novo no sistema e gere a proposta.');
     const resp = await fetch('/api/proposta-pdf', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token || ''}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify(dados),
     });
     if (!resp.ok) {
