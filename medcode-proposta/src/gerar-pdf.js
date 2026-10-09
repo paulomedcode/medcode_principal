@@ -75,6 +75,34 @@ async function obterNavegador() {
   return navegador;
 }
 
+// Os brilhos (filter:blur), a grade com mask-image e as transparências das
+// páginas escuras e dos cards escuros viram, no PDF do Chrome, dezenas de
+// imagens com máscara de página inteira — o visualizador recompõe tudo a cada
+// rolagem e trava. Aqui só a camada decorativa desses blocos é fotografada
+// como uma JPEG opaca e posta de fundo; o texto continua vetorial.
+const ACHATAR = '.page.dark, .aside-card, .total-card';
+const DECORACAO = '.glow, .grid-bg';
+
+async function achatarDecoracao(page) {
+  await page.emulateMediaType('print'); // mesmo layout do page.pdf (sem margens/sombras de tela)
+  await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 2 }); // A4 a 96 dpi, foto em 2×
+  await page.addStyleTag({ content: `
+    .achatando *:not(${DECORACAO}){visibility:hidden!important}
+    .achatado{background-size:100% 100%!important;background-repeat:no-repeat!important}
+    .achatado:before,.achatado:after,.achatado :is(${DECORACAO}){display:none!important}` });
+  const alvos = await page.$$(ACHATAR);
+  for (const el of alvos) {
+    await el.evaluate((n) => n.classList.add('achatando'));
+    const foto = await el.screenshot({ type: 'jpeg', quality: 85, encoding: 'base64' });
+    await el.evaluate((n, url) => {
+      n.classList.remove('achatando');
+      n.classList.add('achatado');
+      n.style.backgroundImage = `url(${url})`;
+    }, `data:image/jpeg;base64,${foto}`);
+  }
+  await page.evaluate(() => Promise.all([...document.images].map((i) => i.decode?.().catch(() => {}))));
+}
+
 export async function gerarPropostaPDF(dados, { caminho } = {}) {
   const html = gerarPropostaHTML(dados, { fontesCss: fontesLocais(), imagens: imagensLocais() });
   const browser = await obterNavegador();
@@ -82,6 +110,7 @@ export async function gerarPropostaPDF(dados, { caminho } = {}) {
   try {
     await page.setContent(html, { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
+    await achatarDecoracao(page);
     const pdf = await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true, margin: { top: 0, right: 0, bottom: 0, left: 0 } });
     if (caminho) writeFileSync(caminho, pdf);
     return Buffer.from(pdf);
