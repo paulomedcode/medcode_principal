@@ -63,16 +63,16 @@ export default function VirarOportunidade({ lead, onClose, onFeito }) {
 
     return (
         <Janela titulo="Virar oportunidade" icone={Target} onClose={onClose} largura="max-w-xl"
-            rodape={<>
-                <button onClick={onClose} className={btnSecundario}>Cancelar</button>
-                <button onClick={() => salvar('abrir')} disabled={salvando} className={btnSecundario}>Criar e abrir no Vendas</button>
-                <button onClick={() => salvar('ganhar')} disabled={salvando} className={btnSecundario} title="O cliente já fechou: cria a oportunidade ganha e o projeto">
+            rodape={<div className="w-full grid grid-cols-2 gap-2 sm:flex sm:justify-end [&>button]:justify-center [&>button]:whitespace-nowrap">
+                <button onClick={onClose} className={`${btnSecundario} order-3 sm:order-none`}>Cancelar</button>
+                <button onClick={() => salvar('abrir')} disabled={salvando} className={`${btnSecundario} order-1 sm:order-none border border-black/[.085] sm:border-0`}>Criar e abrir no Vendas</button>
+                <button onClick={() => salvar('ganhar')} disabled={salvando} className={`${btnSecundario} order-2 sm:order-none border border-black/[.085] sm:border-0 flex items-center gap-1.5`} title="O cliente já fechou: cria a oportunidade ganha e o projeto">
                     <Trophy size={14} /> Já fechou: criar projeto
                 </button>
-                <button onClick={() => salvar()} disabled={salvando} className={btnPrimario}>
+                <button onClick={() => salvar()} disabled={salvando} className={`${btnPrimario} order-4 sm:order-none`}>
                     {salvando ? <Loader2 size={14} className="animate-spin" /> : <Target size={14} />} Criar
                 </button>
-            </>}>
+            </div>}>
             <p className="text-[12px] font-semibold text-slate-500">
                 <b className="text-slate-700">{lead.nome}</b> entra em Clientes (em negociação) e a oportunidade vai para o funil.
                 As notas da prospecção vão junto para o histórico.
