@@ -15,6 +15,7 @@ import { gerarPropostaHTML, PADRAO } from '../../medcode-proposta/src/template.j
 import logoClara from '../../medcode-proposta/assets/logo-clara.webp';
 import logoEscura from '../../medcode-proposta/assets/logo-escura.webp';
 import foto from '../../medcode-proposta/assets/foto.jpg';
+import { textoPadraoDoServico } from '../config/textosServicos';
 
 const BUCKET = 'propostas';
 const VALIDADE_URL = 300; // segundos
@@ -113,6 +114,18 @@ function trocarMarcadores(v, valores) {
     return v;
 }
 
+/**
+ * Item sem explicação (nem descrição nem entregáveis) ganha o texto padrão do
+ * tipo de serviço reconhecido pelo nome — senão a página de solução sai só com
+ * o nome do serviço. Campo preenchido no item nunca é trocado.
+ */
+function comTextoPadrao(d, nome) {
+    if (d.descricao?.trim() || (d.entregaveis || []).some((x) => String(x).trim())) return d;
+    const t = textoPadraoDoServico(nome);
+    if (!t) return d;
+    return { ...d, rotulo: d.rotulo || t.rotulo, descricao: t.descricao, entregaveis: t.entregaveis, resumo: d.resumo || t.resumo };
+}
+
 /** Objeto que o template da proposta entende. */
 export function montarDadosProposta({ numero, title, issue_date, valid_until, notes, party, items: itensBrutos, proposta }) {
     const marcadores = { cliente: nomeCliente(party), contato: proposta?.contato || nomeCliente(party) };
@@ -139,7 +152,7 @@ export function montarDadosProposta({ numero, title, issue_date, valid_until, no
         cenario: { ...p.cenario, problemas: limpar(p.cenario?.problemas), objetivos: limpar(p.cenario?.objetivos) },
         solucao: p.solucao,
         servicos: (items || []).filter((it) => it.description?.trim()).map((it) => {
-            const d = it.detalhes || {};
+            const d = comTextoPadrao(it.detalhes || {}, it.description);
             return {
                 nome: it.description.trim(),
                 nomeTabela: d.nomeTabela || undefined,
