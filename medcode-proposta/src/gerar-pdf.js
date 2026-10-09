@@ -42,8 +42,6 @@ let imagensCache = null;
 function imagensLocais() {
   if (imagensCache) return imagensCache;
   imagensCache = {
-    logoClara: `data:image/webp;base64,${base64('assets', 'logo-clara.webp')}`,
-    logoEscura: `data:image/webp;base64,${base64('assets', 'logo-escura.webp')}`,
     foto: `data:image/jpeg;base64,${base64('assets', 'foto.jpg')}`,
   };
   return imagensCache;

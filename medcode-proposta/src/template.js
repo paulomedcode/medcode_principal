@@ -1,12 +1,13 @@
 // =====================================================================
 //  MedCode Assessoria — Gerador de Proposta Comercial (HTML A4)
 //  Uso:  import { gerarPropostaHTML } from './template.js'
-//        const html = gerarPropostaHTML(dados, { imagens: { logoClara, logoEscura, foto } })
+//        const html = gerarPropostaHTML(dados, { imagens: { foto } })
 //  Sem dependências. Funciona no Node e no navegador.
 //  As imagens ficam em ../assets: no navegador entram como URL, no gerador de
 //  PDF entram embutidas (data:), para o arquivo não depender de rede.
 // =====================================================================
 import { ESTILOS } from './estilos.js';
+import { logoMedCode } from './logo.js';
 
 // ---------- Dados fixos da empresa (edite aqui uma vez) ----------
 export const EMPRESA = {
@@ -15,7 +16,7 @@ export const EMPRESA = {
   responsavel: 'Paulo Nogueira',
   cargo: 'Fundador · MedCode Assessoria',
   iniciais: 'PN',
-  whatsapp: '(11) 99164-9612',
+  whatsapp: '(15) 98804-1307',
   email: 'contato@medcodedev.com',
   site: 'contato.medcodedev.com',
   rodape: 'medcodedev.com',
@@ -97,11 +98,10 @@ export function calcularInvestimento(dados) {
 // ---------- blocos ----------
 let IMG = {}; // imagens da geração em curso (gerarPropostaHTML é síncrona)
 
-// escura = logo para fundo escuro (capa e fechamento); clara = cabeçalho das páginas brancas
+// Logo vetorial, igual ao da landing page (ver logo.js).
+// Fundo escuro: capa e fechamento; fundo claro: cabeçalho das páginas brancas.
 function logo(fundoEscuro = true) {
-  const src = fundoEscuro ? IMG.logoEscura : IMG.logoClara;
-  if (src) return `<div class="logo"><img src="${esc(src)}" alt="${esc(EMPRESA.nome)} ${esc(EMPRESA.sufixo)}" style="height:${fundoEscuro ? 58 : 34}px;width:auto;display:block"></div>`;
-  return `<div class="logo"><div class="mark">&lt;/&gt;</div><div class="name">${esc(EMPRESA.nome)}${fundoEscuro ? `<small>${esc(EMPRESA.sufixo)}</small>` : ''}</div></div>`;
+  return logoMedCode({ escuro: fundoEscuro, altura: fundoEscuro ? 46 : 26 });
 }
 
 const avatar = () => (IMG.foto

@@ -25,7 +25,8 @@ medcode-proposta/
 - **PDF:** `api/proposta-pdf.js` (função da Vercel, `puppeteer-core` + `@sparticuz/chromium`). No `npm run dev`
   o `vite.config.js` atende a mesma rota com o Google Chrome do computador (ou `CHROME_PATH`).
 - **Arquivos:** bucket privado `propostas`, uma versão por geração (`finance_quote_pdfs`).
-- **Imagens:** `assets/` (logo para fundo claro e escuro, foto da assinatura). Os dados fixos da empresa
+- **Logo:** vetorial, em `src/logo.js` (o mesmo da landing page; não depende de imagem nem de fonte).
+- **Imagens:** `assets/` (foto da assinatura). Os dados fixos da empresa
   (WhatsApp, e-mail, CNPJ) ficam em `EMPRESA`, no topo de `src/template.js`.
 
 Teste rápido pela linha de comando (na raiz do projeto):
