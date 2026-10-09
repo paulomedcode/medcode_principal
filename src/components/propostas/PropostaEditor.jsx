@@ -42,6 +42,29 @@ function ListaTexto({ value, onChange, rows = 4, paragrafos = false, placeholder
     return <textarea value={texto} onChange={(e) => mudar(e.target.value)} rows={rows} className={areaCls} placeholder={placeholder} />;
 }
 
+/**
+ * Textos de um serviço na proposta (rótulo, prazo, descrição, entregáveis…).
+ * Usado no item do orçamento e no cadastro do serviço (o texto padrão).
+ * `compacto` empilha tudo numa coluna, para formulários estreitos.
+ */
+export function CamposTextoServico({ detalhes = {}, onChange, nome = '', compacto = false }) {
+    const d = detalhes;
+    const g3 = compacto ? 'grid grid-cols-1 gap-2' : 'grid grid-cols-1 md:grid-cols-3 gap-2';
+    const g2 = compacto ? 'grid grid-cols-1 gap-2' : 'grid grid-cols-1 md:grid-cols-2 gap-2';
+    return (<>
+        <div className={g3}>
+            <Campo label="Rótulo"><input value={d.rotulo || ''} onChange={(e) => onChange({ rotulo: e.target.value })} className={inputCls} placeholder="Ex.: Presença digital" /></Campo>
+            <Campo label="Prazo"><input value={d.prazo || ''} onChange={(e) => onChange({ prazo: e.target.value })} className={inputCls} placeholder="Ex.: 10 dias" /></Campo>
+            <Campo label="Nome na tabela de valores"><input value={d.nomeTabela || ''} onChange={(e) => onChange({ nomeTabela: e.target.value })} className={inputCls} placeholder={nome} /></Campo>
+        </div>
+        <Campo label="Descrição"><textarea value={d.descricao || ''} onChange={(e) => onChange({ descricao: e.target.value })} rows={compacto ? 3 : 2} className={areaCls} /></Campo>
+        <div className={g2}>
+            <Campo label="Entregáveis (um por linha)"><ListaTexto value={d.entregaveis} onChange={(entregaveis) => onChange({ entregaveis })} rows={5} /></Campo>
+            <Campo label="Resumo na tabela de valores"><textarea value={d.resumo || ''} onChange={(e) => onChange({ resumo: e.target.value })} rows={compacto ? 2 : 5} className={areaCls} /></Campo>
+        </div>
+    </>);
+}
+
 /** Tabela pequena de objetos (destaques, etapas, cronograma…). */
 function Tabela({ value, onChange, colunas, novo, max }) {
     const linhas = value || [];
@@ -160,16 +183,7 @@ export default function PropostaEditor({ proposta, onChange, items, onItemDetalh
                                 </button>
                             )}
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                            <Campo label="Rótulo"><input value={it.detalhes.rotulo || ''} onChange={(e) => onItemDetalhes(i, { rotulo: e.target.value })} className={inputCls} placeholder="Ex.: Presença digital" /></Campo>
-                            <Campo label="Prazo"><input value={it.detalhes.prazo || ''} onChange={(e) => onItemDetalhes(i, { prazo: e.target.value })} className={inputCls} placeholder="Ex.: 10 dias" /></Campo>
-                            <Campo label="Nome na tabela de valores"><input value={it.detalhes.nomeTabela || ''} onChange={(e) => onItemDetalhes(i, { nomeTabela: e.target.value })} className={inputCls} placeholder={it.description} /></Campo>
-                        </div>
-                        <Campo label="Descrição"><textarea value={it.detalhes.descricao || ''} onChange={(e) => onItemDetalhes(i, { descricao: e.target.value })} rows={2} className={areaCls} /></Campo>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <Campo label="Entregáveis (um por linha)"><ListaTexto value={it.detalhes.entregaveis} onChange={(entregaveis) => onItemDetalhes(i, { entregaveis })} rows={5} /></Campo>
-                            <Campo label="Resumo na tabela de valores"><textarea value={it.detalhes.resumo || ''} onChange={(e) => onItemDetalhes(i, { resumo: e.target.value })} rows={5} className={areaCls} /></Campo>
-                        </div>
+                        <CamposTextoServico detalhes={it.detalhes} onChange={(patch) => onItemDetalhes(i, patch)} nome={it.description} />
                     </div>
                 ) : null)}
             </Secao>

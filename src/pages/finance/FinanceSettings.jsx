@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { financeService } from '../../services/financeService';
+import { detalhesVazios } from '../../services/propostas';
+import { CamposTextoServico } from '../../components/propostas/PropostaEditor';
 import {
   FolderPlus, Plus, Edit2, Trash2, ShieldCheck, DollarSign,
   Settings, Folder, Palette, HelpCircle, Loader2, Save, UserCheck, CreditCard,
@@ -36,6 +38,8 @@ const CATEGORY_COLORS = [
   '#6366f1', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b', '#0ea5e9',
 ];
 
+const servicoVazio = () => ({ name: '', description: '', base_price: 0, is_active: true, proposta_padrao: detalhesVazios() });
+
 export default function FinanceSettings() {
   const { theme } = useWhiteLabel();
   const { currentUser } = useAuth();
@@ -48,7 +52,7 @@ export default function FinanceSettings() {
 
   // States para Serviços
   const [services, setServices] = useState([]);
-  const [serviceForm, setServiceForm] = useState({ name: '', description: '', base_price: 0, is_active: true });
+  const [serviceForm, setServiceForm] = useState(servicoVazio());
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [serviceSearch, setServiceSearch] = useState('');
   const [serviceStatusFilter, setServiceStatusFilter] = useState('all'); // all | active | inactive
@@ -124,7 +128,7 @@ export default function FinanceSettings() {
         await financeService.createService(serviceForm);
         toast.success('Serviço cadastrado com sucesso!');
       }
-      setServiceForm({ name: '', description: '', base_price: 0, is_active: true });
+      setServiceForm(servicoVazio());
       setEditingServiceId(null);
       const data = await financeService.getServices();
       setServices(data || []);
@@ -139,7 +143,8 @@ export default function FinanceSettings() {
       name: service.name,
       description: service.description || '',
       base_price: service.base_price,
-      is_active: service.is_active !== false
+      is_active: service.is_active !== false,
+      proposta_padrao: { ...detalhesVazios(), ...(service.proposta_padrao || {}) },
     });
     setEditingServiceId(service.id);
   };
@@ -738,6 +743,19 @@ export default function FinanceSettings() {
                 />
               </div>
 
+              <details className="group rounded-xl border border-black/[.085] bg-slate-50/60 px-3 py-2">
+                <summary className="text-[11.5px] font-medium text-slate-600 cursor-pointer select-none list-none flex items-center justify-between">
+                  Texto padrão na proposta
+                  <span className="text-[10.5px] text-slate-400 group-open:hidden">rótulo, prazo, descrição, entregáveis</span>
+                </summary>
+                <div className="mt-3 space-y-2">
+                  <p className="text-[10.5px] text-slate-400">Ao escolher este serviço num orçamento, a página de solução da proposta já vem com estes textos. Dá para ajustar em cada orçamento.</p>
+                  <CamposTextoServico compacto nome={serviceForm.name}
+                    detalhes={serviceForm.proposta_padrao}
+                    onChange={(patch) => setServiceForm((f) => ({ ...f, proposta_padrao: { ...f.proposta_padrao, ...patch } }))} />
+                </div>
+              </details>
+
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -755,7 +773,7 @@ export default function FinanceSettings() {
                 {editingServiceId && (
                   <button
                     type="button"
-                    onClick={() => { setEditingServiceId(null); setServiceForm({ name: '', description: '', base_price: 0, is_active: true }); }}
+                    onClick={() => { setEditingServiceId(null); setServiceForm(servicoVazio()); }}
                     className="w-full h-8 text-xs font-medium text-slate-400 hover:text-slate-600 mt-2"
                   >
                     Cancelar Edição
