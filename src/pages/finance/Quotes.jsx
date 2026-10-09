@@ -268,7 +268,7 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
   const party = parties.find(p => p.id === partyId);
   const abrirPrevia = () => {
     const dados = montarDadosProposta({ numero: quote?.numero || 'MC-' + new Date().getFullYear() + '-···', title, issue_date: quote?.issue_date,
-      valid_until: validUntil, party, items, proposta });
+      valid_until: validUntil, notes, party, items, proposta });
     if (!dados.servicos.length) return toast.error('Adicione ao menos um item.');
     setPrevia(htmlDaProposta(dados));
   };

@@ -119,6 +119,8 @@ export const ESTILOS = `
   .note h3{font-size:9.5pt;margin-bottom:1.5mm}
   .note p{color:var(--muted);line-height:1.5}
   .note .price{font-weight:600;color:var(--text)}
+  .obs{margin-top:6mm;font-size:7.8pt;line-height:1.5;color:var(--muted);white-space:pre-line}
+  .obs b{font-weight:600;color:var(--text);margin-right:1.5mm}
 
   /* timeline */
   .tl{position:relative;margin:4mm 0 0}
