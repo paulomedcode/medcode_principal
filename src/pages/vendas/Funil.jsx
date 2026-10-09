@@ -1,20 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-    Target, Plus, Search, Settings2, Trophy, XCircle, Edit2, Trash2, RotateCcw, FileText, FileDown, CalendarClock, X, Building2, FolderKanban,
+    Target, Plus, Search, Settings2, Trophy, XCircle, Edit2, Trash2, RotateCcw, FileText, CalendarClock, X, Building2, FolderKanban,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
     listarEtapas, listarOportunidades, listarEmpresas, moverOportunidade, excluirOportunidade, reabrirOportunidade,
     salvarEtapa, excluirEtapa, listarProjetos,
 } from '../../services/crm';
-import { financeService } from '../../services/financeService';
 import { SERVICOS, resumoServicos, temServico, fmtBRL, fmtData } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import { OportunidadeModal, GanharModal, PerderModal } from '../../components/crm/OportunidadeModal';
 import Atividades from '../../components/crm/Atividades';
-import { QuoteModal } from '../finance/Quotes';
-import PdfsProposta from '../../components/propostas/PdfsProposta';
+import PropostasBloco from '../../components/propostas/PropostasBloco';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { PAGINA, CARD, FiltrosCelular, Etiqueta, Carregando, Janela, inputCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
 import { useUsuarios } from '../../components/crm/dados';
@@ -320,38 +318,14 @@ export default function Funil() {
 /** Painel lateral com a oportunidade: dados, propostas, ações e histórico. */
 function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar, onGanhar, onPerder, onReabrir, onExcluir }) {
     const navigate = useNavigate();
-    const { hasPermission } = usePermission();
-    const [propostas, setPropostas] = useState([]);
-    const [servicos, setServicos] = useState([]);
-    const [empresas, setEmpresas] = useState([]);
-    const [novaProposta, setNovaProposta] = useState(false);
-    const [pdfsDe, setPdfsDe] = useState(null); // { quote, gerar }
     const [projeto, setProjeto] = useState(null);
     const etapa = etapas.find((e) => e.id === op.etapa_id);
     const s = resumoServicos(op);
-    const verPropostas = hasPermission('Acessar Vendas') || hasPermission('Acessar Financeiro');
 
-    const carregarPropostas = useCallback(() => {
-        if (!verPropostas) return;
-        financeService.getQuotes({ oportunidadeId: op.id }).then(setPropostas).catch(() => setPropostas([]));
-    }, [op.id, verPropostas]);
-
-    useEffect(() => { carregarPropostas(); }, [carregarPropostas]);
     useEffect(() => {
         if (!op.ganho_em) return;
         listarProjetos({ partyId: op.party_id }).then((l) => setProjeto(l.find((p) => p.oportunidade_id === op.id) || null)).catch(() => {});
     }, [op.id, op.ganho_em, op.party_id]);
-
-    const abrirNovaProposta = async () => {
-        try {
-            const [sv, pt] = await Promise.all([financeService.getServices(), financeService.getParties()]);
-            setServicos((sv || []).filter((x) => x.is_active !== false));
-            setEmpresas((pt || []).filter((p) => p.kind !== 'FORNECEDOR'));
-            setNovaProposta(true);
-        } catch (e) { console.error(e); toast.error('Não foi possível abrir a proposta.'); }
-    };
-
-    const STATUS_PROPOSTA = { PENDENTE: 'bg-amber-50 text-amber-700 border-amber-100', APROVADO: 'bg-emerald-50 text-emerald-700 border-emerald-100', RECUSADO: 'bg-rose-50 text-rose-700 border-rose-100' };
 
     return (
         <div className="fixed inset-0 z-[10500] flex justify-end">
@@ -412,42 +386,11 @@ function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar
                         </button>
                     )}
 
-                    {verPropostas && (
-                        <div className={`${CARD} p-4`}>
-                            <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight flex items-center gap-1.5"><FileText size={13} /> Propostas</h3>
-                                {podeEditar && <button onClick={abrirNovaProposta} className="text-[12px] font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"><Plus size={12} /> Nova proposta</button>}
-                            </div>
-                            {propostas.length === 0 ? <p className="text-[11px] font-semibold text-slate-400">Nenhuma proposta ainda.</p> : (
-                                <ul className="divide-y divide-black/[.05]">
-                                    {propostas.map((q) => (
-                                        <li key={q.id} className="py-2 flex items-center gap-2 text-[11.5px]">
-                                            <span className="font-semibold text-slate-700 flex-1 truncate">{q.title || 'Proposta'}{q.numero && <span className="text-slate-400 font-semibold"> · {q.numero}</span>}</span>
-                                            <span className="text-slate-400 font-semibold">{fmtData(q.valid_until)}</span>
-                                            <span className="font-bold text-slate-800 tabular-nums">{fmtBRL(q.total_amount)}</span>
-                                            <Etiqueta className={STATUS_PROPOSTA[q.status] || STATUS_PROPOSTA.PENDENTE}>{q.status}</Etiqueta>
-                                            <button onClick={() => setPdfsDe({ quote: q })} title="Proposta em PDF" className="p-1 text-violet-500 hover:text-violet-700 hover:bg-violet-50 rounded-md"><FileDown size={14} /></button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                    )}
+                    <PropostasBloco oportunidade={op} />
 
                     <Atividades vinculo={{ party_id: op.party_id, oportunidade_id: op.id }} filtro={{ oportunidadeId: op.id }} titulo="Histórico da negociação" />
                 </div>
             </div>
-
-            {novaProposta && (
-                <QuoteModal quote={null} services={servicos} parties={empresas} oportunidade={op}
-                    onClose={() => setNovaProposta(false)}
-                    onSaved={async (salvo) => {
-                        setNovaProposta(false);
-                        carregarPropostas();
-                        if (salvo?.gerarPdf) setPdfsDe({ quote: await financeService.getQuoteDetails(salvo.id), gerar: true });
-                    }} />
-            )}
-            {pdfsDe && <PdfsProposta quote={pdfsDe.quote} podeGerar={podeEditar} gerarAoAbrir={!!pdfsDe.gerar} onClose={() => setPdfsDe(null)} />}
         </div>
     );
 }

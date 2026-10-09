@@ -11,6 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { todayISO } from '../../utils/date';
 import ProjetoModal from '../../components/crm/ProjetoModal';
 import Atividades from '../../components/crm/Atividades';
+import PropostasBloco from '../../components/propostas/PropostasBloco';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { PAGINA, CARD, Etiqueta, Carregando } from '../../components/crm/ui';
 import { resumoFinanceiro } from '../../components/crm/dados';
@@ -241,6 +242,9 @@ export default function ProjetoDetalhe() {
                             )}
                         </div>
                     )}
+
+                    <PropostasBloco oportunidade={projeto.oportunidade ? { ...projeto.oportunidade, party_id: projeto.party_id } : null}
+                        partyId={projeto.party_id} titulo={projeto.nome} />
 
                     <Atividades vinculo={{ party_id: projeto.party_id, projeto_id: projeto.id }} filtro={{ projetoId: projeto.id }} titulo="Histórico do projeto" />
                 </div>
