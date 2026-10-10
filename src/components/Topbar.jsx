@@ -26,8 +26,6 @@ export const Topbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const [activeDropdown, setActiveDropdown] = useState(null);
-    const dropdownRef = useRef(null);
     const [mobileNavOpen, setMobileNavOpen] = useState(false);  // menu hambúrguer (tablet)
     const [maisAberto, setMaisAberto] = useState(false);        // "Mais" do celular
     const mobileNavRef = useRef(null);
@@ -45,7 +43,6 @@ export const Topbar = () => {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setActiveDropdown(null);
             if (notifRef.current && !notifRef.current.contains(event.target)) setShowNotifications(false);
             if (mobileNavRef.current && !mobileNavRef.current.contains(event.target)) setMobileNavOpen(false);
         };
@@ -101,12 +98,12 @@ export const Topbar = () => {
         {
             id: 'financeiro', label: 'Financeiro',
             items: [
-                { path: '/finance/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-                { path: '/finance/contas-pagar', icon: ArrowUpCircle, label: 'Contas a Pagar' },
-                { path: '/finance/contas-receber', icon: ArrowDownCircle, label: 'Contas a Receber' },
+                { path: '/finance/dashboard', icon: LayoutDashboard, label: 'Painel' },
+                { path: '/finance/contas-pagar', icon: ArrowUpCircle, label: 'Contas a pagar' },
+                { path: '/finance/contas-receber', icon: ArrowDownCircle, label: 'Contas a receber' },
                 { path: '/finance/transacoes', icon: Activity, label: 'Movimentações' },
-                { path: '/finance/fluxo-de-caixa', icon: TrendingUp, label: 'Fluxo de Caixa' },
-                { path: '/finance/conciliacao', icon: ArrowRightLeft, label: 'Conciliação Bancária' },
+                { path: '/finance/fluxo-de-caixa', icon: TrendingUp, label: 'Fluxo de caixa' },
+                { path: '/finance/conciliacao', icon: ArrowRightLeft, label: 'Conciliação bancária' },
             ]
         },
         {
@@ -186,84 +183,21 @@ export const Topbar = () => {
                     </div>
                 )}
 
-                {/* MENU DO MÓDULO FINANCEIRO (somente em /finance) */}
-                <div className="hidden lg:flex flex-1 items-center h-full mx-4 sm:mx-8 min-w-0" ref={dropdownRef}>
-                    {!isFinance && (
-                        <nav className="flex items-center gap-1">
-                            {modulosNav.map(m => {
-                                const Icon = m.icon;
-                                const ativo = moduloAtivo(m);
-                                return (
-                                    <Link key={m.id} to={m.path}
-                                        className={`flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors ${ativo ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-black/[.04]' : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'}`}>
-                                        <Icon size={14} /> {m.label}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-                    )}
-                    {isFinance && (
-                        <Link to="/home" title="Voltar ao início" className="flex items-center justify-center w-9 h-9 mr-2 rounded-lg text-slate-500 hover:bg-white/70 hover:text-indigo-600 shrink-0"><Home size={16} /></Link>
-                    )}
-                    {isFinance && (
-                        <nav className="flex items-center gap-1">
-                            {financeMenu.map(m => {
-                                if (m.soon) {
-                                    return (
-                                        <button key={m.id} disabled
-                                            className="flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium text-slate-300 cursor-not-allowed">
-                                            {m.label}
-                                            <span className="text-[8px] font-bold bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">em breve</span>
-                                        </button>
-                                    );
-                                }
-                                if (m.path) {
-                                    const active = location.pathname === m.path;
-                                    return (
-                                        <Link key={m.id} to={m.path}
-                                            className={`flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors ${active ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-black/[.04]' : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'}`}>
-                                            {m.icon && <m.icon size={14} />} {m.label}
-                                        </Link>
-                                    );
-                                }
-                                const open = activeDropdown === m.id;
-                                const anyActive = m.items?.some(s => location.pathname === s.path);
-                                return (
-                                    <div key={m.id} className="relative"
-                                        onMouseEnter={() => setActiveDropdown(m.id)}
-                                        onMouseLeave={() => setActiveDropdown(null)}>
-                                        <button onClick={() => setActiveDropdown(open ? null : m.id)}
-                                            className={`flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors ${open || anyActive ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-black/[.04]' : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'}`}>
-                                            {m.label}
-                                            <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        {open && (
-                                            <div className="absolute left-0 top-full w-52 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden p-1 animate-in fade-in slide-in-from-top-1">
-                                                {m.items.map(s => {
-                                                    if (s.soon) {
-                                                        return (
-                                                            <div key={s.label} className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-[11px] font-bold text-slate-300 cursor-not-allowed">
-                                                                {s.label}
-                                                                <span className="text-[8px] font-bold bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">em breve</span>
-                                                            </div>
-                                                        );
-                                                    }
-                                                    const Icon = s.icon;
-                                                    const sActive = location.pathname === s.path;
-                                                    return (
-                                                        <Link key={s.path} to={s.path} onClick={() => setActiveDropdown(null)}
-                                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors ${sActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}>
-                                                            <Icon size={14} /> {s.label}
-                                                        </Link>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </nav>
-                    )}
+                {/* MÓDULOS: a barra é a mesma em todo o sistema. O menu interno do
+                    Financeiro fica numa faixa própria logo abaixo (ver o fim do header). */}
+                <div className="hidden lg:flex flex-1 items-center h-full mx-4 sm:mx-8 min-w-0">
+                    <nav className="flex items-center gap-1">
+                        {modulosNav.map(m => {
+                            const Icon = m.icon;
+                            const ativo = moduloAtivo(m);
+                            return (
+                                <Link key={m.id} to={m.path}
+                                    className={`flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors ${ativo ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-black/[.04]' : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'}`}>
+                                    <Icon size={14} /> {m.label}
+                                </Link>
+                            );
+                        })}
+                    </nav>
                 </div>
                 {/* DIREITA */}
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -385,6 +319,30 @@ export const Topbar = () => {
                     </button>
                 </div>
             </header>
+
+            {/* Faixa do Financeiro (desktop): as telas internas do módulo, em abas
+                planas. No celular/tablet elas ficam no menu. App.jsx soma a altura
+                desta faixa ao respiro do <main> em /finance. */}
+            {isFinance && (
+                <nav className="hidden lg:flex items-center gap-0.5 h-10 px-4 sm:px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-black/[.06] dark:border-slate-700/60 overflow-x-auto no-scrollbar print:hidden">
+                    {financeMenu.flatMap((m, gi) => {
+                        const itens = m.items || [{ path: m.path, label: m.label }];
+                        return [
+                            gi > 0 && <span key={`sep-${m.id}`} className="w-px h-4 bg-black/[.08] mx-2 shrink-0" aria-hidden />,
+                            ...itens.map(s => {
+                                const ativo = location.pathname === s.path;
+                                return (
+                                    <Link key={s.path} to={s.path}
+                                        className={`relative h-10 px-2.5 flex items-center text-[12.5px] whitespace-nowrap transition-colors ${ativo ? 'text-slate-900 font-medium' : 'text-slate-500 hover:text-slate-900'}`}>
+                                        {s.label}
+                                        {ativo && <span className="absolute left-2.5 right-2.5 bottom-0 h-[2px] rounded-full bg-slate-900" />}
+                                    </Link>
+                                );
+                            }),
+                        ];
+                    })}
+                </nav>
+            )}
 
             {/* "MAIS" DO CELULAR: módulos, financeiro, ajustes, tema, perfil e sair */}
             <Gaveta aberta={maisAberto} onClose={() => setMaisAberto(false)} titulo="Menu">

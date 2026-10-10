@@ -44,6 +44,8 @@ const AppLayout = ({ children }) => {
   const { isThemeLoading } = useWhiteLabel();
   const location = useLocation();
   const isHome = location.pathname === '/home';
+  // No desktop o Financeiro tem uma faixa de abas abaixo da barra (Topbar).
+  const isFinance = location.pathname.startsWith('/finance');
   // A tela de redefinir senha já tem sessão (o link do e-mail loga), mas não é
   // o sistema ainda: sem Topbar até a senha nova ser gravada.
   const mostraTopbar = currentUser && location.pathname !== '/redefinir-senha';
@@ -69,7 +71,7 @@ const AppLayout = ({ children }) => {
       {/* Celular: a página inteira rola (a barra do Safari recolhe e tocar no
           relógio volta ao topo) e sobra espaço embaixo para a barra inferior.
           Computador: rola só o <main>, com a barra superior parada. */}
-      <main className={`flex-1 md:overflow-y-auto ${mostraTopbar && !isHome ? 'pt-[64px]' : ''} ${mostraTopbar ? 'pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0' : ''}`}>
+      <main className={`flex-1 md:overflow-y-auto ${mostraTopbar && !isHome ? (isFinance ? 'pt-[64px] lg:pt-[104px]' : 'pt-[64px]') : ''} ${mostraTopbar ? 'pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0' : ''}`}>
         {children}
       </main>
       {mostraTopbar && <BarraInferior />}
