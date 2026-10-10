@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePermission } from '../contexts/PermissionContext';
 import { maskTelefone } from '../utils/masks';
 import { logAction } from '../utils/logger';
+import { BotaoVoltar } from '../components/crm/ui';
 import { ROLES, PERMISSION_MODULES, EXTRA_MODULES, ADMIN_KEY } from '../config/permissions';
 import PermissionBlocks from '../components/permissions/PermissionBlocks';
 
@@ -45,7 +46,7 @@ const ExtraPermissionsSelection = ({ value = {}, onChange, role }) => {
     return (
         <div className="mt-4 p-4 border border-purple-100 bg-purple-50/50 rounded-2xl space-y-4">
             <div>
-                <h4 className="text-[11px] font-black text-purple-600 uppercase tracking-wide flex items-center gap-1.5">
+                <h4 className="text-[11px] font-semibold text-purple-600 tracking-wide flex items-center gap-1.5">
                     <Shield size={14} /> Permissões Individuais (Extras){activeCount > 0 && <span className="text-purple-400">· {activeCount}</span>}
                 </h4>
                 <p className="text-[10px] text-slate-500 font-medium mt-1">
@@ -158,7 +159,7 @@ const PermissionsModal = ({ onClose }) => {
                             <Shield size={20} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black text-slate-900 leading-tight">Matriz de Permissões</h2>
+                            <h2 className="text-lg font-semibold text-slate-900 leading-tight">Matriz de Permissões</h2>
                             <p className="text-[11px] text-slate-500 font-bold">Ligue os blocos que cada perfil enxerga — e abra um bloco para afinar o que se faz dentro dele</p>
                         </div>
                     </div>
@@ -177,14 +178,14 @@ const PermissionsModal = ({ onClose }) => {
                                 <button
                                     key={r}
                                     onClick={() => setRole(r)}
-                                    className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap flex items-center gap-2 ${
+                                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
                                         ativo
                                             ? 'bg-slate-900 text-white shadow-md'
                                             : 'text-slate-500 hover:bg-slate-100'
                                     }`}
                                 >
                                     {r}
-                                    <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${
                                         ativo ? 'bg-white/20 text-white' : n > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'
                                     }`}>
                                         {n}
@@ -349,13 +350,13 @@ const UserCreationModal = ({ onClose, onSave }) => {
             <div className="m-auto bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/60 max-w-2xl w-full p-8 relative">
                 <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-500 hover:text-slate-600 hover:bg-white/70 rounded-lg transition-all"><X size={20} /></button>
 
-                <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-1">Novo Usuário</h2>
+                <h2 className="text-xl font-semibold text-slate-800 mb-1">Novo Usuário</h2>
                 <p className="text-xs text-slate-500 mb-6">Preencha os dados para criar um novo acesso.</p>
 
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
+                            <label className="block text-[11px] font-bold text-slate-500 mb-1">Nome Completo</label>
                             <input
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -364,7 +365,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email Corporativo</label>
+                            <label className="block text-[11px] font-bold text-slate-500 mb-1">Email Corporativo</label>
                             <input
                                 value={formData.email}
                                 onChange={e => setFormData({ ...formData, email: e.target.value })}
@@ -375,7 +376,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha Provisória</label>
+                            <label className="block text-[11px] font-bold text-slate-500 mb-1">Senha Provisória</label>
                             <div className="flex gap-2">
                                 <input
                                     value={formData.password}
@@ -388,7 +389,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Perfil de Acesso</label>
+                            <label className="block text-[11px] font-bold text-slate-500 mb-1">Perfil de Acesso</label>
                             <select
                                 value={formData.role}
                                 onChange={e => setFormData({ ...formData, role: e.target.value })}
@@ -402,7 +403,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Equipe</label>
+                            <label className="block text-[11px] font-bold text-slate-500 mb-1">Equipe</label>
                             <select
                                 value={formData.categoria_agenda_id || ''}
                                 onChange={e => setFormData({ ...formData, categoria_agenda_id: e.target.value || null })}
@@ -413,7 +414,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Gênero</label>
+                            <label className="block text-[11px] font-bold text-slate-500 mb-1">Gênero</label>
                             <select
                                 value={formData.sexo}
                                 onChange={e => setFormData({ ...formData, sexo: e.target.value })}
@@ -428,7 +429,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
 
                     {/* Telefone é campo base de TODOS os usuários (não só médicos) */}
                     <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Telefone (Celular)</label>
+                        <label className="block text-[11px] font-bold text-slate-500 mb-1">Telefone (Celular)</label>
                         <input
                             value={formData.telefone}
                             onChange={e => setFormData({ ...formData, telefone: maskTelefone(e.target.value) })}
@@ -450,7 +451,7 @@ const UserCreationModal = ({ onClose, onSave }) => {
                     <button
                         onClick={handleCreate}
                         disabled={loading}
-                        className="flex-1 py-3 bg-blue-600 text-white font-bold text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 flex justify-center items-center gap-2"
+                        className="flex-1 py-3 bg-slate-900 text-white font-bold text-sm rounded-lg hover:bg-slate-800 disabled:opacity-50 flex justify-center items-center gap-2"
                     >
                         {loading ? <Loader2 className="animate-spin" size={18} /> : <><UserPlus size={18} /> Criar Usuário</>}
                     </button>
@@ -524,7 +525,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                     <X size={20} />
                 </button>
 
-                <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-2">
+                <h2 className="text-xl font-semibold text-slate-800 mb-2">
                     Editar Usuário
                 </h2>
                 <p className="text-xs text-slate-500 font-bold mb-6">{user.email}</p>
@@ -532,7 +533,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Nome</label>
+                            <label className="block text-[11px] font-semibold text-slate-500 tracking-wide mb-2">Nome</label>
                             <input
                                 type="text"
                                 value={formData.name}
@@ -542,7 +543,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Perfil de Acesso</label>
+                            <label className="block text-[11px] font-semibold text-slate-500 tracking-wide mb-2">Perfil de Acesso</label>
                             {podeGerenciarPermissoes ? (
                                 <select
                                     value={formData.role}
@@ -566,7 +567,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Equipe</label>
+                            <label className="block text-[11px] font-semibold text-slate-500 tracking-wide mb-2">Equipe</label>
                             <select
                                 value={formData.categoria_agenda_id || ''}
                                 onChange={(e) => setFormData({ ...formData, categoria_agenda_id: e.target.value || null })}
@@ -577,7 +578,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Gênero</label>
+                            <label className="block text-[11px] font-semibold text-slate-500 tracking-wide mb-2">Gênero</label>
                             <select
                                 value={formData.sexo}
                                 onChange={(e) => setFormData({ ...formData, sexo: e.target.value })}
@@ -592,7 +593,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
 
                     {/* Telefone é campo base de TODOS os usuários (não só médicos) */}
                     <div>
-                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">Telefone (Celular)</label>
+                        <label className="block text-[11px] font-semibold text-slate-500 tracking-wide mb-2">Telefone (Celular)</label>
                         <input
                             value={formData.telefone}
                             onChange={e => setFormData({ ...formData, telefone: maskTelefone(e.target.value) })}
@@ -610,13 +611,13 @@ const UserEditModal = ({ user, onClose, onSave }) => {
 
                     {/* Status Toggle */}
                     <div>
-                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wide mb-2">
+                        <label className="block text-[11px] font-semibold text-slate-500 tracking-wide mb-2">
                             Status
                         </label>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setFormData({ ...formData, status: 'Ativo' })}
-                                className={`flex-1 px-4 py-3 rounded-xl text-xs font-black uppercase transition-all ${formData.status === 'Ativo'
+                                className={`flex-1 px-4 py-3 rounded-xl text-xs font-semibold transition-all ${formData.status === 'Ativo'
                                     ? 'bg-emerald-500/20 text-white shadow-lg'
                                     : 'bg-white/70 text-slate-500 hover:bg-white/80'
                                     }`}
@@ -625,7 +626,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                             </button>
                             <button
                                 onClick={() => setFormData({ ...formData, status: 'Inativo' })}
-                                className={`flex-1 px-4 py-3 rounded-xl text-xs font-black uppercase transition-all ${formData.status === 'Inativo'
+                                className={`flex-1 px-4 py-3 rounded-xl text-xs font-semibold transition-all ${formData.status === 'Inativo'
                                     ? 'bg-rose-500/20 text-white shadow-lg'
                                     : 'bg-white/70 text-slate-500 hover:bg-white/80'
                                     }`}
@@ -638,7 +639,7 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                     {/* Reset Password Button */}
                     <button
                         onClick={handleResetPassword}
-                        className="w-full px-4 py-3 bg-amber-500/20 text-amber-600 border border-amber-100 rounded-xl text-xs font-black uppercase hover:bg-amber-100 transition-all flex items-center justify-center gap-2"
+                        className="w-full px-4 py-3 bg-amber-500/20 text-amber-600 border border-amber-100 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-all flex items-center justify-center gap-2"
                     >
                         <KeyRound size={16} />
                         Resetar Senha
@@ -649,14 +650,14 @@ const UserEditModal = ({ user, onClose, onSave }) => {
                 <div className="flex gap-3 mt-6">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-6 py-3 bg-white/70 text-slate-600 rounded-xl font-black text-sm uppercase hover:bg-white/80 transition-all"
+                        className="flex-1 px-6 py-3 bg-white/70 text-slate-600 rounded-xl font-semibold text-sm hover:bg-white/80 transition-all"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-sm uppercase hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 px-6 py-3 bg-slate-900 text-white rounded-xl font-semibold text-sm hover:bg-slate-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? 'Salvando...' : 'Salvar'}
                     </button>
@@ -712,16 +713,16 @@ const UserManagement = ({ isEmbedded = false }) => {
 
     if (loading) return (
         <div className="flex justify-center items-center h-full">
-            <Loader2 className="animate-spin text-blue-500" size={32} />
+            <Loader2 className="animate-spin text-slate-400" size={24} />
         </div>
     );
 
     const getRoleBadgeColor = (role) => {
         const colors = {
-            'Desenvolvedor': 'bg-white/40 text-amber-400 border-amber-500/50 shadow-sm shadow-amber-900/20',
-            'Administrador': 'bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.4)] border-none border-blue-100',
-            'Visualizador': 'bg-white/60 text-slate-600 border-white/40',
-            'Sócio': 'bg-violet-600 text-white shadow-[0_4px_15px_rgba(124,58,237,0.35)] border-none',
+            'Desenvolvedor': 'bg-amber-50 text-amber-700 border-amber-100',
+            'Administrador': 'bg-slate-900 text-white border-slate-900',
+            'Visualizador': 'bg-slate-100 text-slate-600 border-slate-200',
+            'Sócio': 'bg-violet-50 text-violet-700 border-violet-100',
             'Comercial': 'bg-emerald-500/20 text-emerald-700 border-emerald-100',
             'Gestor de Projetos': 'bg-indigo-500/15 text-indigo-700 border-indigo-100',
             'Produção': 'bg-sky-500/15 text-sky-700 border-sky-100',
@@ -744,29 +745,29 @@ const UserManagement = ({ isEmbedded = false }) => {
     });
 
     const content = (
-        <div className="flex flex-col h-full bg-white/60 backdrop-blur-lg rounded-lg border border-white/400 shadow-sm overflow-hidden animate-in fade-in duration-500">
+        <div className="flex flex-col h-full bg-white rounded-xl border border-black/[.07] shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden">
             {/* Header Actions */}
-            <div className="p-4 md:p-6 border-b border-white/60 flex flex-col gap-5 bg-white/60 backdrop-blur-md">
+            <div className="p-4 md:p-5 border-b border-black/[.06] flex flex-col gap-4 bg-white">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
                     <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-black text-slate-900 drop-shadow-none uppercase tracking-widest">
-                            Gestão de Acessos
+                        <h3 className="text-[14px] font-semibold text-slate-900">
+                            Equipe
                         </h3>
                     </div>
                     <div className="flex items-center gap-2 w-full md:w-auto">
                         {podeGerenciarPermissoes && (
                             <button
                                 onClick={() => setShowPermissionsModal(true)}
-                                className="flex-1 md:flex-none px-4 py-2 border border-white/60 bg-white/60 text-slate-600 rounded-lg text-xs font-bold uppercase hover:bg-white/80 hover:border-purple-300 hover:text-purple-600 transition-all flex items-center justify-center gap-2 backdrop-blur-md shadow-sm"
+                                className="flex-1 md:flex-none h-9 px-3.5 border border-black/[.09] bg-white text-slate-700 rounded-lg text-[13px] font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
                             >
                                 <Shield size={14} /> Permissões
                             </button>
                         )}
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            className="flex-1 md:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-black uppercase hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+                            className="flex-1 md:flex-none h-9 px-3.5 bg-slate-900 text-white rounded-lg text-[13px] font-medium hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
                         >
-                            <UserPlus size={14} strokeWidth={3} /> Novo Usuário
+                            <UserPlus size={14} /> Novo usuário
                         </button>
                     </div>
                 </div>
@@ -796,19 +797,19 @@ const UserManagement = ({ isEmbedded = false }) => {
                 <div className="flex gap-2 bg-slate-100/50 p-1.5 rounded-xl border border-white/60 self-start">
                     <button 
                         onClick={() => setActiveFilter('todos')} 
-                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'todos' ? 'bg-white/60 text-slate-900 drop-shadow-none shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-4 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-2 ${activeFilter === 'todos' ? 'bg-white/60 text-slate-900 drop-shadow-none shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Todos <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'todos' ? 'bg-white/70 text-slate-500' : 'bg-slate-200/50'}`}>{users.length}</span>
                     </button>
                     <button
                         onClick={() => setActiveFilter('ativos')}
-                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'ativos' ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-4 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-2 ${activeFilter === 'ativos' ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Ativos <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'ativos' ? 'bg-white/80 text-slate-800' : 'bg-slate-200/50'}`}>{users.filter(u => (u.status || 'Ativo') !== 'Inativo').length}</span>
                     </button>
                     <button
                         onClick={() => setActiveFilter('inativos')}
-                        className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === 'inativos' ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-4 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-2 ${activeFilter === 'inativos' ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Inativos <span className={`px-1.5 py-0.5 rounded-md ${activeFilter === 'inativos' ? 'bg-white/80 text-slate-800' : 'bg-slate-200/50'}`}>{users.filter(u => u.status === 'Inativo').length}</span>
                     </button>
@@ -820,11 +821,11 @@ const UserManagement = ({ isEmbedded = false }) => {
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-white/60 backdrop-blur-md sticky top-0 z-10 shadow-sm border-b border-white/400">
                         <tr>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-white/60">Nome</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-white/60">Email</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-white/60">Perfil</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-white/60">Status</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-white/60 text-center">Ações</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 border-b border-white/60">Nome</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 border-b border-white/60">Email</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 border-b border-white/60">Perfil</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 border-b border-white/60">Status</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 border-b border-white/60 text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/50">
@@ -836,18 +837,18 @@ const UserManagement = ({ isEmbedded = false }) => {
                             return (
                                 <tr key={user.id} className="hover:bg-white/60 transition-colors group">
                                     <td className="px-4 py-2.5">
-                                        <div className="text-sm font-bold text-slate-700 uppercase">{user.name || '---'}</div>
+                                        <div className="text-sm font-bold text-slate-700">{user.name || '---'}</div>
                                     </td>
                                     <td className="px-4 py-2.5">
                                         <div className="text-sm font-medium text-slate-500">{user.email}</div>
                                     </td>
                                     <td className="px-4 py-2.5">
-                                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase border ${getRoleBadgeColor(user.role)}`}>
+                                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${getRoleBadgeColor(user.role)}`}>
                                             {user.role}
                                         </span>
                                     </td>
                                     <td className="px-4 py-2.5">
-                                        <span className={`flex items-center gap-1.5 text-xs font-bold uppercase ${user.status === 'Ativo' ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                        <span className={`flex items-center gap-1.5 text-xs font-bold ${user.status === 'Ativo' ? 'text-emerald-600' : 'text-slate-500'}`}>
                                             <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'Ativo' ? 'bg-emerald-500/20' : 'bg-slate-300'}`}></div>
                                             {user.status || 'Inativo'}
                                         </span>
@@ -888,7 +889,7 @@ const UserManagement = ({ isEmbedded = false }) => {
                         })}
                         {filteredUsers.length === 0 && (
                             <tr>
-                                <td colSpan="5" className="py-12 text-center text-slate-500 text-[11px] uppercase font-bold tracking-widest">
+                                <td colSpan="5" className="py-12 text-center text-slate-500 text-[11px] font-bold">
                                     {termo ? `Nenhum usuário encontrado para "${searchTerm.trim()}".` : 'Nenhum usuário encontrado nesta aba.'}
                                 </td>
                             </tr>
@@ -938,10 +939,13 @@ const UserManagement = ({ isEmbedded = false }) => {
     // permissões: a tela só era usada embutida nas Configurações, então os
     // botões existiam sem nada por trás.
     return (
-        <div className="px-4 lg:px-4 pr-4 py-8 space-y-6 bg-slate-50/20 min-h-full font-sans">
-            <h1 className="text-2xl font-black text-slate-800 uppercase tracking-widest">
-                {podeGerenciarPermissoes ? 'Equipe e Permissões' : 'Equipe'}
-            </h1>
+        <div className="px-4 sm:px-6 py-5 space-y-4 bg-[#f7f7f8] min-h-[calc(100dvh-64px)] font-sans">
+            <div className="flex items-center gap-1.5">
+                <BotaoVoltar padrao="/configuracoes" />
+                <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight">
+                    {podeGerenciarPermissoes ? 'Usuários e permissões' : 'Usuários'}
+                </h1>
+            </div>
             {content}
             {editingUser && (
                 <UserEditModal

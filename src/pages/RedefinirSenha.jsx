@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Key, AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase, HASH_INICIAL } from '../services/supabase';
-import { useWhiteLabel } from '../contexts/WhiteLabelContext';
-import bgImage from '../assets/capa-login.jpg';
+import TelaAcesso, { rotuloAcesso, campoAcesso, botaoAcesso } from '../components/acesso/TelaAcesso';
 
 /*
  * Destino do link "redefinir senha" do e-mail.
@@ -59,7 +58,6 @@ export const DesvioDeRecuperacao = () => {
 
 const RedefinirSenha = () => {
     const navigate = useNavigate();
-    const { theme } = useWhiteLabel();
     const [motivo, setMotivo] = useState(() => erroDoLink(HASH_INICIAL));
     // verificando | formulario | invalido
     const [etapa, setEtapa] = useState(() => (erroDoLink(HASH_INICIAL) ? 'invalido' : 'verificando'));
@@ -113,83 +111,52 @@ const RedefinirSenha = () => {
         navigate('/login', { replace: true });
     };
 
-    const inputClass = 'w-full pl-12 pr-4 py-3.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl text-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/50 font-bold placeholder:text-slate-500 transition-all shadow-sm';
-
     return (
-        <div
-            className="min-h-full w-full flex justify-end font-sans"
-            style={{ backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-        >
-            <div className="w-full md:w-1/2 lg:w-1/3 min-h-full bg-white/60 backdrop-blur-md border-l border-white/40 shadow-2xl p-10 flex flex-col justify-center relative z-10">
-                <div className="text-center mb-10">
-                    {theme.logoUrl && (
-                        <div className="flex justify-center mb-8">
-                            <img src={theme.logoUrl} alt="Logo" className="h-[4.5rem] w-auto object-contain drop-shadow-md" />
-                        </div>
-                    )}
-                    <h1 className="text-2xl font-extrabold text-slate-800 uppercase tracking-widest leading-tight">
-                        Nova senha
-                    </h1>
+        <TelaAcesso titulo="Nova senha" subtitulo={etapa === 'formulario' ? 'Escolha a senha que você vai usar para entrar.' : undefined}>
+            {etapa === 'verificando' && (
+                <div className="flex items-center gap-2.5 text-[14px] text-slate-500">
+                    <Loader2 className="animate-spin text-slate-400" size={18} /> Validando o link...
                 </div>
+            )}
 
-                {etapa === 'verificando' && (
-                    <div className="flex flex-col items-center gap-3 text-slate-600">
-                        <Loader2 className="animate-spin text-blue-600" size={32} />
-                        <p className="text-[11px] font-bold uppercase tracking-widest">Validando o link...</p>
+            {etapa === 'invalido' && (
+                <div className="space-y-5">
+                    <div className="flex items-start gap-2.5 bg-rose-50 border border-rose-200 rounded-lg p-3.5">
+                        <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={16} />
+                        <p className="text-[13.5px] text-rose-800">
+                            {motivo} Volte ao login e use "Esqueci minha senha" para receber um link novo.
+                        </p>
                     </div>
-                )}
+                    <button type="button" onClick={voltarAoLogin} className={botaoAcesso}>
+                        Voltar ao login
+                    </button>
+                </div>
+            )}
 
-                {etapa === 'invalido' && (
-                    <div className="space-y-6 text-center">
-                        <div className="flex items-start gap-3 text-left bg-rose-50/90 border border-rose-200 rounded-2xl p-4">
-                            <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={18} />
-                            <p className="text-sm font-semibold text-rose-800">
-                                {motivo} Volte ao login e use "Esqueci minha senha" para receber um link novo.
-                            </p>
-                        </div>
-                        <button
-                            type="button" onClick={voltarAoLogin}
-                            className="w-full py-4 bg-blue-50/90 hover:bg-blue-100 text-blue-800 border-2 border-blue-200/60 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/10 transition-all active:scale-95"
-                        >
-                            Voltar ao login
-                        </button>
+            {etapa === 'formulario' && (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label htmlFor="senha" className={rotuloAcesso}>Senha nova</label>
+                        <input
+                            id="senha" type="password" required autoFocus autoComplete="new-password"
+                            value={senha} onChange={(e) => setSenha(e.target.value)}
+                            className={campoAcesso} placeholder={`Mínimo ${SENHA_MINIMA} caracteres`}
+                        />
                     </div>
-                )}
-
-                {etapa === 'formulario' && (
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-900 uppercase ml-1">Senha nova</label>
-                            <div className="relative">
-                                <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                <input
-                                    type="password" required autoFocus autoComplete="new-password"
-                                    value={senha} onChange={(e) => setSenha(e.target.value)}
-                                    className={inputClass} placeholder={`Mínimo ${SENHA_MINIMA} caracteres`}
-                                />
-                            </div>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-900 uppercase ml-1">Repita a senha</label>
-                            <div className="relative">
-                                <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                <input
-                                    type="password" required autoComplete="new-password"
-                                    value={confirmacao} onChange={(e) => setConfirmacao(e.target.value)}
-                                    className={inputClass} placeholder="••••••••"
-                                />
-                            </div>
-                        </div>
-                        <button
-                            disabled={salvando}
-                            className="w-full py-4 bg-blue-50/90 hover:bg-blue-100 text-blue-800 border-2 border-blue-200/60 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/10 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-wait"
-                        >
-                            {salvando ? 'Salvando...' : 'Salvar e entrar'}
-                        </button>
-                    </form>
-                )}
-            </div>
-        </div>
+                    <div>
+                        <label htmlFor="confirmacao" className={rotuloAcesso}>Repita a senha</label>
+                        <input
+                            id="confirmacao" type="password" required autoComplete="new-password"
+                            value={confirmacao} onChange={(e) => setConfirmacao(e.target.value)}
+                            className={campoAcesso} placeholder="••••••••"
+                        />
+                    </div>
+                    <button disabled={salvando} className={`${botaoAcesso} !mt-6`}>
+                        {salvando ? 'Salvando...' : 'Salvar e entrar'}
+                    </button>
+                </form>
+            )}
+        </TelaAcesso>
     );
 };
 

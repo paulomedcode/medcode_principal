@@ -84,7 +84,7 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                     {TIPOS_ATIVIDADE.filter((t) => t.id !== 'SISTEMA').map((t) => (
                         <button type="button" key={t.id} onClick={() => setForm((f) => ({ ...f, tipo: t.id }))}
                             className={`px-2.5 h-7 rounded-lg text-[12px] font-medium transition-all ${form.tipo === t.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border border-black/[.06] hover:text-slate-800'}`}>
-                            {t.emoji} {t.label}
+                            <span className="inline-flex items-center gap-1">{React.createElement(t.icone, { size: 13 })} {t.label}</span>
                         </button>
                     ))}
                 </div>
@@ -121,7 +121,7 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                         const t = tipoAtividade(a.tipo);
                         return (
                             <li key={a.id} className="ml-4 group">
-                                <span className="absolute -left-[9px] mt-0.5 w-[18px] h-[18px] rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px]">{t.emoji}</span>
+                                <span className="absolute -left-[9px] mt-0.5 w-[18px] h-[18px] rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500">{React.createElement(t.icone, { size: 10 })}</span>
                                 <div className="flex items-start gap-2">
                                     <div className="min-w-0 flex-1">
                                         <p className="text-[12px] font-bold text-slate-800 leading-snug">{a.titulo}</p>

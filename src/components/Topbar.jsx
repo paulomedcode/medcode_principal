@@ -121,7 +121,7 @@ export const Topbar = () => {
 
     return (
         <>
-            <header className="h-[64px] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-[999] shrink-0 print:hidden transition-colors duration-300 bg-white/60 dark:bg-slate-900/80 backdrop-blur-md border-b border-white/60 dark:border-slate-700/60 shadow-none">
+            <header className="h-[64px] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-[999] shrink-0 print:hidden transition-colors duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-black/[.06] dark:border-slate-700/60 shadow-none">
 
                 {/* LOGO */}
                 <div className="flex items-center justify-center shrink-0">
@@ -281,6 +281,16 @@ export const Topbar = () => {
                         {temaEscuro ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
 
+                    {/* Configurações no desktop (no celular fica no "Mais"). Um caminho só:
+                        Usuários mora dentro de Configurações; quem só tem a chave de
+                        Usuários cai direto lá. */}
+                    {(hasPermission('Acessar Configurações') || hasPermission('Acessar Usuarios')) && (
+                        <Link to={hasPermission('Acessar Configurações') ? '/configuracoes' : '/usuarios'} title="Configurações"
+                            className={`hidden md:block p-1.5 sm:p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent hover:bg-white/70 hover:border-white/30 ${['/configuracoes', '/configuracoes-painel', '/usuarios'].includes(location.pathname) ? 'text-slate-900' : 'text-slate-600'}`}>
+                            <Settings size={18} />
+                        </Link>
+                    )}
+
                     {/* BELL ICON NOTIFICATIONS */}
                     <div className="relative" ref={notifRef}>
                         <button
@@ -288,7 +298,7 @@ export const Topbar = () => {
                             onClick={() => { const abrir = !showNotifications; setShowNotifications(abrir); if (abrir) pararPulso(); }}
                             className="p-1.5 sm:p-2 rounded-xl transition-all duration-300 shadow-sm border border-transparent text-slate-800 hover:bg-white/70 hover:border-white/30 relative"
                         >
-                            <Bell size={18} className={`${notificacoes.length > 0 ? 'text-rose-500' : 'text-slate-600'} ${pulsando ? 'mc-bell-ring' : ''}`} />
+                            <Bell size={18} className={`text-slate-600 ${pulsando ? 'mc-bell-ring' : ''}`} />
                             {notificacoes.length > 0 && (
                                 <span className={`absolute top-1 right-1 flex items-center justify-center min-w-[14px] h-3.5 px-[3px] bg-rose-500 text-white text-[9px] font-bold rounded-full border border-white ${pulsando ? 'animate-pulse' : ''}`}>
                                     {notificacoes.length > 9 ? '9+' : notificacoes.length}
@@ -411,7 +421,8 @@ export const Topbar = () => {
                             <Settings size={16} className="text-slate-400" /> <span className="flex-1">Configurações</span> <ChevronRight size={15} className="text-slate-300" />
                         </Link>
                     )}
-                    {hasPermission('Acessar Usuarios') && (
+                    {/* Usuários fica dentro de Configurações; aparece aqui só para quem não abre Configurações. */}
+                    {hasPermission('Acessar Usuarios') && !hasPermission('Acessar Configurações') && (
                         <Link to="/usuarios" className="flex items-center gap-3 px-4 h-12 text-[13px] font-semibold text-slate-700 active:bg-slate-100">
                             <UserCog size={16} className="text-slate-400" /> <span className="flex-1">Usuários</span> <ChevronRight size={15} className="text-slate-300" />
                         </Link>

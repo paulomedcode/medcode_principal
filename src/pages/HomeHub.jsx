@@ -14,6 +14,7 @@ import {
     proximosPassos, concluirProximoPasso, listarProjetos,
     progressoDasEntregas, atividadesRecentes,
 } from '../services/crm';
+import { IconesServicos } from '../components/crm/ui';
 import { resumoServicos, statusProjeto, tipoAtividade, fmtBRL, fmtData } from '../config/servicos';
 import { todayISO } from '../utils/date';
 import { statusProspeccao } from '../config/prospeccao';
@@ -47,7 +48,7 @@ const tempoAtras = (iso) => {
     return d === 1 ? 'ontem' : `há ${d} dias`;
 };
 
-const VIDRO = 'bg-white/85 backdrop-blur-xl border border-black/[.05] shadow-[0_1px_2px_rgba(15,23,42,0.04)] rounded-2xl';
+const VIDRO = 'bg-white border border-black/[.07] shadow-[0_1px_2px_rgba(15,23,42,0.03)] rounded-2xl';
 
 const TIPO_ITEM = {
     tarefa: { icone: ClipboardList, cor: 'bg-fuchsia-50 text-fuchsia-600', rotulo: 'Entrega' },
@@ -284,7 +285,7 @@ export default function HomeHub() {
 
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
                         {/* Meu dia */}
-                        <section className={`${VIDRO} p-4 xl:col-span-2 md:min-h-[380px] flex flex-col`}>
+                        <section className={`${VIDRO} p-4 xl:col-span-2 md:min-h-[280px] xl:self-start flex flex-col`}>
                             <div className="flex flex-wrap items-center gap-2 mb-4">
                                 {[
                                     ['atrasado', 'Atrasados', 'bg-rose-600'],
@@ -355,7 +356,7 @@ export default function HomeHub() {
                                                 return (
                                                     <li key={p.id} onClick={() => navigate(`/projetos/${p.id}`)} className="cursor-pointer group">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-base">{resumoServicos(p).emoji}</span>
+                                                            <IconesServicos icones={resumoServicos(p).icones} tamanho="sm" />
                                                             <span className="text-[12.5px] font-bold text-slate-800 truncate flex-1 group-hover:text-indigo-600">{p.nome}</span>
                                                             <span className={`text-[10.5px] font-bold whitespace-nowrap ${atrasado ? 'text-rose-600' : 'text-slate-400'}`}>
                                                                 {atrasado && <AlertTriangle size={10} className="inline mr-0.5 -mt-0.5" />}{p.prazo ? fmtData(p.prazo).slice(0, 5) : 'sem prazo'}
@@ -386,7 +387,7 @@ export default function HomeHub() {
                                             {d.feed.map((a) => (
                                                 <li key={a.id} onClick={() => navigate(a.projeto_id ? `/projetos/${a.projeto_id}` : a.oportunidade_id ? `/vendas?abrir=${a.oportunidade_id}` : `/clientes/${a.party_id}`)}
                                                     className="flex items-start gap-2 cursor-pointer group">
-                                                    <span className="text-sm leading-5">{tipoAtividade(a.tipo).emoji}</span>
+                                                    <span className="mt-0.5 text-slate-400">{React.createElement(tipoAtividade(a.tipo).icone, { size: 14 })}</span>
                                                     <div className="min-w-0">
                                                         <p className="text-[12px] font-semibold text-slate-700 leading-snug group-hover:text-indigo-600">{a.titulo}</p>
                                                         <p className="text-[10.5px] font-semibold text-slate-400">{a.empresa?.name}{a.autor?.name ? ` · ${a.autor.name.split(' ')[0]}` : ''} · {tempoAtras(a.data)}</p>

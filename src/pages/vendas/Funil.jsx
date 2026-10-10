@@ -14,7 +14,7 @@ import { OportunidadeModal, GanharModal, PerderModal } from '../../components/cr
 import Atividades from '../../components/crm/Atividades';
 import PropostasBloco from '../../components/propostas/PropostasBloco';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { PAGINA, CARD, FiltrosCelular, Etiqueta, Carregando, Janela, inputCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
+import { IconesServicos, PAGINA, CARD, FiltrosCelular, Etiqueta, Carregando, Janela, inputCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
 import { useUsuarios } from '../../components/crm/dados';
 
 const hoje = () => { const d = new Date(); const p = (x) => String(x).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
@@ -146,7 +146,7 @@ export default function Funil() {
                 onClick={() => setAberta(o)}
                 className={`bg-white rounded-xl border border-black/[.06] shadow-sm p-2.5 cursor-pointer hover:shadow-md hover:border-[#0071e3]/30 transition-all ${arrastando?.id === o.id ? 'opacity-40' : ''}`}>
                 <div className="flex items-start gap-1.5">
-                    <span className="text-sm leading-none mt-0.5">{s.emoji}</span>
+                    <IconesServicos icones={s.icones} tamanho="sm" />
                     <p className="text-[12px] font-bold text-slate-800 leading-snug flex-1 line-clamp-2">{o.titulo}</p>
                 </div>
                 <p className="text-[10.5px] font-semibold text-slate-500 mt-1 truncate flex items-center gap-1"><Building2 size={10} />{o.empresa?.name}</p>
@@ -186,7 +186,7 @@ export default function Funil() {
                 <FiltrosCelular ativos={(fServico ? 1 : 0) + (fResp ? 1 : 0)}>
                     <select value={fServico} onChange={(e) => setFServico(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
                         <option value="">Todos os serviços</option>
-                        {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
+                        {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
                     </select>
                     <select value={fResp} onChange={(e) => setFResp(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
                         <option value="">Todos os responsáveis</option>
@@ -243,7 +243,7 @@ export default function Funil() {
                                 onDragOver={(e) => { if (arrastando) { e.preventDefault(); setSobre(etapa.id); } }}
                                 onDragLeave={() => setSobre((s) => (s === etapa.id ? null : s))}
                                 onDrop={(e) => { e.preventDefault(); soltar(etapa); }}
-                                className={`shrink-0 ${fechada ? 'w-60' : 'w-72'} rounded-2xl p-2 transition-colors ${sobre === etapa.id ? 'bg-[#0071e3]/10 ring-2 ring-[#0071e3]/30' : 'bg-slate-200/40'}`}>
+                                className={`flex-1 min-w-[230px] min-h-[calc(100dvh-190px)] rounded-2xl p-2 transition-colors ${sobre === etapa.id ? 'bg-[#0071e3]/10 ring-2 ring-[#0071e3]/30' : 'bg-slate-200/40'}`}>
                                 <div className="px-1.5 pt-1 pb-2">
                                     <div className="flex items-center gap-1.5">
                                         <span className="w-2 h-2 rounded-full" style={{ background: etapa.cor }} />
@@ -332,7 +332,7 @@ function PainelOportunidade({ op, etapas, podeEditar, onMover, onClose, onEditar
             <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" onClick={onClose} />
             <div className="relative w-full max-w-lg h-full bg-[#f5f5f7] shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
                 <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-black/[.06] p-4 flex items-start gap-3">
-                    <span className="text-2xl">{s.emoji}</span>
+                    <IconesServicos icones={s.icones} tamanho="lg" />
                     <div className="min-w-0 flex-1">
                         <h2 className="text-[15px] font-bold text-slate-800 leading-snug">{op.titulo}</h2>
                         <button onClick={() => navigate(`/clientes/${op.party_id}`)} className="text-[11.5px] font-semibold text-[#0071e3] hover:underline">{op.empresa?.name}</button>

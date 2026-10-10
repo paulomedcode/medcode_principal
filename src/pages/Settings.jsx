@@ -17,7 +17,7 @@ const compressImage = async (file) => {
     }
 };
 
-import { Plus, Trash2, Edit2, Check, X, UploadCloud, FileText, Loader2, AlertTriangle, CheckCircle, FileSpreadsheet, ChevronRight, Search, Clock, User, Activity, Palette, Users, Building, Syringe, MapPin, Stethoscope, ShieldCheck, LayoutGrid, CalendarDays, ArrowLeft, Printer, Download } from 'lucide-react';
+import { Plus, Trash2, Edit2, Pencil, Check, X, UploadCloud, FileText, Loader2, AlertTriangle, CheckCircle, FileSpreadsheet, ChevronRight, Search, Clock, User, Activity, Palette, Users, Building, Syringe, MapPin, Stethoscope, ShieldCheck, LayoutGrid, CalendarDays, ArrowLeft, Printer, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import UserManagement from './UserManagement';
@@ -262,7 +262,14 @@ const AgendaCategoriasManager = () => {
 };
 
 // --- EDITABLE LIST COMPONENT ---
-const RenderSection = ({ title, category, placeholder, inputValue, items, onInputChange, onAdd, onRemove, onEdit }) => {
+// Pontos de partida para as listas vazias, no nicho da MedCode (clínicas e
+// pequenos negócios). Os de clínica batem com as categorias da Prospecção.
+const SUGESTOES = {
+    segmentos: ['Clínica odontológica', 'Clínica de estética', 'Clínica médica', 'Psicologia', 'Fisioterapia', 'Nutrição', 'Veterinária', 'Comércio e varejo', 'Alimentação', 'Educação', 'Serviços'],
+    origens_lead: ['Prospecção ativa', 'Indicação', 'Instagram', 'Google', 'Site', 'WhatsApp', 'Evento', 'Parceiro'],
+};
+
+const RenderSection = ({ title, category, placeholder, inputValue, items, onInputChange, onAdd, onRemove, onEdit, sugestoes = [], onAddVarios }) => {
     const [editingIndex, setEditingIndex] = useState(null);
     const [editValue, setEditValue] = useState('');
 
@@ -285,24 +292,22 @@ const RenderSection = ({ title, category, placeholder, inputValue, items, onInpu
     };
 
     return (
-        <div className="flex flex-col bg-white/60 backdrop-blur-md rounded-xl border border-white/60 shadow-sm overflow-hidden h-fit">
+        <div className="flex flex-col bg-white rounded-xl border border-black/[.07] shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden h-fit">
             {/* Header / Inserção Compacta */}
-            <div className="p-4 border-b border-white/60 bg-white/60 flex flex-col gap-3 rounded-t-xl">
-                <h3 className="font-black text-slate-800 uppercase tracking-wider text-sm flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div> {title}
-                </h3>
+            <div className="p-4 border-b border-black/[.06] flex flex-col gap-3 rounded-t-xl">
+                <h3 className="font-semibold text-slate-900 text-[14px]">{title}</h3>
                 <div className="flex gap-2">
                     <input
                         value={inputValue || ''}
                         onChange={(e) => onInputChange(category, e.target.value)}
                         placeholder={placeholder}
-                        className="flex-1 h-9 px-2.5 bg-white/70 backdrop-blur-xl border-2 border-white shadow-xl rounded-lg text-[13px] font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-500"
+                        className="flex-1 h-9 px-3 bg-white border border-black/[.09] rounded-lg text-[13px] text-slate-800 outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-900/[.06] transition-all placeholder:text-slate-400"
                         onKeyDown={(e) => e.key === 'Enter' && onAdd(category)}
                     />
                     <button
                         onClick={() => onAdd(category)}
                         disabled={!inputValue}
-                        className="bg-blue-600 text-white px-2.5 h-9 rounded-lg hover:bg-blue-700 transition-all flex justify-center items-center shadow-md shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-slate-900 text-white px-2.5 h-9 rounded-lg hover:bg-slate-800 transition-all flex justify-center items-center disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Adicionar"
                     >
                         <Plus size={16} />
@@ -311,47 +316,59 @@ const RenderSection = ({ title, category, placeholder, inputValue, items, onInpu
             </div>
 
             {/* Lista com Tags */}
-            <div className="p-4 pb-5 min-h[100px]">
+            <div className="p-4 pb-5">
                 {(!items || items.length === 0) ? (
-                    <div className="flex flex-col items-center justify-center text-slate-500 gap-1 py-4 opacity-70">
-                        <AlertTriangle size={18} />
-                        <span className="text-xs uppercase font-bold tracking-widest mt-1">Lista Vazia</span>
-                    </div>
+                    sugestoes.length > 0 && onAddVarios ? (
+                        <div className="space-y-3">
+                            <p className="text-[12.5px] text-slate-500">Lista vazia. Sugestões para começar:</p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {sugestoes.map((sug) => (
+                                    <span key={sug} className="text-[12px] text-slate-600 bg-slate-50 border border-black/[.06] px-2 py-1 rounded-md">{sug}</span>
+                                ))}
+                            </div>
+                            <button type="button" onClick={() => onAddVarios(category, sugestoes)}
+                                className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[12.5px] font-medium flex items-center gap-1.5">
+                                <Plus size={14} /> Usar estas sugestões
+                            </button>
+                            <p className="text-[11.5px] text-slate-400">Depois dá para editar ou remover qualquer uma.</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-slate-400 gap-1 py-4">
+                            <AlertTriangle size={16} />
+                            <span className="text-[12.5px] mt-1">Lista vazia</span>
+                        </div>
+                    )
                 ) : (
-                    <div className="flex flex-wrap gap-2">
+                    <ul className="divide-y divide-black/[.06] -mx-4 -mb-5">
                         {items.map((item, index) => (
-                            editingIndex === index ? (
-                                <div key={index} className="flex items-center gap-1 bg-white/60 border border-blue-400 text-blue-800 text-xs font-bold px-1.5 py-1 rounded-md shadow-sm animate-in zoom-in-95">
-                                    <input
-                                        value={editValue}
-                                        onChange={(e) => setEditValue(e.target.value)}
-                                        className="h-5 px-1 bg-transparent w-24 outline-none text-xs"
-                                        autoFocus
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') saveEdit(index);
-                                            if (e.key === 'Escape') cancelEdit();
-                                        }}
-                                    />
-                                    <button onClick={() => saveEdit(index)} className="p-0.5 text-emerald-600 hover:bg-emerald-100 rounded-sm"><Check size={12} /></button>
-                                    <button onClick={cancelEdit} className="p-0.5 text-rose-600 hover:bg-rose-100 rounded-sm"><X size={12} /></button>
-                                </div>
-                            ) : (
-                                <span
-                                    key={index}
-                                    className="bg-white/80 border-2 border-white shadow-sm text-slate-700 text-xs font-black uppercase px-2.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm group hover:border-blue-300 hover:bg-blue-50 transition-all"
-                                >
-                                    <span className="cursor-pointer" onClick={() => startEdit(index, item)}>{item}</span>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); onRemove(category, item); }}
-                                        className="text-slate-500 hover:text-rose-500 hover:bg-rose-100 rounded p-0.5 transition-colors"
-                                        title="Remover"
-                                    >
-                                        <X size={12} strokeWidth={3} />
-                                    </button>
-                                </span>
-                            )
+                            <li key={index} className="group flex items-center gap-2 px-4 h-11">
+                                {editingIndex === index ? (
+                                    <>
+                                        <input
+                                            value={editValue}
+                                            onChange={(e) => setEditValue(e.target.value)}
+                                            className="flex-1 h-8 px-2.5 bg-white border border-slate-300 rounded-md text-[13.5px] text-slate-900 outline-none focus:ring-4 focus:ring-slate-900/[.06]"
+                                            autoFocus
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') saveEdit(index);
+                                                if (e.key === 'Escape') cancelEdit();
+                                            }}
+                                        />
+                                        <button onClick={() => saveEdit(index)} title="Salvar" className="w-8 h-8 grid place-items-center rounded-md text-slate-600 hover:bg-slate-100"><Check size={15} /></button>
+                                        <button onClick={cancelEdit} title="Cancelar" className="w-8 h-8 grid place-items-center rounded-md text-slate-400 hover:bg-slate-100"><X size={15} /></button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="flex-1 min-w-0 truncate text-[13.5px] text-slate-800">{item}</span>
+                                        <span className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
+                                            <button onClick={() => startEdit(index, item)} title="Editar" className="w-8 h-8 grid place-items-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"><Pencil size={14} /></button>
+                                            <button onClick={() => onRemove(category, item)} title="Remover" className="w-8 h-8 grid place-items-center rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50"><Trash2 size={14} /></button>
+                                        </span>
+                                    </>
+                                )}
+                            </li>
                         ))}
-                    </div>
+                    </ul>
                 )}
             </div>
         </div>
@@ -690,6 +707,20 @@ const Settings = () => {
         } catch (error) { toast.error("Erro ao salvar."); }
     };
 
+    const handleAddVarios = async (category, itens) => {
+        const atuais = data[category] || [];
+        const novos = itens.filter((i) => !atuais.includes(i));
+        if (!novos.length) return;
+        const updatedData = { ...data, [category]: [...atuais, ...novos] };
+        try {
+            const { error } = await supabase.from('settings').upsert({ id: 'general', data: updatedData });
+            if (error) throw error;
+            setData(updatedData);
+            await logAction('Configurações do Sistema', `Adicionou em [${category.toUpperCase()}]: ${novos.join(', ')}`);
+            toast.success(`${novos.length} itens adicionados.`);
+        } catch { toast.error("Erro ao salvar."); }
+    };
+
     const handleEdit = async (category, index, newValue) => {
         const updatedItems = [...data[category]];
         const oldItem = updatedItems[index]; // Guarda o valor antigo para o Diff
@@ -746,6 +777,14 @@ const Settings = () => {
         { label: 'Equipe', desc: 'Equipes internas (agenda e compromissos)', icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50', ids: ['categorias_agenda'] },
     ];
 
+    // Link direto (?tab=segmentos, vindo de Configurações) abre o bloco certo,
+    // sem parar na grade de cards.
+    useEffect(() => {
+        const bloco = tabBlocks.find((b) => b.ids.includes(tabFromUrl));
+        if (bloco) setActiveBlock(bloco.label);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tabFromUrl]);
+
     const getActiveGroup = (section) => {
         for (const [groupName, tabs] of Object.entries(tabGroups)) {
             if (tabs.some(t => t.id === section)) {
@@ -771,8 +810,8 @@ const Settings = () => {
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-black text-slate-800 tracking-normal">Painel de Controle</h1>
-                        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">Gerencie todos os aspectos do seu sistema</p>
+                        <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight">Cadastros gerais</h1>
+                        <p className="text-[13px] text-slate-500 mt-0.5">Listas usadas nos cadastros do sistema.</p>
                     </div>
                 </div>
 
@@ -819,9 +858,9 @@ const Settings = () => {
                             onClick={() => setActiveBlock(null)}
                             className="inline-flex items-center gap-1.5 mb-4 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-white/70 border border-transparent hover:border-white/60 transition-colors"
                         >
-                            <ArrowLeft size={15} /> Voltar aos cards
+                            <ArrowLeft size={15} /> Todos os cadastros
                         </button>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">{activeBlock}</p>
+                        <p className="text-[12px] font-medium text-slate-400 mb-2 ml-1">{activeBlock}</p>
                         <div className="inline-flex flex-wrap items-center gap-1 bg-white/70 rounded-xl p-1 shadow-sm border border-white/60">
                             {(tabBlocks.find(b => b.label === activeBlock)?.ids || [])
                                 .map(id => activeTabs.find(t => t.id === id))
@@ -848,8 +887,8 @@ const Settings = () => {
                         avulsas (logs, usuários...) mantêm o painel. */}
                     <div className={`w-full animate-in fade-in slide-in-from-bottom-4 duration-500 ${activeBlock !== null ? '' : 'bg-white/60 backdrop-blur-2xl border border-white rounded-[2.5rem] shadow-xl shadow-slate-300/40 p-6 md:p-10 min-h-[700px]'}`}>
                         
-                        {activeSection === 'segmentos' && <RenderSection title="Segmentos" category="segmentos" placeholder="Ex: Clínicas, Varejo, Advocacia..." inputValue={newItem.segmentos} items={data.segmentos} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
-                        {activeSection === 'origens_lead' && <RenderSection title="Origens de lead" category="origens_lead" placeholder="Ex: Instagram, Indicação, Google..." inputValue={newItem.origens_lead} items={data.origens_lead} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} />}
+                        {activeSection === 'segmentos' && <RenderSection title="Segmentos" category="segmentos" placeholder="Ex: Clínicas, Varejo, Advocacia..." inputValue={newItem.segmentos} items={data.segmentos} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} sugestoes={SUGESTOES.segmentos} onAddVarios={handleAddVarios} />}
+                        {activeSection === 'origens_lead' && <RenderSection title="Origens de lead" category="origens_lead" placeholder="Ex: Instagram, Indicação, Google..." inputValue={newItem.origens_lead} items={data.origens_lead} onInputChange={handleInputChange} onAdd={handleAdd} onRemove={handleRemove} onEdit={handleEdit} sugestoes={SUGESTOES.origens_lead} onAddVarios={handleAddVarios} />}
                         {activeSection === 'categorias_agenda' && <AgendaCategoriasManager />}
 
                         {activeSection === 'usuarios' && (hasPermission('Acesso Total (Admin)') || hasPermission('Acessar Usuarios')) && <UserManagement isEmbedded={true} />}

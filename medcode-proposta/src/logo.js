@@ -6,6 +6,9 @@ const CODE = 'M241.2 81.5Q230.4 81.5 222.6 76.8Q214.8 72.1 210.5 63.6Q206.3 55.2
 const W = 455.9; // largura do texto no viewBox (altura 100)
 const CX = 203.3; // onde começa "Code"
 
+// Os mesmos desenhos servem o logo do sistema (src/components/acesso/LogoMedCode.jsx).
+export const LOGO_PATHS = { MED, CODE, W, CX };
+
 let seq = 0;
 
 /**

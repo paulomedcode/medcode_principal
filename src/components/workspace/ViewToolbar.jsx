@@ -165,18 +165,17 @@ function SortPanel({ anchorRef, props, sorts, onChange, onClose }) {
   );
 }
 
-// Select nativo estilizado, compacto.
+// Select nativo estilizado, compacto (a seta vem do index.css, igual em todo select).
 function Select({ value, onChange, className = '', children }) {
   return (
     <div className={`relative ${className}`}>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-7 pl-2 pr-6 rounded-md bg-white border border-slate-200 text-[12px] font-semibold text-slate-700 outline-none cursor-pointer appearance-none focus:border-blue-400 truncate"
+        className="w-full h-7 pl-2 rounded-md bg-white border border-slate-200 text-[12px] font-semibold text-slate-700 outline-none cursor-pointer appearance-none focus:border-blue-400 truncate"
       >
         {children}
       </select>
-      <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
     </div>
   );
 }

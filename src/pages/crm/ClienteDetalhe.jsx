@@ -15,7 +15,7 @@ import EmpresaModal from '../../components/crm/EmpresaModal';
 import Atividades from '../../components/crm/Atividades';
 import { OportunidadeModal } from '../../components/crm/OportunidadeModal';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { PAGINA, CARD, Etiqueta, Carregando, Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
+import { IconesServicos, PAGINA, CARD, Etiqueta, Carregando, Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from '../../components/crm/ui';
 import { resumoFinanceiro } from '../../components/crm/dados';
 
 const Linha = ({ icone, children, href }) => {
@@ -215,7 +215,7 @@ export default function ClienteDetalhe() {
                                     const s = resumoServicos(op);
                                     return (
                                         <li key={op.id} onClick={() => navigate(`/vendas?abrir=${op.id}`)} className="py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-50 -mx-2 px-2 rounded-lg">
-                                            <span className="text-base">{s.emoji}</span>
+                                            <IconesServicos icones={s.icones} />
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-[12px] font-bold text-slate-800 truncate">{op.titulo}</p>
                                                 <p className="text-[10.5px] font-semibold text-slate-400">{s.label}{op.previsao_fechamento ? ` · previsão ${fmtData(op.previsao_fechamento)}` : ''}</p>
@@ -238,7 +238,7 @@ export default function ClienteDetalhe() {
                                     const s = resumoServicos(p);
                                     return (
                                         <li key={p.id} onClick={() => navigate(`/projetos/${p.id}`)} className="py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-50 -mx-2 px-2 rounded-lg">
-                                            <span className="text-base">{s.emoji}</span>
+                                            <IconesServicos icones={s.icones} />
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-[12px] font-bold text-slate-800 truncate">{p.nome}</p>
                                                 <p className="text-[10.5px] font-semibold text-slate-400">{s.label}{p.prazo ? ` · prazo ${fmtData(p.prazo)}` : ''}</p>

@@ -7,7 +7,7 @@ import { SERVICOS, STATUS_PROJETO, resumoServicos, temServico, statusProjeto, fm
 import { usePermission } from '../../contexts/PermissionContext';
 import { todayISO as hoje } from '../../utils/date';
 import ProjetoModal from '../../components/crm/ProjetoModal';
-import { PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario, CHIPS, FiltrosCelular } from '../../components/crm/ui';
+import { IconesServicos, PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario, CHIPS, FiltrosCelular } from '../../components/crm/ui';
 
 const ATIVOS = ['PLANEJAMENTO', 'EM_ANDAMENTO', 'EM_REVISAO', 'PAUSADO'];
 
@@ -60,7 +60,7 @@ export default function Projetos() {
                 <FiltrosCelular ativos={fServico ? 1 : 0}>
                     <select value={fServico} onChange={(e) => setFServico(e.target.value)} className="h-8 px-2 bg-white border border-black/[.085] rounded-lg text-xs font-semibold outline-none cursor-pointer">
                         <option value="">Todos os serviços</option>
-                        {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.label}</option>)}
+                        {SERVICOS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
                     </select>
                 </FiltrosCelular>
                 <div className="relative flex-1 md:flex-none">
@@ -88,7 +88,7 @@ export default function Projetos() {
                             return (<React.Fragment key={p.id}>
                                 {i === principais.length && <BarraEncerrados qtd={encerrados.length} aberto={verEncerrados} onClick={() => setVerEncerrados((v) => !v)} />}
                                 <button type="button" onClick={() => navigate(`/projetos/${p.id}`)} className={`w-full text-left px-4 py-3 flex items-start gap-3 active:bg-slate-50 ${ATIVOS.includes(p.status) ? '' : 'opacity-70'}`}>
-                                    <span className="text-lg leading-none mt-0.5 shrink-0">{s.emoji}</span>
+                                    <IconesServicos icones={s.icones} />
                                     <span className="flex-1 min-w-0">
                                         <span className="block text-[14px] font-bold text-slate-800 truncate">{p.nome}</span>
                                         <span className="block text-[12px] font-semibold text-slate-500 truncate">{p.empresa?.name}</span>
@@ -133,7 +133,7 @@ export default function Projetos() {
                                         {i === principais.length && <tr><td colSpan={8} className="p-0"><BarraEncerrados qtd={encerrados.length} aberto={verEncerrados} onClick={() => setVerEncerrados((v) => !v)} /></td></tr>}
                                         <tr onClick={() => navigate(`/projetos/${p.id}`)} className={`group hover:bg-[#f5f5f7] transition-colors text-xs cursor-pointer ${ATIVOS.includes(p.status) ? '' : 'opacity-70'}`}>
                                             <td className="py-2.5 px-4">
-                                                <div className="font-bold text-slate-800 flex items-center gap-1.5"><span>{s.emoji}</span>{p.nome}</div>
+                                                <div className="font-bold text-slate-800 flex items-center gap-2"><IconesServicos icones={s.icones} tamanho="sm" />{p.nome}</div>
                                                 <div className="text-[10.5px] font-semibold text-slate-400">{s.label}</div>
                                             </td>
                                             <td className="py-2.5 px-3 font-semibold text-slate-600">{p.empresa?.name}</td>

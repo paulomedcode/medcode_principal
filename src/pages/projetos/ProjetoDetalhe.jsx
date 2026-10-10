@@ -13,7 +13,7 @@ import ProjetoModal from '../../components/crm/ProjetoModal';
 import Atividades from '../../components/crm/Atividades';
 import PropostasBloco from '../../components/propostas/PropostasBloco';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { PAGINA, CARD, Etiqueta, Carregando } from '../../components/crm/ui';
+import { IconesServicos, PAGINA, CARD, Etiqueta, Carregando } from '../../components/crm/ui';
 import { resumoFinanceiro } from '../../components/crm/dados';
 import { OPT_COLORS } from '../../components/workspace/databaseUtils';
 
@@ -110,7 +110,7 @@ export default function ProjetoDetalhe() {
         <div className={PAGINA}>
             <div className="flex flex-wrap items-center gap-3 mb-4">
                 <button onClick={() => navigate('/projetos')} title="Voltar" className="p-2 -ml-2 rounded-xl text-slate-500 hover:bg-white hover:text-slate-800"><ArrowLeft size={18} /></button>
-                <span className="text-2xl">{s.emoji}</span>
+                <IconesServicos icones={s.icones} tamanho="lg" />
                 <div className="min-w-0">
                     <h1 className="text-lg font-bold text-[#1d1d1f] flex items-center gap-2 flex-wrap">{projeto.nome} <Etiqueta className={st.cor}>{st.label}</Etiqueta></h1>
                     <button onClick={() => navigate(`/clientes/${projeto.party_id}`)} className="text-[11.5px] font-semibold text-[#0071e3] hover:underline flex items-center gap-1"><Building2 size={11} />{projeto.empresa?.name}</button>
