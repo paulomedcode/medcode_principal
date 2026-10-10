@@ -347,7 +347,7 @@ export default function FinanceDashboard() {
         <div className="flex-1 flex flex-col">
           {/* ===== CARDS: Receber | Pagar | (Saldo + card novo) ===== */}
           {/* Altura fixa e alta: cabe muita conta com scroll interno; o gráfico fica abaixo da dobra. */}
-          <div className="flex flex-col lg:flex-row gap-3 mb-3 items-stretch lg:h-[calc(100dvh-140px)] lg:min-h-[480px] shrink-0">
+          <div className="flex flex-col lg:flex-row gap-3 mb-3 items-stretch lg:h-[calc(100dvh-180px)] lg:min-h-[440px] shrink-0">
             <SummaryCard title="Contas a receber" subtitle={horizonLbl} icon={<ArrowDownCircle size={15} className="text-emerald-600" />}
               accent="emerald" data={receberData} emptyText={`Nenhuma conta a receber nos próximos ${horizon} dias`}
               onClick={() => navigate('/finance/contas-receber')} className="lg:flex-1 lg:min-w-0" />
