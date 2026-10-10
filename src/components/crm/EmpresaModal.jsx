@@ -116,7 +116,7 @@ export default function EmpresaModal({ empresa, onClose, onSaved, kindInicial = 
                 </div>
                 {(segmentos.length === 0 || origens_lead.length === 0) && (
                     <p className="text-[10px] font-semibold text-slate-400">
-                        As listas de segmento e origem se cadastram em Configurações › Cadastros Gerais.
+                        As listas de segmento e origem se cadastram em Configurações › Cadastros gerais.
                     </p>
                 )}
             </form>

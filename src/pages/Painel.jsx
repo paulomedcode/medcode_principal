@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '../services/supabase';
 import { listarEtapas, listarOportunidades, listarProjetos } from '../services/crm';
 import { listarLeads } from '../services/prospeccao';
-import { SERVICOS, idsServicos, resumoServicos, fmtBRL } from '../config/servicos';
+import { SERVICOS, idsServicos, fmtBRL } from '../config/servicos';
 import { usePermission } from '../contexts/PermissionContext';
 import { todayISO } from '../utils/date';
 import { CARD, Carregando } from '../components/crm/ui';
@@ -235,7 +235,7 @@ export default function Painel() {
                     <Bloco titulo="Contratado por serviço · 12 meses">
                         {k.porServico.length === 0 ? <p className="text-[11.5px] font-semibold text-slate-400">Nenhum projeto no período.</p> : (
                             <div className="space-y-3">
-                                {k.porServico.map((s) => <BarraRotulada key={s.id} rotulo={`${s.emoji} ${s.label}`} valor={s.valor} max={maxServico} cor="#6366f1" detalhe={`${s.qtd} proj.`} />)}
+                                {k.porServico.map((s) => <BarraRotulada key={s.id} rotulo={s.label} valor={s.valor} max={maxServico} cor="#6366f1" detalhe={`${s.qtd} proj.`} />)}
                             </div>
                         )}
                     </Bloco>
@@ -255,7 +255,7 @@ export default function Painel() {
                                 <tbody className="divide-y divide-black/[.05]">
                                     {k.margem.map((p) => (
                                         <tr key={p.id} onClick={() => navigate(`/projetos/${p.id}`)} className="cursor-pointer hover:bg-slate-50">
-                                            <td className="py-1.5 pr-2"><span className="mr-1">{resumoServicos(p).emoji}</span><span className="font-semibold text-slate-700">{p.nome}</span><span className="text-slate-400"> · {p.empresa?.name}</span></td>
+                                            <td className="py-1.5 pr-2"><span className="font-semibold text-slate-700">{p.nome}</span><span className="text-slate-400"> · {p.empresa?.name}</span></td>
                                             <td className="py-1.5 text-right font-semibold text-slate-700 tabular-nums">{fmtBRL(p.receita)}</td>
                                             <td className="py-1.5 text-right font-semibold text-slate-500 tabular-nums">{fmtBRL(p.custo)}</td>
                                             <td className={`py-1.5 text-right font-bold tabular-nums ${p.margem < 0 ? 'text-rose-600' : 'text-slate-800'}`}>

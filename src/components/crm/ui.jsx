@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { X, Loader2, SlidersHorizontal } from 'lucide-react';
+import { X, Loader2, SlidersHorizontal, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { SERVICOS } from '../../config/servicos';
 import Gaveta from '../ui/Gaveta';
 import useTravaRolagem from '../../hooks/useTravaRolagem';
@@ -45,7 +46,7 @@ export const ServicosPicker = ({ value = [], onChange }) => {
                     <button key={s.id} type="button" onClick={() => alternar(s.id)} aria-pressed={ativo}
                         title={ativo && value.length === 1 ? 'Escolha outro antes de desmarcar este' : undefined}
                         className={`px-2.5 h-8 rounded-lg text-[12px] font-medium border transition-all ${ativo ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-black/[.09] text-slate-600 hover:text-slate-900'}`}>
-                        {s.emoji} {s.label}
+                        <span className="inline-flex items-center gap-1.5">{React.createElement(s.icone, { size: 13 })} {s.label}</span>
                     </button>
                 );
             })}
@@ -115,5 +116,46 @@ export const Janela = ({ titulo, icone: Icone, onClose, children, rodape, largur
                 {rodape && <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4 border-t border-black/[.06] flex items-center justify-end gap-2 shrink-0 bg-white">{rodape}</div>}
             </div>
         </div>
+    );
+};
+
+/*
+ * Ícones dos serviços de um item (oportunidade ou projeto), no lugar dos
+ * emojis: um quadradinho por serviço, encostados quando são vários.
+ * `icones` vem de resumoServicos(item).icones.
+ */
+const TAM_ICONE = { sm: [20, 12], md: [26, 14], lg: [36, 18] };
+export const IconesServicos = ({ icones = [], tamanho = 'md' }) => {
+    const [lado, ico] = TAM_ICONE[tamanho];
+    const mostrar = icones.slice(0, 3);
+    return (
+        <span className="inline-flex shrink-0" aria-hidden>
+            {mostrar.map((Icone, i) => (
+                <span key={i} className="grid place-items-center rounded-md bg-slate-100 text-slate-600 ring-2 ring-white"
+                    style={{ width: lado, height: lado, marginLeft: i ? -Math.round(lado * 0.3) : 0 }}>
+                    {React.createElement(Icone, { size: ico, strokeWidth: 2 })}
+                </span>
+            ))}
+            {icones.length > 3 && (
+                <span className="grid place-items-center rounded-md bg-slate-200 text-slate-600 ring-2 ring-white text-[10px] font-semibold"
+                    style={{ width: lado, height: lado, marginLeft: -Math.round(lado * 0.3) }}>+{icones.length - 3}</span>
+            )}
+        </span>
+    );
+};
+
+/*
+ * Seta de voltar dos títulos: volta para onde a pessoa estava. Quem abriu o
+ * endereço direto (sem histórico dentro do app) vai para `padrao`.
+ * O React Router guarda a posição no histórico em history.state.idx.
+ */
+export const BotaoVoltar = ({ padrao = '/home' }) => {
+    const navigate = useNavigate();
+    const voltar = () => (window.history.state?.idx > 0 ? navigate(-1) : navigate(padrao));
+    return (
+        <button type="button" onClick={voltar} title="Voltar"
+            className="w-8 h-8 -ml-1.5 grid place-items-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-black/[.05] transition-colors shrink-0">
+            <ArrowLeft size={17} />
+        </button>
     );
 };

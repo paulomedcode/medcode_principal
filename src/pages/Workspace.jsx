@@ -74,7 +74,7 @@ export default function Workspace() {
     (pagina) => (pagina?.type === 'database' ? podeEditarBancos : podeEditarPaginas),
     [podeEditarBancos, podeEditarPaginas]
   );
-  const avisarSemPermissao = () => toast.error('Você não tem permissão para esta ação no Compromisso.', { id: 'ws-sem-permissao' });
+  const avisarSemPermissao = () => toast.error('Você não tem permissão para esta ação em Compromissos.', { id: 'ws-sem-permissao' });
 
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -534,7 +534,7 @@ export default function Workspace() {
           <button onClick={() => navigate('/home')} title="Início" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-800 transition-colors">
             <ArrowLeft size={16} />
           </button>
-          <span className="text-[13px] font-black text-slate-800 dark:text-slate-100 tracking-tight flex-1 px-1">Compromisso</span>
+          <span className="text-[13px] font-black text-slate-800 dark:text-slate-100 tracking-tight flex-1 px-1">Compromissos</span>
           <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
             <Command size={15} />
           </button>

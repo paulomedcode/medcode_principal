@@ -10,7 +10,6 @@ import BuscaGlobal from './components/BuscaGlobal';
 import BarraInferior from './components/BarraInferior';
 import NovoGlobal from './components/NovoGlobal';
 import { Loader2 } from 'lucide-react';
-import defaultBgImage from './assets/capa-login.jpg';
 
 // Páginas
 import HomeHub from './pages/HomeHub';
@@ -42,7 +41,7 @@ import RelatorioGerencial from './pages/finance/RelatorioGerencial';
 
 const AppLayout = ({ children }) => {
   const { currentUser } = useAuth();
-  const { isThemeLoading, theme } = useWhiteLabel();
+  const { isThemeLoading } = useWhiteLabel();
   const location = useLocation();
   const isHome = location.pathname === '/home';
   // A tela de redefinir senha já tem sessão (o link do e-mail loga), mas não é
@@ -51,31 +50,15 @@ const AppLayout = ({ children }) => {
 
   if (isThemeLoading) {
     return (
-      <div className="flex flex-col h-screen bg-slate-50 items-center justify-center">
-        <div className="flex flex-col items-center gap-4 animate-in fade-in duration-500">
-          <Loader2 className="animate-spin text-blue-600" size={48} />
-          <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Preparando Ambiente...</p>
-        </div>
+      <div className="flex h-screen bg-[#f7f7f8] items-center justify-center">
+        <Loader2 className="animate-spin text-slate-400" size={22} aria-label="Carregando" />
       </div>
     );
   }
 
   return (
-    <div
-      className="flex flex-col min-h-dvh md:h-screen relative isolate md:overflow-hidden text-slate-800"
-      style={{
-          backgroundImage: `url(${theme.bgImage || defaultBgImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-      }}
-    >
-      {/* Véu sobre o papel de parede. -z-[1] (com isolate no pai) o mantém acima do
-          bg e abaixo do conteúdo, sem precisar de z-index no <main> — z-index no main
-          criava um stacking context que prendia os modais (z-[10000]) abaixo da
-          Topbar fixa (z-[999]), que ficava sobrepondo o topo dos modais. */}
-      <div className="absolute inset-0 -z-[1] pointer-events-none bg-white/50 backdrop-blur-[3px]"></div>
-      
+    // Fundo neutro, o mesmo das telas de módulo (PAGINA em crm/ui.jsx).
+    <div className="flex flex-col min-h-dvh md:h-screen relative md:overflow-hidden text-slate-800 bg-[#f7f7f8]">
       {mostraTopbar && (
         <div className="fixed top-0 left-0 w-full z-[999]">
           <Topbar />

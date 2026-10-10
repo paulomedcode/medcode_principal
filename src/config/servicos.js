@@ -6,11 +6,14 @@
 // "Ganhar oportunidade" sugere para as parcelas. `fases` e `tarefas` montam a
 // página de entregas que nasce com cada projeto (módulo Compromissos).
 
+import { Globe, Rocket, LayoutDashboard, Bot, Lightbulb, Package, StickyNote, Phone, Users, Mail, MessageCircle, Settings2 } from 'lucide-react';
+
 export const SERVICOS = [
     {
         id: 'SITE',
         label: 'Site',
         emoji: '🌐',
+        icone: Globe,
         cor: 'bg-sky-50 text-sky-700 border-sky-100',
         categoria: 'Sites',
         fases: ['Briefing', 'Conteúdo', 'Design', 'Desenvolvimento', 'Revisão', 'Publicação'],
@@ -31,6 +34,7 @@ export const SERVICOS = [
         id: 'LANDING_PAGE',
         label: 'Landing Page',
         emoji: '🚀',
+        icone: Rocket,
         cor: 'bg-teal-50 text-teal-700 border-teal-100',
         categoria: 'Landing Pages',
         fases: ['Briefing', 'Copy', 'Design', 'Desenvolvimento', 'Publicação'],
@@ -49,6 +53,7 @@ export const SERVICOS = [
         id: 'SISTEMA',
         label: 'Sistema sob medida',
         emoji: '🧩',
+        icone: LayoutDashboard,
         cor: 'bg-indigo-50 text-indigo-700 border-indigo-100',
         categoria: 'Sistemas sob medida',
         fases: ['Levantamento', 'Protótipo', 'Desenvolvimento', 'Testes', 'Implantação', 'Suporte'],
@@ -69,6 +74,7 @@ export const SERVICOS = [
         id: 'AGENTE_IA',
         label: 'Agente de IA',
         emoji: '🤖',
+        icone: Bot,
         cor: 'bg-violet-50 text-violet-700 border-violet-100',
         categoria: 'Agentes de IA',
         fases: ['Descoberta', 'Base de conhecimento', 'Prompt e fluxos', 'Integrações', 'Testes', 'Produção'],
@@ -88,6 +94,7 @@ export const SERVICOS = [
         id: 'CONSULTORIA',
         label: 'Consultoria',
         emoji: '💡',
+        icone: Lightbulb,
         cor: 'bg-amber-50 text-amber-700 border-amber-100',
         categoria: 'Consultoria',
         fases: ['Diagnóstico', 'Análise', 'Plano de ação', 'Acompanhamento'],
@@ -104,6 +111,7 @@ export const SERVICOS = [
         id: 'OUTRO',
         label: 'Outro',
         emoji: '📦',
+        icone: Package,
         cor: 'bg-slate-50 text-slate-600 border-slate-200',
         categoria: null,
         fases: ['A fazer', 'Fazendo', 'Revisão', 'Entregue'],
@@ -124,11 +132,14 @@ export const rotuloServicos = (item, { emoji = false } = {}) =>
     servicosDe(item).map((s) => (emoji ? `${s.emoji} ${s.label}` : s.label)).join(' + ');
 
 /**
- * Para listas e cartões: { emoji: '🌐🤖', label: 'Site + Agente de IA', fases }.
+ * Para listas e cartões: { emoji: '🌐🤖', icones, label: 'Site + Agente de IA', fases }.
+ * Na tela use `icones` (com <IconesServicos> de components/crm/ui); o emoji
+ * fica para texto puro, como <option>.
  * `fases` soma as de todos os serviços, sem repetir (igual ao quadro de entregas).
  */
 export const resumoServicos = (item) => ({
     emoji: servicosDe(item).map((s) => s.emoji).join(''),
+    icones: servicosDe(item).map((s) => s.icone),
     label: rotuloServicos(item),
     fases: [...new Set(servicosDe(item).flatMap((s) => s.fases))],
 });
@@ -157,12 +168,12 @@ export const TIPOS_EMPRESA = [
 export const tipoEmpresa = (id) => TIPOS_EMPRESA.find((t) => t.id === id) || TIPOS_EMPRESA[0];
 
 export const TIPOS_ATIVIDADE = [
-    { id: 'NOTA', label: 'Nota', emoji: '📝' },
-    { id: 'LIGACAO', label: 'Ligação', emoji: '📞' },
-    { id: 'REUNIAO', label: 'Reunião', emoji: '🤝' },
-    { id: 'EMAIL', label: 'E-mail', emoji: '✉️' },
-    { id: 'WHATSAPP', label: 'WhatsApp', emoji: '💬' },
-    { id: 'SISTEMA', label: 'Sistema', emoji: '⚙️' },
+    { id: 'NOTA', label: 'Nota', emoji: '📝', icone: StickyNote },
+    { id: 'LIGACAO', label: 'Ligação', emoji: '📞', icone: Phone },
+    { id: 'REUNIAO', label: 'Reunião', emoji: '🤝', icone: Users },
+    { id: 'EMAIL', label: 'E-mail', emoji: '✉️', icone: Mail },
+    { id: 'WHATSAPP', label: 'WhatsApp', emoji: '💬', icone: MessageCircle },
+    { id: 'SISTEMA', label: 'Sistema', emoji: '⚙️', icone: Settings2 },
 ];
 
 export const tipoAtividade = (id) => TIPOS_ATIVIDADE.find((t) => t.id === id) || TIPOS_ATIVIDADE[0];

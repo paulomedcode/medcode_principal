@@ -324,12 +324,12 @@ export default function FinanceDashboard() {
   };
 
   return (
-    <div className="px-4 sm:px-5 py-4 min-h-[calc(100dvh-64px)] flex flex-col bg-[#f5f5f7] font-sans text-slate-900">
+    <div className="px-4 sm:px-5 py-4 min-h-[calc(100dvh-64px)] flex flex-col bg-[#f7f7f8] font-sans text-slate-900">
 
       {/* Header: gráficos seguem o mês atual; os cards de contas seguem a janela escolhida */}
       <div className="mb-4 flex flex-wrap items-center gap-3 shrink-0">
         <h1 className="text-[17px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-          <TrendingUp className="text-[#0071e3]" size={18} /> Financeiro MedCode
+          <TrendingUp className="text-slate-500" size={18} /> Financeiro
         </h1>
         <label className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-500">
           Contas a vencer em
@@ -347,11 +347,11 @@ export default function FinanceDashboard() {
         <div className="flex-1 flex flex-col">
           {/* ===== CARDS: Receber | Pagar | (Saldo + card novo) ===== */}
           {/* Altura fixa e alta: cabe muita conta com scroll interno; o gráfico fica abaixo da dobra. */}
-          <div className="flex flex-col lg:flex-row gap-3 mb-3 items-stretch lg:h-[80vh] shrink-0">
-            <SummaryCard title="Contas a Receber" subtitle={horizonLbl} icon={<ArrowDownCircle size={15} className="text-emerald-600" />}
+          <div className="flex flex-col lg:flex-row gap-3 mb-3 items-stretch lg:h-[calc(100dvh-140px)] lg:min-h-[480px] shrink-0">
+            <SummaryCard title="Contas a receber" subtitle={horizonLbl} icon={<ArrowDownCircle size={15} className="text-emerald-600" />}
               accent="emerald" data={receberData} emptyText={`Nenhuma conta a receber nos próximos ${horizon} dias`}
               onClick={() => navigate('/finance/contas-receber')} className="lg:flex-1 lg:min-w-0" />
-            <SummaryCard title="Contas a Pagar" subtitle={horizonLbl} icon={<ArrowUpCircle size={15} className="text-rose-600" />}
+            <SummaryCard title="Contas a pagar" subtitle={horizonLbl} icon={<ArrowUpCircle size={15} className="text-rose-600" />}
               accent="rose" data={pagarData} emptyText={`Nenhuma conta a pagar nos próximos ${horizon} dias`}
               onClick={() => navigate('/finance/contas-pagar')} className="lg:flex-1 lg:min-w-0"
               selection={canEdit ? {
@@ -368,10 +368,10 @@ export default function FinanceDashboard() {
 
             {/* Coluna 3: Saldo das Contas + card novo (placeholder) empilhados */}
             <div className="lg:flex-1 lg:min-w-0 flex flex-col gap-3">
-              <div className="bg-white border border-black/[.085] rounded-2xl p-4 shadow-sm flex flex-col flex-[2] min-h-[200px]">
+              <div className="bg-white border border-black/[.07] rounded-xl p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] flex flex-col flex-[2] min-h-[200px]">
                 <div className="flex items-center gap-1.5 mb-2">
-                  <Landmark size={15} className="text-[#0071e3]" />
-                  <h3 className="text-[12px] font-semibold text-slate-600">Saldo das Contas</h3>
+                  <Landmark size={15} className="text-slate-500" />
+                  <h3 className="text-[13px] font-semibold text-slate-700">Saldo das contas</h3>
                 </div>
                 <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar min-h-0">
                   {accounts.length === 0 ? (
@@ -383,11 +383,11 @@ export default function FinanceDashboard() {
                     return (
                       <div key={a.id} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
                         <div className="min-w-0 pr-2">
-                          <span className="text-[10px] font-bold text-slate-700 truncate block leading-tight">{a.name}</span>
+                          <span className="text-[12.5px] font-medium text-slate-700 truncate block leading-tight">{a.name}</span>
                           {pend > 0 && <span className="text-[11px] font-medium text-amber-500">{pend} concil. pendente{pend === 1 ? '' : 's'}</span>}
                         </div>
                         <div className="shrink-0 text-right">
-                          <span className={`text-[10px] font-semibold tabular-nums block ${bal < 0 ? 'text-rose-600' : 'text-slate-800'}`}>{fmt(bal)}</span>
+                          <span className={`text-[12.5px] font-semibold tabular-nums block ${bal < 0 ? 'text-rose-600' : 'text-slate-800'}`}>{fmt(bal)}</span>
                           {limit > 0 && <span className="text-[9px] font-bold tabular-nums text-slate-400 block">c/ limite {fmt(bal + limit)}</span>}
                         </div>
                       </div>
@@ -397,7 +397,7 @@ export default function FinanceDashboard() {
                 <div className="mt-2 pt-2 border-t border-black/[.085] flex items-center justify-between">
                   <span className="text-[12px] font-semibold text-slate-500">Total</span>
                   <div className="text-right">
-                    <span className={`text-sm font-semibold tabular-nums block ${accountsTotal < 0 ? 'text-rose-600' : 'text-indigo-700'}`}>{fmt(accountsTotal)}</span>
+                    <span className={`text-sm font-semibold tabular-nums block ${accountsTotal < 0 ? 'text-rose-600' : 'text-slate-900'}`}>{fmt(accountsTotal)}</span>
                     {accountsLimitTotal > 0 && <span className="text-[9px] font-bold tabular-nums text-slate-400 block">c/ limite {fmt(accountsTotal + accountsLimitTotal)}</span>}
                   </div>
                 </div>
@@ -405,7 +405,7 @@ export default function FinanceDashboard() {
 
               {/* CARD: Lançadas para Pagamento (Aguardando Liberação) */}
               <SummaryCard
-                title="Lançadas p/ Pagamento"
+                title="Lançadas para pagamento"
                 subtitle={horizonLbl}
                 icon={<Clock size={15} className="text-purple-600" />}
                 accent="purple"
@@ -467,14 +467,14 @@ function SummaryRow({ r, selectable = false, checked = false, onToggle }) {
             <input type="checkbox" checked={checked} onChange={() => onToggle?.(r.id)} onClick={e => e.stopPropagation()}
               aria-label={`Selecionar ${r.name}`} className="w-3.5 h-3.5 accent-[#0071e3] cursor-pointer shrink-0" />
           )}
-          <span className="text-[10px] font-bold text-slate-600 truncate pr-2">{r.name}</span>
+          <span className="text-[12.5px] font-medium text-slate-700 truncate pr-2">{r.name}</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {r.due && <span className={`text-[9px] font-bold whitespace-nowrap ${r.overdue ? 'text-rose-500' : 'text-slate-400'}`}>venc {fmtDate(r.due)}</span>}
-          <span className="text-[10px] font-semibold text-slate-800 tabular-nums">{fmt(r.value)}</span>
+          {r.due && <span className={`text-[11px] font-medium whitespace-nowrap ${r.overdue ? 'text-rose-500' : 'text-slate-400'}`}>venc {fmtDate(r.due)}</span>}
+          <span className="text-[12.5px] font-semibold text-slate-800 tabular-nums">{fmt(r.value)}</span>
         </div>
       </div>
-      {r.obs && <div className={`text-[9px] font-medium text-slate-400 truncate mt-0.5 ${selectable ? 'pl-5' : ''}`}>{r.obs}</div>}
+      {r.obs && <div className={`text-[11px] font-normal text-slate-400 truncate mt-0.5 ${selectable ? 'pl-5' : ''}`}>{r.obs}</div>}
     </div>
   );
 }
@@ -493,8 +493,7 @@ function SummaryCard({ title, subtitle, icon, accent, data, emptyText, onClick, 
     ? [...data.rows, ...data.priorRows].reduce((a, r) => a + (sel.has(r.id) ? r.value : 0), 0)
     : 0;
   const totalColor = accent === 'emerald' ? 'text-emerald-700' : accent === 'purple' ? 'text-purple-700' : 'text-rose-700';
-  // Fundo levemente tingido por tipo (receber = verdinho / pagar = avermelhado / lançadas = roxinho) pra diferenciar os cards.
-  const bgTint = accent === 'emerald' ? 'bg-emerald-50/50 border-emerald-100' : accent === 'purple' ? 'bg-purple-50/50 border-purple-100' : 'bg-rose-50/50 border-rose-100';
+  // Cartão branco como no resto do sistema; o tipo aparece só no ícone e no total.
   const clickable = typeof onClick === 'function';
   return (
     <div
@@ -502,11 +501,11 @@ function SummaryCard({ title, subtitle, icon, accent, data, emptyText, onClick, 
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
       onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
-      className={`${bgTint} border rounded-2xl p-4 shadow-sm flex flex-col min-h-[200px] ${className} ${clickable ? 'cursor-pointer transition-all hover:shadow-md hover:border-[#0071e3]/40 hover:-translate-y-0.5' : ''}`}>
+      className={`bg-white border border-black/[.07] rounded-xl p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] flex flex-col min-h-[200px] ${className} ${clickable ? 'cursor-pointer transition-all hover:shadow-md hover:border-black/[.14]' : ''}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           {icon}
-          <h3 className="text-[12px] font-semibold text-slate-600">{title}</h3>
+          <h3 className="text-[13px] font-semibold text-slate-700">{title}</h3>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {idsDoCard.length > 0 && (
