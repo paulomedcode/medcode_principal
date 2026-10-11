@@ -47,20 +47,6 @@ Posso passar aí 15 minutos essa semana pra te mostrar?`,
         whats: false,
     },
     {
-        id: 'piloto',
-        grupo: 'Clínicas · teste noturno',
-        titulo: 'Oferta de cliente-piloto',
-        quando: 'Quando o interesse aparecer',
-        dica: 'Você decide a condição (implantação sem custo ou com desconto forte). O que você pede em troca precisa estar claro desde o início.',
-        texto: `Estou escolhendo só 3 clínicas de Tatuí pra serem as primeiras. Pra essas, a implantação sai em condição de fundador: [condição]. A plataforma de IA fica no nome da clínica, a partir de R$ 147 por mês.
-
-Em troca eu peço duas coisas: um depoimento depois de 30 dias e autorização pra mostrar os números (quantas conversas o agente atendeu fora do horário, quantos agendamentos fez).
-
-Se depois de 30 dias não fizer sentido, você desliga e pronto, sem fidelidade.`,
-        whats: true,
-        conta: true,
-    },
-    {
         id: 'followup-2',
         grupo: 'Clínicas · teste noturno',
         titulo: 'Follow-up D+2',
@@ -74,7 +60,7 @@ Se depois de 30 dias não fizer sentido, você desliga e pronto, sem fidelidade.
         grupo: 'Clínicas · teste noturno',
         titulo: 'Follow-up D+5',
         quando: '5 dias depois da abordagem',
-        texto: 'Fiz o teste de novo ontem à noite e [resultado]. Ainda tenho [n] vagas de piloto, posso reservar uma pra {empresa}?',
+        texto: 'Fiz o teste de novo ontem à noite e [resultado]. Posso te mostrar em 15 minutos como ficaria aí na {empresa}?',
         whats: true,
         conta: true,
     },
@@ -83,7 +69,7 @@ Se depois de 30 dias não fizer sentido, você desliga e pronto, sem fidelidade.
         grupo: 'Clínicas · teste noturno',
         titulo: 'Follow-up D+10',
         quando: '10 dias depois, o último',
-        texto: 'Vou fechar as vagas de piloto essa semana. Se não for o momento, sem problema, me avisa que eu não insisto.',
+        texto: 'Não quero ficar te enchendo de mensagem: se não for o momento, sem problema, me avisa que eu não insisto. Fico à disposição quando fizer sentido.',
         whats: true,
         conta: true,
     },
@@ -226,7 +212,7 @@ Consigo hoje às [HORÁRIO] ou amanhã às [HORÁRIO]. Qual encaixa melhor pra v
 ✅ Site completo e rápido, feito pra vender (não é template genérico)
 ✅ Otimizado pro Google e pro celular
 ✅ Botão de WhatsApp e formulário de contato
-✅ 60 dias de garantia: qualquer ajuste nesse período é por minha conta
+✅ 30 dias de suporte grátis: qualquer ajuste nesse período é por nossa conta
 Ou seja: a {empresa} aparecendo profissional pra quem pesquisa. Fechou a ideia?`,
         whats: true,
     },
