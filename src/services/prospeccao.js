@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { logAction } from '../utils/logger';
+import { TOQUES, hojeISO, diaDoToque } from '../config/cadencia';
 
 /*
  * Prospecção: lista crua de possíveis clientes.
@@ -10,7 +11,7 @@ const ok = ({ data, error }) => { if (error) throw error; return data; };
 
 const CAMPOS = ['nome', 'categoria', 'telefone', 'email', 'site', 'instagram', 'endereco', 'cidade', 'uf', 'maps_url',
     'nota_google', 'avaliacoes', 'origem', 'status', 'prioridade', 'tentativas', 'ultimo_contato_em',
-    'proximo_contato_em', 'notas', 'extras', 'party_id', 'responsavel_id'];
+    'proximo_contato_em', 'notas', 'extras', 'party_id', 'responsavel_id', 'cadencia_inicio', 'cadencia_etapa'];
 
 const soCampos = (obj) => Object.fromEntries(
     CAMPOS.filter((c) => obj[c] !== undefined).map((c) => [c, obj[c] === '' ? null : obj[c]])
@@ -75,16 +76,66 @@ export async function excluirEvento(id) {
 
 /**
  * Tentativa de contato: conta +1, carimba a data e, se o lead ainda estava
- * "A abordar", passa para "Abordado". Devolve o lead atualizado.
+ * "A abordar", passa para "Abordado" e entra na cadência de acompanhamento
+ * (src/config/cadencia.js). Devolve o lead atualizado.
  */
 export async function registrarTentativa(lead, canal, autorId) {
+    const primeira = lead.status === 'NOVO' && lead.cadencia_etapa == null;
     const dados = {
         tentativas: (lead.tentativas || 0) + 1,
         ultimo_contato_em: new Date().toISOString(),
         ...(lead.status === 'NOVO' ? { status: 'CONTATADO' } : {}),
+        ...(primeira ? { cadencia_inicio: hojeISO(), cadencia_etapa: 0, proximo_contato_em: diaDoToque(hojeISO(), 0) } : {}),
     };
     const row = ok(await supabase.from('prospeccao_leads').update(dados).eq('id', lead.id).select().single());
     await registrarEvento({ lead_id: lead.id, tipo: 'CONTATO', texto: canal ? `Tentativa por ${canal}` : 'Tentativa de contato' }, autorId);
+    return row;
+}
+
+// ---------------------------------------------------------------------------
+// Cadência de acompanhamento (toques de 2, 5 e 10 dias)
+// ---------------------------------------------------------------------------
+const atualizar = async (id, dados) => ok(await supabase.from('prospeccao_leads').update(dados).eq('id', id).select().single());
+
+/** Começa (ou recomeça) a contagem a partir do dia em que a abordagem foi enviada. */
+export async function iniciarCadencia(lead, inicio, autorId) {
+    const row = await atualizar(lead.id, {
+        cadencia_inicio: inicio, cadencia_etapa: 0, proximo_contato_em: diaDoToque(inicio, 0),
+        ...(['NOVO', 'SEM_RESPOSTA'].includes(lead.status) ? { status: 'CONTATADO' } : {}),
+    });
+    const [y, m, d] = inicio.split('-');
+    await registrarEvento({ lead_id: lead.id, tipo: 'SISTEMA', texto: `Acompanhamento contando a partir de ${d}/${m}/${y}` }, autorId);
+    return row;
+}
+
+/**
+ * O toque da vez foi enviado: conta como tentativa e agenda o próximo. Depois
+ * do último (agradecer e encerrar) o lead vai para "Sem resposta".
+ */
+export async function registrarToque(lead, autorId) {
+    const etapa = lead.cadencia_etapa;
+    const toque = TOQUES[etapa];
+    if (!toque) throw new Error('Lead fora da cadência');
+    const proxima = etapa + 1;
+    const row = await atualizar(lead.id, {
+        tentativas: (lead.tentativas || 0) + 1,
+        ultimo_contato_em: new Date().toISOString(),
+        ...(toque.encerra || !TOQUES[proxima]
+            ? { cadencia_etapa: null, proximo_contato_em: null, status: 'SEM_RESPOSTA' }
+            : { cadencia_etapa: proxima, proximo_contato_em: diaDoToque(lead.cadencia_inicio || hojeISO(), proxima, { aPartirDeAmanha: true }) }),
+    });
+    await registrarEvento({ lead_id: lead.id, tipo: 'CONTATO', texto: `${toque.titulo} (dia ${toque.dias}) enviado pelo WhatsApp` }, autorId);
+    return row;
+}
+
+/** Respondeu: para a cadência e o lead fica pronto para virar oportunidade. */
+export async function marcarRespondeu(lead) {
+    return atualizar(lead.id, { status: 'RESPONDEU', cadencia_etapa: null, proximo_contato_em: null });
+}
+
+export async function pararCadencia(lead, autorId) {
+    const row = await atualizar(lead.id, { cadencia_etapa: null, proximo_contato_em: null });
+    await registrarEvento({ lead_id: lead.id, tipo: 'SISTEMA', texto: 'Acompanhamento parado' }, autorId);
     return row;
 }
 
