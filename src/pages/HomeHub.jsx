@@ -18,6 +18,8 @@ import { IconesServicos } from '../components/crm/ui';
 import { resumoServicos, statusProjeto, tipoAtividade, fmtBRL, fmtData } from '../config/servicos';
 import { todayISO } from '../utils/date';
 import { statusProspeccao } from '../config/prospeccao';
+import { toqueDaVez } from '../config/cadencia';
+import { ModalAcompanhamento } from '../components/prospeccao/Acompanhamento';
 import { useOpcoesNovo, abrirNovo } from '../components/novo';
 import Numeros from './Painel';
 
@@ -91,6 +93,7 @@ export default function HomeHub() {
     const [d, setD] = useState(null);
     const [aba, setAba] = useState('hoje');
     const [concluindo, setConcluindo] = useState(null);
+    const [toqueAberto, setToqueAberto] = useState(null);
     const [novoAberto, setNovoAberto] = useState(false);
     const novoRef = useRef(null);
 
@@ -109,7 +112,7 @@ export default function HomeHub() {
             veCrm ? seguro(atividadesRecentes(8)) : vazio,
             // Retornos combinados na Prospecção (meus ou sem dono), até a semana que vem.
             pode.prospeccao && currentUser?.id ? seguro(supabase.from('prospeccao_leads')
-                .select('id, nome, categoria, cidade, status, proximo_contato_em, responsavel_id')
+                .select('id, nome, categoria, cidade, telefone, status, tentativas, ultimo_contato_em, proximo_contato_em, responsavel_id, cadencia_inicio, cadencia_etapa')
                 .not('proximo_contato_em', 'is', null).lte('proximo_contato_em', addDias(hoje, 7))
                 .not('status', 'in', '(DESCARTADO,CONVERTIDO)')
                 .or(`responsavel_id.is.null,responsavel_id.eq.${currentUser.id}`)
@@ -147,12 +150,17 @@ export default function HomeHub() {
                 abrir: a.projeto_id ? `/projetos/${a.projeto_id}` : a.oportunidade_id ? `/vendas?abrir=${a.oportunidade_id}` : `/clientes/${a.party_id}`,
                 concluir: { tipo: 'retorno', id: a.id },
             })),
-            ...d.prosp.map((l) => ({
-                id: `prosp:${l.id}`, tipo: 'prospeccao', titulo: `Retornar: ${l.nome}`, data: l.proximo_contato_em,
-                contexto: [statusProspeccao(l.status).label, l.categoria, l.cidade].filter(Boolean).join(' · '),
-                abrir: `/prospeccao?abrir=${l.id}`,
-                concluir: pode.editarProspeccao ? { tipo: 'prospeccao', id: l.id } : undefined,
-            })),
+            ...d.prosp.map((l) => {
+                const toque = toqueDaVez(l);
+                return {
+                    id: `prosp:${l.id}`, tipo: 'prospeccao', data: l.proximo_contato_em,
+                    titulo: toque ? `${toque.aviso}: ${l.nome}` : `Retornar: ${l.nome}`,
+                    contexto: [toque ? `${toque.titulo}, mensagem pronta` : statusProspeccao(l.status).label, l.categoria, l.cidade].filter(Boolean).join(' · '),
+                    abrir: `/prospeccao?abrir=${l.id}`,
+                    // Com cadência, o ✓ abre o toque com o texto pronto em vez de só limpar a data.
+                    concluir: pode.editarProspeccao ? { tipo: toque ? 'toque' : 'prospeccao', id: l.id } : undefined,
+                };
+            }),
             ...d.receber.map((t) => ({
                 id: `fin:${t.id}`, tipo: 'receber', titulo: `Receber ${fmtBRL(Number(t.amount) - Number(t.paid_amount || 0))}`,
                 data: t.due_date, contexto: `${t.finance_parties?.name || ''}${t.finance_parties?.name ? ' · ' : ''}${t.description}`,
@@ -184,7 +192,23 @@ export default function HomeHub() {
         setAba(grupos.atrasado.length ? 'atrasado' : grupos.hoje.length ? 'hoje' : 'semana');
     }, [d, grupos]);
 
+    // O lead mudou no painel do toque: some da lista se o próximo retorno saiu da semana.
+    const leadAlterado = (row) => {
+        const fimSemana = addDias(todayISO(), 7);
+        setD((x) => ({
+            ...x,
+            prosp: x.prosp
+                .map((l) => (l.id === row.id ? { ...l, ...row } : l))
+                .filter((l) => l.proximo_contato_em && l.proximo_contato_em <= fimSemana && !['DESCARTADO', 'CONVERTIDO'].includes(l.status)),
+        }));
+        setToqueAberto(null);
+    };
+
     const concluir = async (item) => {
+        if (item.concluir.tipo === 'toque') {
+            setToqueAberto(d.prosp.find((l) => l.id === item.concluir.id) || null);
+            return;
+        }
         setConcluindo(item.id);
         try {
             if (item.concluir.tipo === 'retorno') await concluirProximoPasso(item.concluir.id);
@@ -326,7 +350,7 @@ export default function HomeHub() {
                                                     {item.data === d.hoje ? (item.hora || 'Hoje') : fmtData(item.data).slice(0, 5)}
                                                 </span>
                                                 {item.concluir ? (
-                                                    <button onClick={() => concluir(item)} disabled={concluindo === item.id} title="Marcar como feito"
+                                                    <button onClick={() => concluir(item)} disabled={concluindo === item.id} title={item.concluir.tipo === 'toque' ? 'Abrir a mensagem pronta' : 'Marcar como feito'}
                                                         className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 border border-slate-100 shrink-0">
                                                         {concluindo === item.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={15} strokeWidth={3} />}
                                                     </button>
@@ -402,6 +426,11 @@ export default function HomeHub() {
                     </div>
                 </>)}
             </div>
+
+            {toqueAberto && (
+                <ModalAcompanhamento lead={toqueAberto} onAlterado={leadAlterado} onClose={() => setToqueAberto(null)}
+                    onAbrirFicha={() => navigate(`/prospeccao?abrir=${toqueAberto.id}`)} />
+            )}
         </div>
     );
 }

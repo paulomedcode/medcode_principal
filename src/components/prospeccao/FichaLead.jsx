@@ -13,6 +13,7 @@ import useTravaRolagem from '../../hooks/useTravaRolagem';
 import { Estrelas, Contatos, NotaGoogle } from './pecas';
 import VirarOportunidade from './VirarOportunidade';
 import Roteiros from './Roteiros';
+import Acompanhamento from './Acompanhamento';
 
 const hojeMais = (dias) => {
     const d = new Date(); d.setDate(d.getDate() + dias);
@@ -177,6 +178,9 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                             )}
                         </section>
                     )}
+
+                    {/* Cadência de acompanhamento (toques de 2, 5 e 10 dias) */}
+                    {!convertido && <Acompanhamento lead={lead} onAlterado={onAlterado} podeEditar={podeEditar} />}
 
                     {/* Contato e retorno */}
                     <section className="bg-white border border-black/[.085] rounded-2xl p-3 space-y-3">
