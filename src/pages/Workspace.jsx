@@ -12,7 +12,8 @@ import {
   Plus, FileText, ChevronRight, ChevronDown, Trash2,
   Loader2, Search, RotateCcw, X, Cloud, CloudOff, ArrowLeft, Database,
   Globe, Users2, CornerDownLeft, Command, Lock, Check,
-  PanelLeftOpen, PanelLeftClose,
+  PanelLeftOpen, PanelLeftClose, Folder, FolderOpen, FolderPlus, FolderInput,
+  MoreHorizontal, Pencil,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermission } from '../contexts/PermissionContext';
@@ -36,7 +37,9 @@ const EMOJIS = ['📄', '📝', '✅', '📌', '📅', '🩺', '💊', '🏥', '
 // a primeira página qualquer.
 const LAST_PAGE_KEY = 'ws-ultima-pagina';
 
-function pickInitialPage(pages) {
+function pickInitialPage(allPages) {
+  // Pasta não abre nada — só agrupa —, então nunca é a página inicial.
+  const pages = allPages.filter((p) => p.type !== 'folder');
   if (!pages.length) return null;
   let last = null;
   try { last = localStorage.getItem(LAST_PAGE_KEY); } catch { /* ignore */ }
@@ -44,6 +47,12 @@ function pickInitialPage(pages) {
   const firstDb = pages.find((p) => p.type === 'database');
   return (firstDb || pages[0]).id;
 }
+
+// Largura da barra lateral no computador (arrastável pela borda, fica no aparelho).
+const SIDEBAR_W_KEY = 'ws-sidebar-largura';
+const SIDEBAR_W_MIN = 220;
+const SIDEBAR_W_MAX = 480;
+const SIDEBAR_W_PADRAO = 300;
 
 // Linha do seletor de visibilidade (módulo: não recriar por render).
 function VisRow({ icon, iconClass, text, active, onClick }) {
@@ -104,6 +113,40 @@ export default function Workspace() {
     try { localStorage.setItem('ws-sidebar', sidebarAberta ? '1' : '0'); } catch { /* ignore */ }
   }, [sidebarAberta]);
   useEffect(() => { if (ehCelular()) setSidebarAberta(false); }, [selectedId]);
+
+  // Largura arrastável: 248px fixos cortavam qualquer título com mais de três
+  // palavras ("Agente exemplo – …" cinco vezes seguidas).
+  const [sidebarLargura, setSidebarLargura] = useState(() => {
+    try {
+      const v = Number(localStorage.getItem(SIDEBAR_W_KEY));
+      if (v >= SIDEBAR_W_MIN && v <= SIDEBAR_W_MAX) return v;
+    } catch { /* ignore */ }
+    return SIDEBAR_W_PADRAO;
+  });
+  const iniciarRedimensionar = useCallback((e) => {
+    e.preventDefault();
+    const x0 = e.clientX;
+    const w0 = sidebarLargura;
+    let atual = w0;
+    const onMove = (ev) => {
+      atual = Math.min(SIDEBAR_W_MAX, Math.max(SIDEBAR_W_MIN, w0 + ev.clientX - x0));
+      setSidebarLargura(atual);
+    };
+    const onUp = () => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      try { localStorage.setItem(SIDEBAR_W_KEY, String(atual)); } catch { /* ignore */ }
+    };
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  }, [sidebarLargura]);
+
+  // Renomear direto na árvore (pastas não têm página com título para editar).
+  const [renamingId, setRenamingId] = useState(null);
 
   const databaseIds = useMemo(() => new Set(pages.filter((p) => p.type === 'database').map((p) => p.id)), [pages]);
   const tree = useMemo(() => ws.buildTree(pages, { databaseIds }), [pages, databaseIds]);
@@ -336,6 +379,40 @@ export default function Workspace() {
     }
   }, [currentUser, refresh, selectPage, podeCriarBanco]);
 
+  // `comItemId`: já cria a pasta com esse item dentro, no lugar onde ele estava
+  // (o jeito rápido de "juntar estas páginas").
+  const handleCreateFolder = useCallback(async (parentId = null, comItemId = null) => {
+    if (!podeCriarPagina) return avisarSemPermissao();
+    try {
+      const pasta = await ws.createPage({ parentId, type: 'folder', title: 'Nova pasta', createdBy: currentUser?.id });
+      if (comItemId) {
+        const item = pages.find((p) => p.id === comItemId);
+        if (item) await ws.updatePage(pasta.id, { position: item.position });
+        await ws.movePage(comItemId, pasta.id);
+      }
+      await refresh();
+      setExpanded((s) => { const n = new Set(s); if (parentId) n.add(parentId); n.add(pasta.id); return n; });
+      setRenamingId(pasta.id);
+    } catch (e) {
+      console.error(e);
+      // 23514 = check violation: o banco ainda não conhece type='folder'.
+      if (e?.code === '23514') toast.error('Pastas ainda não foram liberadas neste banco (falta a migration 20261019120000).');
+      else toast.error('Erro ao criar pasta.');
+    }
+  }, [currentUser, refresh, podeCriarPagina, pages]);
+
+  const handleRename = useCallback(async (id, title) => {
+    setRenamingId(null);
+    const alvo = pages.find((p) => p.id === id);
+    const novo = title.trim();
+    if (!alvo || !novo || novo === alvo.title) return;
+    if (!podeEditarEste(alvo)) return avisarSemPermissao();
+    setPages((list) => list.map((p) => (p.id === id ? { ...p, title: novo } : p)));
+    setCurrentPage((p) => (p?.id === id ? { ...p, title: novo } : p));
+    try { await ws.updatePage(id, { title: novo }); }
+    catch (e) { console.error(e); toast.error('Erro ao renomear.'); refresh(); }
+  }, [pages, podeEditarEste, refresh]);
+
   const handleSaveContent = useCallback(async (id, blocks) => {
     // O editor já vai montado em somente-leitura sem permissão; esta guarda é a
     // rede de baixo, para nenhum caminho (autosave pendente, atalho) gravar.
@@ -386,7 +463,18 @@ export default function Workspace() {
     const podeExcluirEste = page.type === 'database' ? podeExcluirBancos : podeExcluirPaginas;
     if (!podeExcluirEste) return avisarSemPermissao();
 
-    if (page.type === 'database') {
+    if (page.type === 'folder') {
+      // Excluir a pasta leva tudo que está dentro. Se houver database lá, a
+      // confirmação de "digite excluir" seria pulada — então obriga a tirar antes.
+      const desc = ws.descendantIdsFlat(pages, id);
+      if (pages.some((p) => desc.includes(p.id) && p.type === 'database')) {
+        toast.error('Esta pasta tem databases dentro. Mova-os para fora antes de excluir a pasta.');
+        return;
+      }
+      if (!window.confirm(desc.length
+        ? `Mover a pasta "${page.title}" e os ${desc.length} itens dentro dela para a lixeira?`
+        : `Mover a pasta "${page.title}" para a lixeira?`)) return;
+    } else if (page.type === 'database') {
       const confirm = window.prompt(`CUIDADO: Você está tentando excluir o banco de dados "${page.title}". Isso apagará TODAS as linhas e informações contidas nele.\n\nPara prosseguir, digite a palavra "excluir" abaixo:`);
       if (confirm !== 'excluir') {
         toast.error('Exclusão cancelada (palavra incorreta).');
@@ -422,7 +510,15 @@ export default function Workspace() {
   // Move (arrastar e soltar): 'inside' aninha como filho; 'before'/'after'
   // reordena entre irmãos. Bloqueia ciclos (mover para dentro de si mesma).
   const handleMove = useCallback(async (sourceId, target, mode) => {
-    if (!sourceId || !target || sourceId === target.id) return;
+    if (!sourceId) return;
+    // Sem alvo = soltou no vazio do fim da lista: vai para a raiz, por último.
+    if (!target) {
+      if (!podeEditarPaginas) return avisarSemPermissao();
+      try { await ws.movePage(sourceId, null); await refresh(); }
+      catch (e) { console.error(e); toast.error('Erro ao mover a página.'); }
+      return;
+    }
+    if (sourceId === target.id) return;
     if (!podeEditarPaginas) return avisarSemPermissao();
     if (mode === 'inside' && target.type === 'database') {
       toast.error('Para adicionar itens a um database, use a tabela ou "Importar agenda".');
@@ -436,6 +532,7 @@ export default function Workspace() {
     }
     try {
       if (mode === 'inside') {
+        if (pages.find((p) => p.id === sourceId)?.parent_id === newParentId) return;
         await ws.movePage(sourceId, newParentId);
         setExpanded((s) => new Set(s).add(newParentId));
       } else {
@@ -463,10 +560,19 @@ export default function Workspace() {
     onDragOver: (e, node) => {
       if (!dragId || dragId === node.id) return;
       e.preventDefault();
+      e.stopPropagation();
       const rect = e.currentTarget.getBoundingClientRect();
       const y = e.clientY - rect.top;
-      const mode = y < rect.height * 0.3 ? 'before' : y > rect.height * 0.7 ? 'after' : 'inside';
+      // Pasta: a faixa do meio ("soltar dentro") é maior — é o que se quer
+      // quase sempre. Database não recebe nada dentro.
+      const borda = node.type === 'folder' ? 0.22 : node.type === 'database' ? 0.5 : 0.3;
+      const mode = y < rect.height * borda ? 'before' : y > rect.height * (1 - borda) ? 'after' : 'inside';
       setDropHint((h) => (h && h.id === node.id && h.mode === mode ? h : { id: node.id, mode }));
+    },
+    onDropRoot: () => {
+      if (dragId) handleMove(dragId, null, 'root');
+      setDragId(null);
+      setDropHint(null);
     },
     onDrop: (node) => {
       if (dragId && dropHint) handleMove(dragId, node, dropHint.mode);
@@ -475,6 +581,37 @@ export default function Workspace() {
     },
     onDragEnd: () => { setDragId(null); setDropHint(null); },
   }), [dragId, dropHint, handleMove]);
+
+  // Tudo que a árvore precisa além de selecionar/expandir — num objeto só,
+  // para não alongar ainda mais a lista de props da recursão.
+  const pastas = useMemo(() => pages.filter((p) => p.type === 'folder'), [pages]);
+  const acoesArvore = useMemo(() => ({
+    renamingId,
+    setRenamingId,
+    onRename: handleRename,
+    onCreateFolder: handleCreateFolder,
+    // "Mover para…": pasta de destino, ou null para a raiz.
+    onMoveTo: (id, pastaId) => {
+      const atual = pages.find((p) => p.id === id);
+      if ((atual?.parent_id ?? null) === (pastaId ?? null)) return;
+      const alvo = pastaId ? pages.find((p) => p.id === pastaId) : null;
+      handleMove(id, alvo, 'inside');
+    },
+    // Pastas possíveis para um item: nem ela mesma nem as que estão dentro dela.
+    destinosPara: (id) => {
+      const desc = new Set(ws.descendantIdsFlat(pages, id));
+      const byId = new Map(pages.map((p) => [p.id, p]));
+      const caminho = (p) => {
+        const nomes = [];
+        for (let cur = p, i = 0; cur && i < 20; cur = byId.get(cur.parent_id), i++) nomes.unshift(cur.title || 'Sem título');
+        return nomes.join(' / ');
+      };
+      return pastas
+        .filter((f) => f.id !== id && !desc.has(f.id))
+        .map((f) => ({ id: f.id, nome: caminho(f) }))
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    },
+  }), [renamingId, handleRename, handleCreateFolder, handleMove, pages, pastas]);
 
   if (loading) {
     return (
@@ -529,7 +666,20 @@ export default function Workspace() {
       {sidebarAberta && <div className="md:hidden absolute inset-0 z-20 bg-black/20" onClick={() => setSidebarAberta(false)} />}
 
       {/* SIDEBAR / ÁRVORE */}
-      <aside className={`${sidebarAberta ? 'w-[85%] max-w-[300px] md:max-w-none md:w-[248px] absolute md:static inset-y-0 left-0 z-30 shadow-2xl md:shadow-none bg-white md:bg-white/70' : 'w-0 overflow-hidden border-r-0 bg-white/70'} shrink-0 dark:bg-slate-900/50 backdrop-blur-xl border-r border-slate-200/70 dark:border-slate-700/60 flex flex-col transition-[width] duration-200`}>
+      <aside
+        style={{ '--ws-w': `${sidebarLargura}px` }}
+        className={`${sidebarAberta ? 'w-[85%] max-w-[340px] md:max-w-none md:w-[var(--ws-w)] absolute md:relative inset-y-0 left-0 z-30 shadow-2xl md:shadow-none bg-white md:bg-white/70' : 'w-0 overflow-hidden border-r-0 bg-white/70'} shrink-0 dark:bg-slate-900/50 backdrop-blur-xl border-r border-slate-200/70 dark:border-slate-700/60 flex flex-col`}>
+        {/* Alça de largura (só no computador): arrastar a borda direita. */}
+        {sidebarAberta && (
+          <div
+            onPointerDown={iniciarRedimensionar}
+            onDoubleClick={() => { setSidebarLargura(SIDEBAR_W_PADRAO); try { localStorage.setItem(SIDEBAR_W_KEY, String(SIDEBAR_W_PADRAO)); } catch { /* ignore */ } }}
+            title="Arraste para ajustar a largura (duplo clique volta ao padrão)"
+            className="hidden md:block absolute top-0 -right-1 w-2 h-full z-10 cursor-col-resize group/res"
+          >
+            <div className="mx-auto w-0.5 h-full bg-transparent group-hover/res:bg-slate-300 dark:group-hover/res:bg-slate-600 transition-colors" />
+          </div>
+        )}
         <div className="px-2.5 py-2.5 flex items-center gap-0.5 border-b border-slate-200/60 dark:border-slate-700/60">
           <button onClick={() => navigate('/home')} title="Início" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-800 transition-colors">
             <ArrowLeft size={16} />
@@ -541,6 +691,11 @@ export default function Workspace() {
           {podeCriarBanco && (
             <button onClick={() => handleCreateDatabase(null)} title="Novo database (tabela/kanban/calendário)" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
               <Database size={15} />
+            </button>
+          )}
+          {podeCriarPagina && (
+            <button onClick={() => handleCreateFolder(null)} title="Nova pasta" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
+              <FolderPlus size={15} />
             </button>
           )}
           {podeCriarPagina && (
@@ -595,7 +750,18 @@ export default function Workspace() {
               onDelete={handleDelete}
               dnd={dnd}
               perms={{ podeCriarPagina, podeEditarPaginas, podeExcluirPaginas, podeExcluirBancos }}
+              acoes={acoesArvore}
             />
+          )}
+          {/* Soltar aqui = tirar da pasta (vai para o fim da raiz). */}
+          {dragId && !filter && (
+            <div
+              onDragOver={(e) => { e.preventDefault(); if (dropHint) setDropHint(null); }}
+              onDrop={(e) => { e.preventDefault(); dnd.onDropRoot(); }}
+              className="mt-1 h-10 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-[12px] text-slate-400 flex items-center justify-center"
+            >
+              Soltar aqui para tirar da pasta
+            </div>
           )}
         </nav>
 
@@ -702,14 +868,14 @@ export default function Workspace() {
 // ----------------------------------------------------------------------------
 // Árvore (recursiva)
 // ----------------------------------------------------------------------------
-function TreeList({ nodes, depth, filter, expanded, selectedId, onSelect, onToggle, onCreateChild, onDelete, dnd, perms }) {
+function TreeList({ nodes, depth, filter, expanded, selectedId, onSelect, onToggle, onCreateChild, onDelete, dnd, perms, acoes }) {
   // Com filtro, achata e mostra só o que casa pelo título.
   const visible = filter
     ? flatten(nodes).filter((n) => n.title.toLowerCase().includes(filter))
     : nodes;
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-px">
       {visible.map((node) => (
         <TreeNode
           key={node.id}
@@ -724,6 +890,7 @@ function TreeList({ nodes, depth, filter, expanded, selectedId, onSelect, onTogg
           onDelete={onDelete}
           dnd={dnd}
           perms={perms}
+          acoes={acoes}
         />
       ))}
     </div>
@@ -735,71 +902,119 @@ function flatten(nodes, out = []) {
   return out;
 }
 
-function TreeNode({ node, depth, flat, expanded, selectedId, onSelect, onToggle, onCreateChild, onDelete, dnd, perms }) {
+function TreeNode({ node, depth, flat, expanded, selectedId, onSelect, onToggle, onCreateChild, onDelete, dnd, perms, acoes }) {
+  const isFolder = node.type === 'folder';
   const isOpen = expanded.has(node.id);
   const hasChildren = node.children && node.children.length > 0;
   const isSelected = node.id === selectedId;
+  const renaming = acoes?.renamingId === node.id;
+  const [menuAberto, setMenuAberto] = useState(false);
+  const menuRef = useRef(null);
   // Excluir um database é permissão à parte de excluir uma página: some junto
   // com todas as linhas dele.
   const podeExcluirEste = node.type === 'database' ? perms?.podeExcluirBancos : perms?.podeExcluirPaginas;
 
   const hint = dnd?.dropHint && dnd.dropHint.id === node.id ? dnd.dropHint.mode : null;
   const isDragging = dnd?.dragId === node.id;
-  const draggable = !flat && !!perms?.podeEditarPaginas; // não arrasta na busca nem sem permissão de editar
+  const draggable = !flat && !renaming && !!perms?.podeEditarPaginas; // não arrasta na busca nem sem permissão de editar
+
+  // Pasta não abre página: clicar abre/fecha.
+  const aoClicar = () => {
+    if (renaming) return;
+    if (isFolder) onToggle(node.id);
+    else onSelect(node.id);
+  };
+
+  const iconeVazio = isFolder
+    ? (isOpen ? <FolderOpen size={15} className="inline text-slate-400" /> : <Folder size={15} className="inline text-slate-400" />)
+    : node.type === 'database'
+      ? <Database size={14} className="inline text-slate-400" />
+      : <FileText size={14} className="inline text-slate-400" />;
 
   return (
     <div>
       <div
         draggable={draggable}
-        onDragStart={(e) => { if (!draggable) return; e.stopPropagation(); dnd.onDragStart(node.id); }}
+        onDragStart={(e) => { if (!draggable) return; e.stopPropagation(); e.dataTransfer.effectAllowed = 'move'; dnd.onDragStart(node.id); }}
         onDragOver={(e) => draggable && dnd.onDragOver(e, node)}
         onDrop={(e) => { if (!draggable) return; e.preventDefault(); e.stopPropagation(); dnd.onDrop(node); }}
         onDragEnd={() => draggable && dnd.onDragEnd()}
-        className={`group relative flex items-center gap-1 pr-1 rounded-lg cursor-pointer transition-colors
+        className={`group relative flex items-start gap-1 pr-1 rounded-lg cursor-pointer transition-colors
           ${isSelected ? 'bg-slate-200/60 dark:bg-blue-500/15 text-slate-900 dark:text-blue-300 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800'}
           ${isDragging ? 'opacity-40' : ''}
-          ${hint === 'inside' ? 'ring-2 ring-blue-400 ring-inset' : ''}`}
-        style={{ paddingLeft: 6 + depth * 14 }}
-        onClick={() => onSelect(node.id)}
+          ${hint === 'inside' ? 'ring-2 ring-blue-400 ring-inset bg-blue-50/60 dark:bg-blue-500/10' : ''}`}
+        style={{ paddingLeft: 4 + depth * 14 }}
+        onClick={aoClicar}
+        title={node.title || 'Sem título'}
       >
         {hint === 'before' && <span className="absolute left-2 right-2 top-0 h-0.5 bg-blue-500 rounded-full" />}
         {hint === 'after' && <span className="absolute left-2 right-2 bottom-0 h-0.5 bg-blue-500 rounded-full" />}
         <button
-          onClick={(e) => { e.stopPropagation(); if (hasChildren && !flat) onToggle(node.id); }}
-          className={`p-0.5 rounded ${hasChildren && !flat ? 'text-slate-400 hover:bg-slate-200/60' : 'opacity-0 pointer-events-none'}`}
+          onClick={(e) => { e.stopPropagation(); if ((hasChildren || isFolder) && !flat) onToggle(node.id); }}
+          className={`mt-[7px] p-0.5 rounded shrink-0 ${(hasChildren || isFolder) && !flat ? 'text-slate-400 hover:bg-slate-200/60' : 'opacity-0 pointer-events-none'}`}
         >
           {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </button>
 
-        <span className="text-[15px] leading-none w-[18px] text-center shrink-0">
-          {node.icon || (node.type === 'database'
-            ? <Database size={14} className="inline text-slate-400" />
-            : <FileText size={14} className="inline text-slate-400" />)}
+        <span className="mt-[7px] text-[15px] leading-[18px] w-[18px] text-center shrink-0">
+          {node.icon || iconeVazio}
         </span>
 
-        <span className="flex-1 py-1.5 text-[13px] font-semibold truncate">{node.title || 'Sem título'}</span>
-
-        {perms?.podeCriarPagina && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onCreateChild(node.id); }}
-            title="Adicionar subpágina"
-            className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-200/60 transition-all"
+        {renaming ? (
+          <RenameInput
+            valor={node.title}
+            onConfirmar={(t) => acoes.onRename(node.id, t)}
+            onCancelar={() => acoes.setRenamingId(null)}
+          />
+        ) : (
+          // Até duas linhas: dá para distinguir "Agente exemplo – Clínica X" de
+          // "Agente exemplo – Pediatria" sem abrir.
+          <span
+            onDoubleClick={(e) => { if (perms?.podeEditarPaginas) { e.stopPropagation(); acoes?.setRenamingId(node.id); } }}
+            className={`flex-1 min-w-0 py-[7px] text-[13px] leading-[18px] font-semibold line-clamp-2 break-words ${isFolder ? 'text-slate-700 dark:text-slate-200' : ''}`}
           >
-            <Plus size={13} />
-          </button>
+            {node.title || (isFolder ? 'Pasta sem nome' : 'Sem título')}
+          </span>
         )}
-        {podeExcluirEste && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(node.id); }}
-            title={node.type === 'database' ? 'Excluir database' : 'Excluir'}
-            className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-rose-500 hover:bg-slate-200/60 transition-all"
-          >
-            <Trash2 size={13} />
-          </button>
+
+        {!renaming && (perms?.podeCriarPagina || perms?.podeEditarPaginas || podeExcluirEste) && (
+          <div className={`mt-[4px] flex items-center shrink-0 ${menuAberto ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100'} transition-opacity`}>
+            <button
+              ref={menuRef}
+              onClick={(e) => { e.stopPropagation(); setMenuAberto((v) => !v); }}
+              title="Mais opções"
+              className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+            >
+              <MoreHorizontal size={14} />
+            </button>
+            {perms?.podeCriarPagina && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onCreateChild(node.id); }}
+                title={isFolder ? 'Nova página nesta pasta' : 'Adicionar subpágina'}
+                className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+              >
+                <Plus size={13} />
+              </button>
+            )}
+          </div>
         )}
       </div>
 
-      {hasChildren && isOpen && !flat && (
+      {menuAberto && (
+        <Popover anchorRef={menuRef} onClose={() => setMenuAberto(false)} align="left" width={240}>
+          <NodeMenu
+            node={node}
+            perms={perms}
+            podeExcluirEste={podeExcluirEste}
+            acoes={acoes}
+            fechar={() => setMenuAberto(false)}
+            onCreateChild={onCreateChild}
+            onDelete={onDelete}
+          />
+        </Popover>
+      )}
+
+      {isOpen && !flat && (hasChildren ? (
         <TreeList
           nodes={node.children}
           depth={depth + 1}
@@ -812,7 +1027,97 @@ function TreeNode({ node, depth, flat, expanded, selectedId, onSelect, onToggle,
           onCreateChild={onCreateChild}
           onDelete={onDelete}
           dnd={dnd}
+          acoes={acoes}
         />
+      ) : isFolder && (
+        <p className="py-1 text-[12px] text-slate-400" style={{ paddingLeft: 4 + (depth + 1) * 14 + 22 }}>
+          Pasta vazia — arraste itens para cá
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function RenameInput({ valor, onConfirmar, onCancelar }) {
+  const [texto, setTexto] = useState(valor || '');
+  const ref = useRef(null);
+  useEffect(() => { ref.current?.focus(); ref.current?.select(); }, []);
+  return (
+    <input
+      ref={ref}
+      value={texto}
+      onChange={(e) => setTexto(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') onConfirmar(texto);
+        if (e.key === 'Escape') onCancelar();
+      }}
+      onBlur={() => onConfirmar(texto)}
+      className="flex-1 min-w-0 my-1 h-7 px-1.5 rounded-md bg-white dark:bg-slate-800 border border-blue-400 text-[13px] font-semibold text-slate-800 dark:text-slate-100 outline-none"
+    />
+  );
+}
+
+// Menu "⋯" de um item da árvore. É também o caminho para organizar no
+// celular, onde não existe arrastar e soltar.
+function NodeMenu({ node, perms, podeExcluirEste, acoes, fechar, onCreateChild, onDelete }) {
+  const [movendo, setMovendo] = useState(false);
+  const isFolder = node.type === 'folder';
+  const item = 'flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-left';
+
+  if (movendo) {
+    const destinos = acoes.destinosPara(node.id);
+    return (
+      <div className="p-1 max-h-[320px] overflow-y-auto">
+        <p className="px-2 pt-1 pb-1.5 text-[12px] text-slate-400">Mover para…</p>
+        <button className={item} onClick={() => { fechar(); acoes.onMoveTo(node.id, null); }}>
+          <ArrowLeft size={14} className="text-slate-400 shrink-0" /> <span className="flex-1">Fora de qualquer pasta</span>
+          {!node.parent_id && <Check size={13} className="text-blue-500 shrink-0" />}
+        </button>
+        {destinos.map((d) => (
+          <button key={d.id} className={item} onClick={() => { fechar(); acoes.onMoveTo(node.id, d.id); }}>
+            <Folder size={14} className="text-slate-400 shrink-0" /> <span className="flex-1 line-clamp-2 break-words">{d.nome}</span>
+            {node.parent_id === d.id && <Check size={13} className="text-blue-500 shrink-0" />}
+          </button>
+        ))}
+        {perms?.podeCriarPagina && (
+          <button className={item} onClick={() => { fechar(); acoes.onCreateFolder(node.parent_id ?? null, node.id); }}>
+            <FolderPlus size={14} className="text-slate-400 shrink-0" /> <span className="flex-1">Nova pasta com este item</span>
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-1">
+      {perms?.podeEditarPaginas && (
+        <button className={item} onClick={() => { fechar(); acoes.setRenamingId(node.id); }}>
+          <Pencil size={14} className="text-slate-400" /> Renomear
+        </button>
+      )}
+      {perms?.podeEditarPaginas && (
+        <button className={item} onClick={() => setMovendo(true)}>
+          <FolderInput size={14} className="text-slate-400" /> Mover para…
+        </button>
+      )}
+      {perms?.podeCriarPagina && node.type !== 'database' && (
+        <button className={item} onClick={() => { fechar(); onCreateChild(node.id); }}>
+          <Plus size={14} className="text-slate-400" /> {isFolder ? 'Nova página aqui' : 'Nova subpágina'}
+        </button>
+      )}
+      {perms?.podeCriarPagina && isFolder && (
+        <button className={item} onClick={() => { fechar(); acoes.onCreateFolder(node.id); }}>
+          <FolderPlus size={14} className="text-slate-400" /> Nova pasta dentro
+        </button>
+      )}
+      {podeExcluirEste && (
+        <>
+          <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+          <button className={`${item} hover:!text-rose-600`} onClick={() => { fechar(); onDelete(node.id); }}>
+            <Trash2 size={14} className="text-slate-400" /> {isFolder ? 'Excluir pasta' : node.type === 'database' ? 'Excluir database' : 'Excluir'}
+          </button>
+        </>
       )}
     </div>
   );
@@ -917,7 +1222,7 @@ function CommandPalette({ pages, onClose, onSelect, onNewPage, onNewDatabase }) 
   const query = q.trim().toLowerCase();
 
   const results = useMemo(() => {
-    const list = pages.filter((p) => (p.title || '').toLowerCase().includes(query));
+    const list = pages.filter((p) => p.type !== 'folder' && (p.title || '').toLowerCase().includes(query));
     return list.slice(0, 40);
   }, [pages, query]);
 
