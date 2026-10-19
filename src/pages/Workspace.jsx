@@ -379,10 +379,17 @@ export default function Workspace() {
     }
   }, [currentUser, refresh, selectPage, podeCriarBanco]);
 
-  const handleCreateFolder = useCallback(async (parentId = null) => {
+  // `comItemId`: já cria a pasta com esse item dentro, no lugar onde ele estava
+  // (o jeito rápido de "juntar estas páginas").
+  const handleCreateFolder = useCallback(async (parentId = null, comItemId = null) => {
     if (!podeCriarPagina) return avisarSemPermissao();
     try {
       const pasta = await ws.createPage({ parentId, type: 'folder', title: 'Nova pasta', createdBy: currentUser?.id });
+      if (comItemId) {
+        const item = pages.find((p) => p.id === comItemId);
+        if (item) await ws.updatePage(pasta.id, { position: item.position });
+        await ws.movePage(comItemId, pasta.id);
+      }
       await refresh();
       setExpanded((s) => { const n = new Set(s); if (parentId) n.add(parentId); n.add(pasta.id); return n; });
       setRenamingId(pasta.id);
@@ -392,7 +399,7 @@ export default function Workspace() {
       if (e?.code === '23514') toast.error('Pastas ainda não foram liberadas neste banco (falta a migration 20261019120000).');
       else toast.error('Erro ao criar pasta.');
     }
-  }, [currentUser, refresh, podeCriarPagina]);
+  }, [currentUser, refresh, podeCriarPagina, pages]);
 
   const handleRename = useCallback(async (id, title) => {
     setRenamingId(null);
@@ -1073,8 +1080,10 @@ function NodeMenu({ node, perms, podeExcluirEste, acoes, fechar, onCreateChild, 
             {node.parent_id === d.id && <Check size={13} className="text-blue-500 shrink-0" />}
           </button>
         ))}
-        {destinos.length === 0 && (
-          <p className="px-2 py-1.5 text-[12px] text-slate-400">Nenhuma pasta ainda — crie uma pelo ícone de pasta no topo.</p>
+        {perms?.podeCriarPagina && (
+          <button className={item} onClick={() => { fechar(); acoes.onCreateFolder(node.parent_id ?? null, node.id); }}>
+            <FolderPlus size={14} className="text-slate-400 shrink-0" /> <span className="flex-1">Nova pasta com este item</span>
+          </button>
         )}
       </div>
     );
