@@ -55,6 +55,12 @@ export const PADRAO = {
     'Gestão de tráfego pago',
     'Funcionalidades fora do escopo descrito',
   ],
+  // sem termo de aceite (formato enxuto)
+  proximosEnxuta: [
+    { titulo: 'Aprovação', texto: 'Uma mensagem no WhatsApp confirmando que podemos seguir.' },
+    { titulo: 'Pagamento', texto: 'Na condição que fizer mais sentido para vocês.' },
+    { titulo: 'Início', texto: 'Conversa de alinhamento em até 48h e o trabalho começa.' },
+  ],
   proximos: [
     { titulo: 'Aprovação', texto: 'Responda esta proposta ou assine o aceite abaixo.' },
     { titulo: 'Pagamento', texto: 'Escolha a condição que fizer mais sentido para você.' },
@@ -108,8 +114,8 @@ const avatar = () => (IMG.foto
   ? `<img class="av" src="${esc(IMG.foto)}" alt="${esc(EMPRESA.responsavel)}" style="object-fit:cover">`
   : `<div class="av">${esc(EMPRESA.iniciais)}</div>`);
 
-function paginaClara({ ref, conteudo, rodape, n }) {
-  return `<section class="page light">
+function paginaClara({ ref, conteudo, rodape, n, classe = '' }) {
+  return `<section class="page light${classe ? ` ${classe}` : ''}">
   <header class="head">${logo(false)}<div class="ref">${esc(ref)}</div></header>
   <div class="body">${conteudo}</div>
   <footer class="foot"><span>${esc(rodape)}</span><span class="n">${String(n).padStart(2, '0')}</span></footer>
@@ -138,6 +144,10 @@ export function gerarPropostaHTML(dados, opcoes = {}) {
   const servicos = (d.servicos || []).map((s, i) => ({ ...s, letra: LETRAS[i] }));
   const paginas = [];
   let n = 1;
+  // 'enxuta' (4 páginas): capa, apresentação, solução e investimento com o
+  // aceite. Para quem não pediu proposta e vai ler no celular. 'completa'
+  // (padrão) mantém cronograma e o fechamento escuro.
+  const enxuta = d.formato === 'enxuta';
 
   // ---------- 1. CAPA ----------
   const capa = d.capa || {};
@@ -223,13 +233,15 @@ export function gerarPropostaHTML(dados, opcoes = {}) {
   if (inv.custosTerceiros) notas.push(`<div class="note"><h3>Custos de terceiros</h3><p>${rich(inv.custosTerceiros.descricao || 'Domínio, hospedagem e APIs são pagos direto aos fornecedores. Estimativa atual:')} <span class="price">${esc(inv.custosTerceiros.estimativa || '')}</span>.</p></div>`);
 
   paginas.push(paginaClara({
-    ref, n, rodape: `Valores válidos até ${fmtData(validade)} · ${EMPRESA.nome} ${EMPRESA.sufixo}`,
+    ref, n, classe: enxuta ? 'enx' : '', rodape: enxuta
+      ? `Válida até ${fmtData(validade)} · WhatsApp ${EMPRESA.whatsapp} · ${EMPRESA.email}`
+      : `Valores válidos até ${fmtData(validade)} · ${EMPRESA.nome} ${EMPRESA.sufixo}`,
     conteudo: `
-    <div class="sec-num">03 · Investimento</div>
+    <div class="sec-num">03 · Investimento${enxuta ? ' e próximos passos' : ''}</div>
     <h2>Transparente, <span class="serif">do início ao fim.</span></h2>
     <table class="inv">
       <thead><tr><th>Item</th><th>Prazo</th><th>Valor</th></tr></thead>
-      <tbody>${servicos.map((s) => `<tr><td><b>${s.letra} · ${esc(s.nomeTabela || s.nome)}</b>${s.resumo ? `<small>${esc(s.resumo)}</small>` : ''}</td><td class="q">${esc(s.prazo || '')}</td><td class="v">${brl(s.valor)}</td></tr>`).join('')}</tbody>
+      <tbody>${servicos.map((s) => `<tr><td><b>${s.letra} · ${esc(s.nomeTabela || s.nome)}</b>${s.resumo ? `<small>${esc(s.resumo)}</small>` : ''}</td><td class="q">${esc(s.prazo || '')}</td><td class="v">${Number(s.valor) ? brl(s.valor) : '<span class="incl-tag">Incluso</span>'}</td></tr>`).join('')}</tbody>
     </table>
     <div class="totals"><div class="t">
       ${calc.desconto ? `<div class="l"><span>Subtotal</span><span>${brl(calc.subtotal)}</span></div>
@@ -238,9 +250,21 @@ export function gerarPropostaHTML(dados, opcoes = {}) {
     </div></div>
     <div class="pay" style="grid-template-columns:repeat(${pag.length},1fr)">${pag.map((k) => opcoesPag[k] || '').join('')}</div>
     ${notas.length ? `<div class="notes" style="grid-template-columns:repeat(${notas.length},1fr)">${notas.join('')}</div>` : ''}
-    ${d.observacoes ? `<p class="obs"><b>Observações</b> ${rich(d.observacoes)}</p>` : ''}`,
+    ${d.observacoes ? `<p class="obs"><b>Observações</b> ${rich(d.observacoes)}</p>` : ''}
+    ${enxuta ? fechamentoEnxuto() : ''}`,
   }));
   n++;
+  if (enxuta) return documento();
+
+  // Fechamento do formato enxuto: próximos passos (o contato vai no rodapé), sem termo de
+  // aceite (proposta que o cliente não pediu não pede assinatura).
+  function fechamentoEnxuto() {
+    const passos = d.proximosPassos || PADRAO.proximosEnxuta;
+    return `<div class="close-light">
+      <h3>Para começar</h3>
+      <div class="steps-light" style="grid-template-columns:repeat(${passos.length},1fr)">${passos.map((x, i) => `<div><span>${String(i + 1).padStart(2, '0')}</span><b>${esc(x.titulo)}</b><p>${rich(x.texto)}</p></div>`).join('')}</div>
+    </div>`;
+  }
 
   // ---------- 5. CRONOGRAMA ----------
   const crono = d.cronograma || [];
@@ -297,12 +321,15 @@ export function gerarPropostaHTML(dados, opcoes = {}) {
   </div>
 </section>`);
 
-  // fontes: por padrão Google Fonts; o gerador de PDF injeta as fontes locais (opcoes.fontesCss)
-  const fontes = opcoes.fontesCss
-    ? `<style>${opcoes.fontesCss}</style>`
-    : `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@1,400;1,500&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">`;
+  return documento();
 
-  return `<!doctype html>
+  function documento() {
+    // fontes: por padrão Google Fonts; o gerador de PDF injeta as fontes locais (opcoes.fontesCss)
+    const fontes = opcoes.fontesCss
+      ? `<style>${opcoes.fontesCss}</style>`
+      : `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@1,400;1,500&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">`;
+
+    return `<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Proposta ${esc(numero)} — ${esc(cliente.nome || '')}</title>
 ${fontes}
@@ -310,4 +337,5 @@ ${fontes}
 </head><body>
 ${paginas.join('\n')}
 </body></html>`;
+  }
 }

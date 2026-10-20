@@ -122,6 +122,7 @@ export default function PropostaEditor({ proposta, onChange, items, onItemDetalh
         catch (e) { console.error(e); toast.error('Não foi possível salvar o padrão.'); }
     };
 
+    const enxuta = p.formato === 'enxuta';
     const formas = inv.formasPagamento || [];
     const alternarForma = (f) => setInv({ formasPagamento: formas.includes(f) ? formas.filter((x) => x !== f) : FORMAS.map(([k]) => k).filter((k) => k === f || formas.includes(k)) });
 
@@ -131,6 +132,21 @@ export default function PropostaEditor({ proposta, onChange, items, onItemDetalh
                 Em qualquer texto, <code className="bg-slate-100 px-1 rounded">{'{cliente}'}</code> vira o nome do cliente e{' '}
                 <code className="bg-slate-100 px-1 rounded">{'{contato}'}</code> o nome de quem recebe. <b>**negrito**</b> também funciona.
             </p>
+
+            {/* Formato: enxuta (4 páginas, sem cronograma nem termo de aceite) é o
+                padrão para quem não pediu proposta; completa mantém as 6 páginas. */}
+            <div className="bg-white border border-black/[.085] rounded-xl px-3 py-2.5 flex flex-wrap items-center gap-3">
+                <span className="text-[12px] font-semibold text-slate-700">Formato</span>
+                <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
+                    {[['enxuta', 'Enxuta · 4 páginas'], ['completa', 'Completa · 6 páginas']].map(([k, rotulo]) => (
+                        <button key={k} type="button" onClick={() => set({ formato: k })}
+                            className={`h-7 px-3 rounded-md text-[12px] font-medium transition-colors ${(p.formato || 'completa') === k ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+                            {rotulo}
+                        </button>
+                    ))}
+                </div>
+                <span className="text-[11px] text-slate-400">{enxuta ? 'Capa, apresentação, solução e investimento com próximos passos.' : 'Inclui cronograma, método e termo de aceite.'}</span>
+            </div>
 
             <Secao titulo="Capa" descricao="título, subtítulo e para quem vai" aberta>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -231,6 +247,7 @@ export default function PropostaEditor({ proposta, onChange, items, onItemDetalh
                 </div>
             </Secao>
 
+            {!enxuta && (<>
             <Secao titulo="Cronograma" descricao="barras por semana; vazio = não aparece">
                 <div className="flex justify-end">
                     <button type="button" className={btnLink} onClick={() => { set({ cronograma: cronogramaSugerido(items) }); setVersaoCrono((v) => v + 1); }}>
@@ -257,8 +274,10 @@ export default function PropostaEditor({ proposta, onChange, items, onItemDetalh
                 </div>
             </Secao>
 
-            <Secao titulo="Fechamento" descricao="chamada final e próximos passos">
-                <Campo label="Título do fechamento"><LinhasTitulo value={p.fechamento.titulo} onChange={(titulo) => setIn('fechamento', { titulo })} /></Campo>
+            </>)}
+
+            <Secao titulo={enxuta ? 'Próximos passos' : 'Fechamento'} descricao={enxuta ? 'o que acontece depois do sim' : 'chamada final e próximos passos'}>
+                {!enxuta && <Campo label="Título do fechamento"><LinhasTitulo value={p.fechamento.titulo} onChange={(titulo) => setIn('fechamento', { titulo })} /></Campo>}
                 <Campo label="Próximos passos">
                     <Tabela value={p.proximosPassos} onChange={(proximosPassos) => set({ proximosPassos })} max={4} novo={() => ({ titulo: '', texto: '' })}
                         colunas={[{ campo: 'titulo', label: 'Passo', largura: '150px' }, { campo: 'texto', label: 'Texto' }]} />

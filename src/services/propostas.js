@@ -27,6 +27,8 @@ const nomeCliente = (party) => party?.nome_fantasia || party?.name || '';
 // ---------------------------------------------------------------------------
 export function propostaModelo({ contato = '', titulo = '' } = {}) {
     return {
+        // enxuta (4 páginas) é o padrão das propostas novas; ver medcode-proposta/src/template.js
+        formato: 'enxuta',
         contato,
         capa: {
             eyebrow: titulo,
@@ -53,7 +55,7 @@ export function propostaModelo({ contato = '', titulo = '' } = {}) {
         incluso: copia(PADRAO.incluso),
         naoIncluso: copia(PADRAO.naoIncluso),
         fechamento: { titulo: [{ texto: 'Vamos colocar seu negócio', destaque: '' }, { texto: 'para', destaque: 'funcionar sozinho?' }] },
-        proximosPassos: copia(PADRAO.proximos),
+        proximosPassos: copia(PADRAO.proximosEnxuta),
     };
 }
 
@@ -63,7 +65,8 @@ export function propostaCompleta(salva, contexto) {
     const p = salva || {};
     if (!Object.keys(p).length) return base;
     return {
-        ...base, ...p,
+        // proposta salva antes do formato enxuto existir continua como era
+        ...base, formato: 'completa', ...p,
         capa: { ...base.capa, ...p.capa },
         carta: { ...base.carta, ...p.carta },
         cenario: { ...base.cenario, ...p.cenario },
@@ -135,6 +138,7 @@ export function montarDadosProposta({ numero, title, issue_date, valid_until, no
     // lista vazia volta ao texto padrão do template, em vez de deixar o bloco em branco
     const ouPadrao = (l) => (l.length ? l : undefined);
     return {
+        formato: p.formato || 'completa',
         numero: numero || 'MC-0000-000',
         emissao: issue_date || undefined,
         validade: valid_until || undefined,

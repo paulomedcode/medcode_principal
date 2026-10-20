@@ -1,6 +1,6 @@
 # Gerador de Propostas — MedCode Assessoria
 
-Gera a proposta comercial premium (PDF A4, 6 páginas) a partir de um objeto JSON.
+Gera a proposta comercial (PDF A4) a partir de um objeto JSON, em dois formatos: **enxuta** (4 páginas: capa, apresentação, solução, investimento com próximos passos; padrão das propostas novas) e **completa** (6 páginas, com cronograma, método e termo de aceite).
 Os totais, o desconto do PIX, as parcelas, a validade e a numeração de páginas são calculados automaticamente.
 
 ```
@@ -39,6 +39,7 @@ node medcode-proposta/src/gerar-pdf.js medcode-proposta/exemplos/proposta-exempl
 
 | Campo | Obrigatório | Observação |
 |---|---|---|
+| `formato` | não | `enxuta` (4 páginas, sem cronograma nem aceite) ou `completa` (padrão do template, 6 páginas) |
 | `numero` | sim | ex.: `MC-2026-014` |
 | `emissao` | não | `AAAA-MM-DD` ou `DD/MM/AAAA` (padrão: hoje) |
 | `validade` / `validadeDias` | não | data fixa, ou nº de dias (padrão 15) |
@@ -47,7 +48,7 @@ node medcode-proposta/src/gerar-pdf.js medcode-proposta/exemplos/proposta-exempl
 | `capa.subtitulo` | não | aceita `**negrito**` |
 | `carta.paragrafos` | não | parágrafos personalizados; o texto institucional é somado depois (`usarTextoPadrao: false` para tirar) |
 | `cenario.problemas` / `objetivos` | sim | listas de texto |
-| `servicos[]` | sim | `nome`, `rotulo`, `descricao`, `entregaveis[]`, `resumo`, `prazo`, `valor` (número). `nomeTabela` opcional. 3 serviços por página: mais de 3 cria outra página automaticamente |
+| `servicos[]` | sim | `valor: 0` aparece como "Incluso" na tabela. `nome`, `rotulo`, `descricao`, `entregaveis[]`, `resumo`, `prazo`, `valor` (número). `nomeTabela` opcional. 3 serviços por página: mais de 3 cria outra página automaticamente |
 | `investimento.desconto` | não | `{ rotulo, valor }` |
 | `investimento.pixDescontoPercentual` | não | padrão 5 (use 0 para não dar desconto) |
 | `investimento.parcelasCartao` | não | padrão 10 |
