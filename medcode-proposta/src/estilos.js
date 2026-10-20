@@ -159,4 +159,16 @@ export const ESTILOS = `
   .contact .c span{color:#8a82a3;font-size:7.5px;letter-spacing:1.8px;text-transform:uppercase;display:block}
   .contact .c b{font-weight:500;color:#fff}
   .legal{font-size:7.2px;color:#6f6889;letter-spacing:.4px;text-align:right;line-height:1.6}
+  /* formato enxuto: próximos passos e contato na página de investimento */
+  .incl-tag{font-size:8pt;font-weight:600;color:var(--violet);background:var(--soft);padding:1mm 2.5mm;border-radius:99px}
+  .enx table.inv td{padding:3.4mm 0}
+  .enx .pay{margin-top:6mm}
+  .enx .notes{margin-top:5mm}
+  .enx .obs{margin-top:4mm;font-size:8.4pt}
+  .close-light{margin-top:6mm;border:1px solid var(--line);border-radius:14px;padding:6mm 7mm;background:#fff}
+  .close-light h3{margin-bottom:3mm}
+  .steps-light{display:grid;gap:5mm}
+  .steps-light span{font-size:8px;letter-spacing:2px;color:var(--violet);font-weight:600}
+  .steps-light b{display:block;font-size:10pt;font-weight:600;margin:.8mm 0}
+  .steps-light p{font-size:8.4pt;color:var(--muted);line-height:1.45}
 `;
