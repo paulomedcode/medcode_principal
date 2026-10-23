@@ -167,6 +167,12 @@ export const ESTILOS = `
   .enx .obs{margin-top:4mm;font-size:8.4pt}
   .close-light{margin-top:6mm;border:1px solid var(--line);border-radius:14px;padding:6mm 7mm;background:#fff}
   .close-light h3{margin-bottom:3mm}
+  .redes{margin-top:3mm;font-size:8.2pt;color:var(--muted)}
+  .close-top{display:flex;justify-content:space-between;align-items:baseline;gap:6mm}
+  .close-light .redes{margin:0;text-align:right;font-size:7.8pt}
+  .redes b{color:var(--violet);font-weight:600}
+  .closing .redes{color:#a9a0c2}
+  .closing .redes b{color:var(--lilac)}
   .steps-light{display:grid;gap:5mm}
   .steps-light span{font-size:8px;letter-spacing:2px;color:var(--violet);font-weight:600}
   .steps-light b{display:block;font-size:10pt;font-weight:600;margin:.8mm 0}

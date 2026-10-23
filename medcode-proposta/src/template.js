@@ -21,7 +21,9 @@ export const EMPRESA = {
   site: 'contato.medcodedev.com',
   rodape: 'medcodedev.com',
   atendimento: 'Todo o Brasil',
-  cnpj: '68.955.873/0001-98',
+  cnpj: '68.955.873/0001-91',
+  // mesmo usuário nas 4 redes; aparece no fim de toda proposta
+  redes: { usuario: '@medcodedev', nomes: 'Instagram, TikTok, YouTube e Facebook' },
 };
 
 // Textos padrão — usados quando a proposta não informa os seus
@@ -261,7 +263,7 @@ export function gerarPropostaHTML(dados, opcoes = {}) {
   function fechamentoEnxuto() {
     const passos = d.proximosPassos || PADRAO.proximosEnxuta;
     return `<div class="close-light">
-      <h3>Para começar</h3>
+      <div class="close-top"><h3>Para começar</h3>${redesLinha()}</div>
       <div class="steps-light" style="grid-template-columns:repeat(${passos.length},1fr)">${passos.map((x, i) => `<div><span>${String(i + 1).padStart(2, '0')}</span><b>${esc(x.titulo)}</b><p>${rich(x.texto)}</p></div>`).join('')}</div>
     </div>`;
   }
@@ -318,10 +320,15 @@ export function gerarPropostaHTML(dados, opcoes = {}) {
       </div>
       <div class="legal">${esc(EMPRESA.nome)} ${esc(EMPRESA.sufixo)}<br>CNPJ ${esc(EMPRESA.cnpj)}<br>Proposta Comercial</div>
     </div>
+    ${redesLinha()}
   </div>
 </section>`);
 
   return documento();
+
+  function redesLinha() {
+    return `<p class="redes">Acompanhe a MedCode: <b>${esc(EMPRESA.redes.usuario)}</b> no ${esc(EMPRESA.redes.nomes)}</p>`;
+  }
 
   function documento() {
     // fontes: por padrão Google Fonts; o gerador de PDF injeta as fontes locais (opcoes.fontesCss)
