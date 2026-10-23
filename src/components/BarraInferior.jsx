@@ -21,7 +21,7 @@ export default function BarraInferior() {
     if (podeCriar) itens.splice(2, 0, { id: 'novo' });
 
     return (
-        <nav className="md:hidden fixed bottom-0 inset-x-0 z-[998] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-black/[.06] pb-seguro print:hidden">
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-[998] bg-white/90 backdrop-blur-md border-t border-black/[.06] pb-seguro print:hidden">
             <div className="flex items-stretch h-16 px-1">
                 {itens.map((m) => {
                     if (m.id === 'novo') {

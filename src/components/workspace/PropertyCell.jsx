@@ -23,7 +23,7 @@ function Pill({ color, children, onRemove }) {
 }
 
 // Placeholder discreto: um traço que só aparece de leve, sem gritar "vazio".
-const Empty = () => <span className="text-slate-300 dark:text-slate-600">—</span>;
+const Empty = () => <span className="text-slate-300">—</span>;
 
 // ---------------------------------------------------------------------------
 // Leitura (kanban / lista / calendário)
@@ -46,17 +46,17 @@ export function PropertyValue({ prop, value, users }) {
       );
     }
     case 'person':
-      return <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300">{userName(users, value) || '—'}</span>;
+      return <span className="text-[12px] font-medium text-slate-700">{userName(users, value) || '—'}</span>;
     case 'date':
-      return <span className="text-[12px] text-slate-600 dark:text-slate-400 tabular-nums">{formatDateBR(value)}</span>;
+      return <span className="text-[12px] text-slate-600 tabular-nums">{formatDateBR(value)}</span>;
     case 'time':
-      return <span className="text-[12px] text-slate-600 dark:text-slate-400 tabular-nums">{formatHora(value)}</span>;
+      return <span className="text-[12px] text-slate-600 tabular-nums">{formatHora(value)}</span>;
     case 'checkbox':
       return value ? <Check size={14} className="text-emerald-600" /> : <Empty />;
     case 'url':
       return <a href={value} onClick={(e) => e.stopPropagation()} className="text-[12px] text-blue-600 underline truncate">{value}</a>;
     default:
-      return <span className="text-[12px] text-slate-700 dark:text-slate-300">{String(value)}</span>;
+      return <span className="text-[12px] text-slate-700">{String(value)}</span>;
   }
 }
 
@@ -65,7 +65,7 @@ export function PropertyValue({ prop, value, users }) {
 // `due` liga o realce de prazo (só faz sentido na coluna de expectativa).
 // ---------------------------------------------------------------------------
 export function PropertyCell({ prop, value, users, onCommit, due = false }) {
-  const baseInput = 'ws-cell w-full bg-transparent text-[12px] text-slate-700 dark:text-slate-300 outline-none px-2 py-1 rounded-md';
+  const baseInput = 'ws-cell w-full bg-transparent text-[12px] text-slate-700 outline-none px-2 py-1 rounded-md';
 
   switch (prop.type) {
     case 'status':
@@ -98,9 +98,9 @@ export function PropertyCell({ prop, value, users, onCommit, due = false }) {
 // Data — texto formatado; vira campo (e abre o calendário) ao clicar.
 // ---------------------------------------------------------------------------
 const DUE_TONE = {
-  late:  'text-rose-600 dark:text-rose-400 font-semibold',
-  today: 'text-amber-600 dark:text-amber-400 font-semibold',
-  soon:  'text-slate-700 dark:text-slate-300 font-medium',
+  late:  'text-rose-600 font-semibold',
+  today: 'text-amber-600 font-semibold',
+  soon:  'text-slate-700 font-medium',
 };
 
 function DateCell({ value, onCommit, due }) {
@@ -122,7 +122,7 @@ function DateCell({ value, onCommit, due }) {
         onChange={(e) => onCommit(e.target.value || null)}
         onBlur={() => setEditing(false)}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditing(false); }}
-        className="ws-cell ws-date-input w-full bg-white dark:bg-slate-800 text-[12px] text-slate-700 dark:text-slate-200 outline-none px-1.5 py-1 rounded-md tabular-nums"
+        className="ws-cell ws-date-input w-full bg-white text-[12px] text-slate-700 outline-none px-1.5 py-1 rounded-md tabular-nums"
       />
     );
   }
@@ -133,8 +133,8 @@ function DateCell({ value, onCommit, due }) {
       className="ws-cell w-full text-left px-2 py-1 rounded-md text-[12px] tabular-nums transition-colors"
     >
       {value
-        ? <span className={tone ? DUE_TONE[tone] : 'text-slate-600 dark:text-slate-400'}>{formatDateBR(value)}</span>
-        : <span className="text-slate-300 dark:text-slate-600">—</span>}
+        ? <span className={tone ? DUE_TONE[tone] : 'text-slate-600'}>{formatDateBR(value)}</span>
+        : <span className="text-slate-300">—</span>}
     </button>
   );
 }
@@ -156,15 +156,15 @@ function TimeCell({ value, onCommit }) {
         onChange={(e) => onCommit(e.target.value || null)}
         onBlur={() => setEditing(false)}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditing(false); }}
-        className="ws-cell ws-date-input w-full bg-white dark:bg-slate-800 text-[12px] text-slate-700 dark:text-slate-200 outline-none px-1.5 py-1 rounded-md tabular-nums"
+        className="ws-cell ws-date-input w-full bg-white text-[12px] text-slate-700 outline-none px-1.5 py-1 rounded-md tabular-nums"
       />
     );
   }
   return (
     <button onClick={() => setEditing(true)} className="ws-cell w-full text-left px-2 py-1 rounded-md text-[12px] tabular-nums transition-colors">
       {value
-        ? <span className="text-slate-600 dark:text-slate-400">{formatHora(value)}</span>
-        : <span className="text-slate-300 dark:text-slate-600">—</span>}
+        ? <span className="text-slate-600">{formatHora(value)}</span>
+        : <span className="text-slate-300">—</span>}
     </button>
   );
 }
@@ -179,7 +179,7 @@ export function StatusPicker({ prop, value, onCommit }) {
   return (
     <>
       <button ref={ref} onClick={() => setOpen((v) => !v)} className="ws-cell group flex items-center gap-1 w-full px-2 py-1 rounded-md transition-colors text-left">
-        {opt ? <Pill color={opt.color}>{opt.name}</Pill> : <span className="text-[12px] text-slate-300 dark:text-slate-600">—</span>}
+        {opt ? <Pill color={opt.color}>{opt.name}</Pill> : <span className="text-[12px] text-slate-300">—</span>}
         <ChevronDown size={11} className="ml-auto text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
       </button>
       {open && (
@@ -211,7 +211,7 @@ function MultiPicker({ prop, value, onCommit }) {
   return (
     <>
       <button ref={ref} onClick={() => setOpen((v) => !v)} className="ws-cell flex flex-wrap items-center gap-1 w-full px-2 py-1 rounded-md transition-colors text-left">
-        {ids.length === 0 && <span className="text-[12px] text-slate-300 dark:text-slate-600">—</span>}
+        {ids.length === 0 && <span className="text-[12px] text-slate-300">—</span>}
         {ids.map((id) => { const o = findOption(prop, id); return o ? <Pill key={id} color={o.color} onRemove={() => toggle(id)}>{o.name}</Pill> : null; })}
       </button>
       {open && (
@@ -243,12 +243,12 @@ function PersonPicker({ users, value, onCommit }) {
       <button ref={ref} onClick={() => setOpen((v) => !v)} className="ws-cell flex items-center gap-1.5 w-full px-2 py-1 rounded-md transition-colors text-left">
         {name ? (
           <>
-            <span className="w-[18px] h-[18px] rounded-full bg-slate-200 dark:bg-slate-700 text-[9px] font-bold text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <span className="w-[18px] h-[18px] rounded-full bg-slate-200 text-[9px] font-bold text-slate-600 flex items-center justify-center shrink-0">
               {name.charAt(0).toUpperCase()}
             </span>
-            <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">{name}</span>
+            <span className="text-[12px] font-medium text-slate-700 truncate">{name}</span>
           </>
-        ) : <span className="text-[12px] text-slate-300 dark:text-slate-600">—</span>}
+        ) : <span className="text-[12px] text-slate-300">—</span>}
       </button>
       {open && (
         <Popover anchorRef={ref} onClose={() => setOpen(false)} width={220}>

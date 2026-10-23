@@ -633,7 +633,7 @@ function ViewTab({ view, active, onSelect, onRename, onDelete, canDelete, podeRe
       <button
         onClick={() => (active && podeRenomear ? setMenu((v) => !v) : onSelect())}
         ref={ref}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[12.5px] font-semibold border-b-2 -mb-px transition-colors ${active ? 'text-slate-900 border-slate-900' : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-800 dark:hover:text-slate-200'}`}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[12.5px] font-semibold border-b-2 -mb-px transition-colors ${active ? 'text-slate-900 border-slate-900' : 'text-slate-500 border-transparent hover:text-slate-800'}`}
       >
         <Icon size={14} /> {view.name}
         {active && podeRenomear && <ChevronDown size={11} className="opacity-50" />}
@@ -701,7 +701,7 @@ function ColumnsManager({ props, onSaved, onDeleted, onCreate }) {
   return (
     <div className="relative">
       <button ref={btnRef} onClick={() => (open ? closeAll() : setOpen(true))} title="Renomear colunas, trocar tipo, gerenciar opções"
-        className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[11.5px] font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[11.5px] font-semibold text-slate-500 hover:bg-slate-100 transition-colors">
         <Columns3 size={13} /> Colunas
       </button>
 
@@ -753,7 +753,7 @@ function ConfigSelect({ label, value, options, onChange }) {
   const sel = options.find((o) => o.id === value);
   return (
     <div className="relative">
-      <button ref={ref} onClick={() => setOpen((v) => !v)} className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[11.5px] font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+      <button ref={ref} onClick={() => setOpen((v) => !v)} className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[11.5px] font-semibold text-slate-500 hover:bg-slate-100 transition-colors">
         <Settings2 size={13} /> {label}: <span className="text-slate-700">{sel?.name || '—'}</span>
       </button>
       {open && (
@@ -935,7 +935,7 @@ function GhostRow({ props, onCreate }) {
               if (e.key === 'Escape') setTexto('');
             }}
             placeholder="Nova tarefa…"
-            className="ws-cell flex-1 bg-transparent text-[12.5px] font-medium text-slate-800 dark:text-slate-100 outline-none px-1.5 py-1 rounded-md placeholder:text-slate-400"
+            className="ws-cell flex-1 bg-transparent text-[12.5px] font-medium text-slate-800 outline-none px-1.5 py-1 rounded-md placeholder:text-slate-400"
           />
         </div>
       </td>
@@ -971,7 +971,7 @@ function TableRow({ row, props, users, excerpt, onCell, onTitle, onOpenRow, onDu
               onBlur={(e) => e.target.value !== row.title && onTitle(row.id, e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
               placeholder="Nome da tarefa"
-              className="ws-cell w-full bg-transparent text-[12.5px] font-medium text-slate-800 dark:text-slate-100 outline-none px-1.5 py-1 rounded-md placeholder:text-slate-300 dark:placeholder:text-slate-600"
+              className="ws-cell w-full bg-transparent text-[12.5px] font-medium text-slate-800 outline-none px-1.5 py-1 rounded-md placeholder:text-slate-300"
             />
             {excerpt && (
               <div onClick={() => onOpenRow(row.id)} title={excerpt} className="ws-excerpt">{excerpt}</div>
@@ -1100,12 +1100,12 @@ function BoardView({ rows, props, users, excerpts, groupById, onCell, onAddRow, 
         return (
           <div
             key={col.id || 'none'}
-            className={`w-[252px] shrink-0 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl p-2 ${over ? 'ws-col-over' : ''}`}
+            className={`w-[252px] shrink-0 bg-slate-50/70 rounded-xl p-2 ${over ? 'ws-col-over' : ''}`}
             onDragOver={(e) => { e.preventDefault(); if (drag && !over) setHint({ colId: col.id, index: items.length }); }}
             onDrop={() => drop(col.id, hint?.colId === col.id ? hint.index : items.length)}
           >
             <div className="flex items-center justify-between px-1 mb-2">
-              <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-slate-600 dark:text-slate-300">
+              <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-slate-600">
                 <span className={`w-1.5 h-1.5 rounded-full ${dotClass(col.color)}`} />
                 {col.name} <span className="text-slate-400 font-medium tabular-nums">{items.length}</span>
               </span>
@@ -1120,11 +1120,11 @@ function BoardView({ rows, props, users, excerpts, groupById, onCell, onAddRow, 
                     onDragEnd={() => { setDrag(null); setHint(null); }}
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); const rect = e.currentTarget.getBoundingClientRect(); const idx = (e.clientY - rect.top) < rect.height / 2 ? i : i + 1; setHint({ colId: col.id, index: idx }); }}
                     onDoubleClick={() => onOpenRow?.(row.id)}
-                    className={`ws-card group bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl px-2.5 py-2 cursor-grab mb-1.5 ${drag === row.id ? 'ws-card-dragging' : ''}`}
+                    className={`ws-card group bg-white border border-slate-200/80 rounded-xl px-2.5 py-2 cursor-grab mb-1.5 ${drag === row.id ? 'ws-card-dragging' : ''}`}
                   >
                     <div className="flex items-start gap-1">
                       <GripVertical size={12} className="text-slate-300 mt-[2px] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <span className="text-[12.5px] font-medium text-slate-800 dark:text-slate-100 flex-1 leading-snug">{row.title || 'Sem título'}</span>
+                      <span className="text-[12.5px] font-medium text-slate-800 flex-1 leading-snug">{row.title || 'Sem título'}</span>
                     </div>
                     {excerpts?.[row.id] && <div className="ws-excerpt pl-4">{excerpts[row.id]}</div>}
                     {otherProps.length > 0 && (
@@ -1170,7 +1170,7 @@ function ListBoard({ rows, props, users, excerpts, onAddRow, onRemoveRow, onDupl
       {rows.map((row) => (
         <div key={row.id} onDoubleClick={() => onOpenRow(row.id)} className={`ws-tr group flex items-center gap-3 px-3 py-2 ${row._new ? 'ws-row-in' : ''}`}>
           <button onClick={() => onOpenRow(row.id)} className="flex-1 min-w-0 text-left">
-            <span className="block text-[12.5px] font-medium text-slate-800 dark:text-slate-100 truncate">{row.title || 'Sem título'}</span>
+            <span className="block text-[12.5px] font-medium text-slate-800 truncate">{row.title || 'Sem título'}</span>
             {excerpts?.[row.id] && <span className="ws-excerpt block">{excerpts[row.id]}</span>}
           </button>
           {personProp && row.values[personProp.id] && <PropertyValue prop={personProp} value={row.values[personProp.id]} users={users} />}
@@ -1253,8 +1253,8 @@ function RowPeek({ rowId, props, users, createdBy, onClose, onCell, onTitle, onD
 
   return (
     <div className="fixed inset-0 z-[1100] flex justify-end bg-slate-900/25 backdrop-blur-[2px]" onClick={onClose}>
-      <div className="w-full max-w-2xl h-full bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto ws-cmd-in" onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 px-7 py-2.5 flex items-center justify-between z-10">
+      <div className="w-full max-w-2xl h-full bg-white shadow-2xl overflow-y-auto ws-cmd-in" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 bg-white/85 backdrop-blur-xl border-b border-slate-100 px-7 py-2.5 flex items-center justify-between z-10">
           <span className="text-[12px] font-semibold text-slate-400 tracking-[0.12em]">Tarefa</span>
           <div className="flex items-center gap-0.5">
             {page && (jaConcluida ? (
@@ -1271,7 +1271,7 @@ function RowPeek({ rowId, props, users, createdBy, onClose, onCell, onTitle, onD
               </button>
             ))}
             <button onClick={() => onDelete(rowId)} title="Excluir tarefa" className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"><Trash2 size={15} /></button>
-            <button onClick={onClose} title="Fechar (Esc)" className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><X size={17} /></button>
+            <button onClick={onClose} title="Fechar (Esc)" className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"><X size={17} /></button>
           </div>
         </div>
         {!page ? (
@@ -1282,19 +1282,19 @@ function RowPeek({ rowId, props, users, createdBy, onClose, onCell, onTitle, onD
               defaultValue={page.title} key={page.title}
               onBlur={(e) => e.target.value !== page.title && onTitle(rowId, e.target.value)}
               placeholder="Nome da tarefa"
-              className="w-full bg-transparent text-[26px] leading-tight font-bold tracking-tight text-slate-900 dark:text-slate-50 placeholder:text-slate-300 dark:placeholder:text-slate-600 outline-none mb-4"
+              className="w-full bg-transparent text-[26px] leading-tight font-bold tracking-tight text-slate-900 placeholder:text-slate-300 outline-none mb-4"
             />
             <div className="grid grid-cols-[132px_1fr] gap-x-3 gap-y-0.5 mb-5">
               {props.map((p) => (
                 <div key={p.id} className="contents">
-                  <span className="flex items-center text-[11.5px] font-medium text-slate-400 dark:text-slate-500 py-1">{p.name}</span>
+                  <span className="flex items-center text-[11.5px] font-medium text-slate-400 py-1">{p.name}</span>
                   <div className="min-w-0 -ml-2">
                     <PropertyCell prop={p} value={values[p.id]} users={users} due={isPrazoProp(p)} onCommit={(v) => setVal(p.id, v)} />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+            <div className="border-t border-slate-100 pt-4">
               <div className="text-[12px] font-semibold text-slate-400 tracking-[0.12em] mb-1.5">Observações e andamento</div>
               <Suspense fallback={<div className="space-y-2"><div className="ws-skel h-4 w-full" /><div className="ws-skel h-4 w-5/6" /></div>}>
                 <BlockEditor
@@ -1314,14 +1314,14 @@ function RowPeek({ rowId, props, users, createdBy, onClose, onCell, onTitle, onD
 
         {confirmarConclusao && (
           <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/40 backdrop-blur-[2px] p-4" onClick={() => !concluindo && setConfirmarConclusao(false)}>
-            <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-5" onClick={(e) => e.stopPropagation()}>
-              <p className="text-[15px] font-bold text-slate-800 dark:text-slate-100">Você já resolveu essa pendência?</p>
-              <p className="text-[12.5px] font-medium text-slate-500 dark:text-slate-400 mt-1.5 leading-snug">
+            <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5" onClick={(e) => e.stopPropagation()}>
+              <p className="text-[15px] font-bold text-slate-800">Você já resolveu essa pendência?</p>
+              <p className="text-[12.5px] font-medium text-slate-500 mt-1.5 leading-snug">
                 O lembrete sai das pendências e fica registrado aqui embaixo, com a data e o seu nome.
               </p>
               <div className="flex justify-end gap-2 mt-4">
                 <button onClick={() => setConfirmarConclusao(false)} disabled={concluindo}
-                  className="px-3.5 py-2 rounded-xl text-[12.5px] font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50">
+                  className="px-3.5 py-2 rounded-xl text-[12.5px] font-bold text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-50">
                   Ainda não
                 </button>
                 <button onClick={concluir} disabled={concluindo}

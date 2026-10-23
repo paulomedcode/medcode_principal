@@ -46,3 +46,18 @@ export default function useTema() {
 
   return { tema, escuro: tema === 'dark', alternar };
 }
+
+/**
+ * Só lê o tema atual e acompanha a troca (sem alternar). Para componentes que
+ * precisam do tema em JS — ex.: o editor BlockNote, que tem tema próprio.
+ */
+export function useTemaEscuroAtivo() {
+  const ler = () => document.documentElement.classList.contains('dark');
+  const [escuro, setEscuro] = useState(ler);
+  useEffect(() => {
+    const obs = new MutationObserver(() => setEscuro(ler()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
+  return escuro;
+}

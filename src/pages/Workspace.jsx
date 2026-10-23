@@ -644,19 +644,19 @@ export default function Workspace() {
           A árvore ocupava 270px permanentes para mostrar 2 nomes — agora o
           espaço vai para o conteúdo, que é o que importa. */}
       {!sidebarAberta && (
-        <div className="w-12 shrink-0 border-r border-slate-200/70 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl flex flex-col items-center py-3 gap-1">
-          <button onClick={() => setSidebarAberta(true)} title="Mostrar páginas" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
+        <div className="w-12 shrink-0 border-r border-slate-200/70 bg-white/60 backdrop-blur-xl flex flex-col items-center py-3 gap-1">
+          <button onClick={() => setSidebarAberta(true)} title="Mostrar páginas" className="p-2 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors">
             <PanelLeftOpen size={17} />
           </button>
-          <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
+          <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-2 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors">
             <Command size={16} />
           </button>
           {podeCriarPagina && (
-            <button onClick={() => handleCreate(null)} title="Nova página" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
+            <button onClick={() => handleCreate(null)} title="Nova página" className="p-2 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors">
               <Plus size={17} />
             </button>
           )}
-          <button onClick={() => navigate('/home')} title="Início" className="mt-auto p-2 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-700 transition-colors">
+          <button onClick={() => navigate('/home')} title="Início" className="mt-auto p-2 rounded-lg text-slate-400 hover:bg-white hover:text-slate-700 transition-colors">
             <ArrowLeft size={16} />
           </button>
         </div>
@@ -668,7 +668,7 @@ export default function Workspace() {
       {/* SIDEBAR / ÁRVORE */}
       <aside
         style={{ '--ws-w': `${sidebarLargura}px` }}
-        className={`${sidebarAberta ? 'w-[85%] max-w-[340px] md:max-w-none md:w-[var(--ws-w)] absolute md:relative inset-y-0 left-0 z-30 shadow-2xl md:shadow-none bg-white md:bg-white/70' : 'w-0 overflow-hidden border-r-0 bg-white/70'} shrink-0 dark:bg-slate-900/50 backdrop-blur-xl border-r border-slate-200/70 dark:border-slate-700/60 flex flex-col`}>
+        className={`${sidebarAberta ? 'w-[85%] max-w-[340px] md:max-w-none md:w-[var(--ws-w)] absolute md:relative inset-y-0 left-0 z-30 shadow-2xl md:shadow-none bg-white md:bg-white/70' : 'w-0 overflow-hidden border-r-0 bg-white/70'} shrink-0 backdrop-blur-xl border-r border-slate-200/70 flex flex-col`}>
         {/* Alça de largura (só no computador): arrastar a borda direita. */}
         {sidebarAberta && (
           <div
@@ -677,33 +677,33 @@ export default function Workspace() {
             title="Arraste para ajustar a largura (duplo clique volta ao padrão)"
             className="hidden md:block absolute top-0 -right-1 w-2 h-full z-10 cursor-col-resize group/res"
           >
-            <div className="mx-auto w-0.5 h-full bg-transparent group-hover/res:bg-slate-300 dark:group-hover/res:bg-slate-600 transition-colors" />
+            <div className="mx-auto w-0.5 h-full bg-transparent group-hover/res:bg-slate-300 transition-colors" />
           </div>
         )}
-        <div className="px-2.5 py-2.5 flex items-center gap-0.5 border-b border-slate-200/60 dark:border-slate-700/60">
-          <button onClick={() => navigate('/home')} title="Início" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-800 transition-colors">
+        <div className="px-2.5 py-2.5 flex items-center gap-0.5 border-b border-slate-200/60">
+          <button onClick={() => navigate('/home')} title="Início" className="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-800 transition-colors">
             <ArrowLeft size={16} />
           </button>
-          <span className="text-[13px] font-black text-slate-800 dark:text-slate-100 tracking-tight flex-1 px-1">Compromissos</span>
-          <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
+          <span className="text-[13px] font-black text-slate-800 tracking-tight flex-1 px-1">Compromissos</span>
+          <button onClick={() => setPaletteOpen(true)} title="Buscar / ir para… (⌘K)" className="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors">
             <Command size={15} />
           </button>
           {podeCriarBanco && (
-            <button onClick={() => handleCreateDatabase(null)} title="Novo database (tabela/kanban/calendário)" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
+            <button onClick={() => handleCreateDatabase(null)} title="Novo database (tabela/kanban/calendário)" className="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors">
               <Database size={15} />
             </button>
           )}
           {podeCriarPagina && (
-            <button onClick={() => handleCreateFolder(null)} title="Nova pasta" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
+            <button onClick={() => handleCreateFolder(null)} title="Nova pasta" className="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors">
               <FolderPlus size={15} />
             </button>
           )}
           {podeCriarPagina && (
-            <button onClick={() => handleCreate(null)} title="Nova página" className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 transition-colors">
+            <button onClick={() => handleCreate(null)} title="Nova página" className="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-900 transition-colors">
               <Plus size={17} />
             </button>
           )}
-          <button onClick={() => setSidebarAberta(false)} title="Recolher barra" className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-700 transition-colors">
+          <button onClick={() => setSidebarAberta(false)} title="Recolher barra" className="p-1.5 rounded-lg text-slate-400 hover:bg-white hover:text-slate-700 transition-colors">
             <PanelLeftClose size={16} />
           </button>
         </div>
@@ -715,7 +715,7 @@ export default function Workspace() {
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               placeholder="Buscar páginas..."
-              className="w-full h-8 pl-8 pr-2 rounded-lg bg-slate-100/80 dark:bg-slate-800 border border-transparent focus:bg-white dark:focus:bg-slate-800 text-[13px] font-semibold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 outline-none focus:border-blue-400 transition-colors"
+              className="w-full h-8 pl-8 pr-2 rounded-lg bg-slate-100/80 border border-transparent focus:bg-white text-[13px] font-semibold text-slate-700 placeholder:text-slate-400 outline-none focus:border-blue-400 transition-colors"
             />
           </div>
         </div>
@@ -729,7 +729,7 @@ export default function Workspace() {
                 </button>
               )}
               {podeCriarPagina && (
-                <button onClick={() => handleCreate(null)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <button onClick={() => handleCreate(null)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold text-slate-500 hover:bg-slate-100 transition-colors">
                   <Plus size={15} /> Página em branco
                 </button>
               )}
@@ -758,7 +758,7 @@ export default function Workspace() {
             <div
               onDragOver={(e) => { e.preventDefault(); if (dropHint) setDropHint(null); }}
               onDrop={(e) => { e.preventDefault(); dnd.onDropRoot(); }}
-              className="mt-1 h-10 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-[12px] text-slate-400 flex items-center justify-center"
+              className="mt-1 h-10 rounded-lg border border-dashed border-slate-300 text-[12px] text-slate-400 flex items-center justify-center"
             >
               Soltar aqui para tirar da pasta
             </div>
@@ -766,14 +766,14 @@ export default function Workspace() {
         </nav>
 
         {(podeExcluirPaginas || podeExcluirBancos) && (
-          <button onClick={() => setShowTrash(true)} className="m-2 flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+          <button onClick={() => setShowTrash(true)} className="m-2 flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold text-slate-500 hover:bg-white transition-colors">
             <Trash2 size={15} /> Lixeira
           </button>
         )}
       </aside>
 
       {/* CONTEÚDO / EDITOR */}
-      <section className="flex-1 min-w-0 overflow-y-auto bg-white dark:bg-slate-900">
+      <section className="flex-1 min-w-0 overflow-y-auto bg-white">
         {!currentPage ? (
           <EmptyState
             onCreate={() => handleCreate(null)}
@@ -822,7 +822,7 @@ export default function Workspace() {
               onChange={(e) => handleTitleChange(e.target.value)}
               readOnly={!podeEditarEste(currentPage)}
               placeholder={podeEditarEste(currentPage) ? 'Sem título' : ''}
-              className={`w-full bg-transparent font-bold tracking-tight text-slate-900 dark:text-slate-50 placeholder:text-slate-300 dark:placeholder:text-slate-600 outline-none ${currentPage.type === 'database' ? 'text-[26px] leading-tight mb-2' : 'text-4xl font-black mb-4'}`}
+              className={`w-full bg-transparent font-bold tracking-tight text-slate-900 placeholder:text-slate-300 outline-none ${currentPage.type === 'database' ? 'text-[26px] leading-tight mb-2' : 'text-4xl font-black mb-4'}`}
             />
 
             {loadingPage ? (
@@ -940,9 +940,9 @@ function TreeNode({ node, depth, flat, expanded, selectedId, onSelect, onToggle,
         onDrop={(e) => { if (!draggable) return; e.preventDefault(); e.stopPropagation(); dnd.onDrop(node); }}
         onDragEnd={() => draggable && dnd.onDragEnd()}
         className={`group relative flex items-start gap-1 pr-1 rounded-lg cursor-pointer transition-colors
-          ${isSelected ? 'bg-slate-200/60 dark:bg-blue-500/15 text-slate-900 dark:text-blue-300 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800'}
+          ${isSelected ? 'bg-slate-200/60 text-slate-900 font-semibold' : 'text-slate-600 hover:bg-slate-100/80'}
           ${isDragging ? 'opacity-40' : ''}
-          ${hint === 'inside' ? 'ring-2 ring-blue-400 ring-inset bg-blue-50/60 dark:bg-blue-500/10' : ''}`}
+          ${hint === 'inside' ? 'ring-2 ring-blue-400 ring-inset bg-blue-50/60' : ''}`}
         style={{ paddingLeft: 4 + depth * 14 }}
         onClick={aoClicar}
         title={node.title || 'Sem título'}
@@ -971,7 +971,7 @@ function TreeNode({ node, depth, flat, expanded, selectedId, onSelect, onToggle,
           // "Agente exemplo – Pediatria" sem abrir.
           <span
             onDoubleClick={(e) => { if (perms?.podeEditarPaginas) { e.stopPropagation(); acoes?.setRenamingId(node.id); } }}
-            className={`flex-1 min-w-0 py-[7px] text-[13px] leading-[18px] font-semibold line-clamp-2 break-words ${isFolder ? 'text-slate-700 dark:text-slate-200' : ''}`}
+            className={`flex-1 min-w-0 py-[7px] text-[13px] leading-[18px] font-semibold line-clamp-2 break-words ${isFolder ? 'text-slate-700' : ''}`}
           >
             {node.title || (isFolder ? 'Pasta sem nome' : 'Sem título')}
           </span>
@@ -1053,7 +1053,7 @@ function RenameInput({ valor, onConfirmar, onCancelar }) {
         if (e.key === 'Escape') onCancelar();
       }}
       onBlur={() => onConfirmar(texto)}
-      className="flex-1 min-w-0 my-1 h-7 px-1.5 rounded-md bg-white dark:bg-slate-800 border border-blue-400 text-[13px] font-semibold text-slate-800 dark:text-slate-100 outline-none"
+      className="flex-1 min-w-0 my-1 h-7 px-1.5 rounded-md bg-white border border-blue-400 text-[13px] font-semibold text-slate-800 outline-none"
     />
   );
 }
@@ -1063,7 +1063,7 @@ function RenameInput({ valor, onConfirmar, onCancelar }) {
 function NodeMenu({ node, perms, podeExcluirEste, acoes, fechar, onCreateChild, onDelete }) {
   const [movendo, setMovendo] = useState(false);
   const isFolder = node.type === 'folder';
-  const item = 'flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-left';
+  const item = 'flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-[13px] font-medium text-slate-600 hover:bg-slate-100 text-left';
 
   if (movendo) {
     const destinos = acoes.destinosPara(node.id);
@@ -1113,7 +1113,7 @@ function NodeMenu({ node, perms, podeExcluirEste, acoes, fechar, onCreateChild, 
       )}
       {podeExcluirEste && (
         <>
-          <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+          <div className="my-1 h-px bg-slate-100" />
           <button className={`${item} hover:!text-rose-600`} onClick={() => { fechar(); onDelete(node.id); }}>
             <Trash2 size={14} className="text-slate-400" /> {isFolder ? 'Excluir pasta' : node.type === 'database' ? 'Excluir database' : 'Excluir'}
           </button>

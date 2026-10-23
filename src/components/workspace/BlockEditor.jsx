@@ -23,6 +23,7 @@ import { agoraFormatado, nomeDoAutor } from './registroDeAndamento';
 import { useAuth } from '../../contexts/AuthContext';
 import { uploadArquivoDoEditor } from '../../services/workspaceUploads';
 import { usePermission } from '../../contexts/PermissionContext';
+import { useTemaEscuroAtivo } from '../../hooks/useTema';
 import '@blocknote/mantine/style.css';
 import '../../styles/blocknote.css';
 
@@ -200,10 +201,12 @@ export default function BlockEditor({ initialContent, onSave, onDirtyChange, onM
   // Salva o que estiver pendente ao desmontar (troca de página / navegação).
   useEffect(() => () => flush(), [flush]);
 
+  const temaEscuro = useTemaEscuroAtivo();
+
   return (
     <BlockNoteView
       editor={editor}
-      theme="light"
+      theme={temaEscuro ? 'dark' : 'light'}
       editable={editavel}
       onChange={handleChange}
       className="ws-editor"
