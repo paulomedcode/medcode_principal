@@ -155,3 +155,15 @@
 .apple-calendar .rbc-current-time-indicator {
     background-color: #ef4444;
 }
+
+/* Tema escuro (as cores acima são fixas, então o escuro precisa das suas). */
+.dark .apple-calendar .rbc-calendar { background: transparent; }
+.dark .apple-calendar :is(.rbc-header, .rbc-month-row + .rbc-month-row, .rbc-day-bg, .rbc-time-header, .rbc-time-header-content, .rbc-timeslot-group, .rbc-time-column) { border-color: rgb(255 255 255 / 0.08); }
+.dark .apple-calendar .rbc-header { color: #9b9ba4; }
+.dark .apple-calendar .rbc-date-cell { color: #cacad1; }
+.dark .apple-calendar .rbc-off-range .rbc-button-link { color: #5c5c66; }
+.dark .apple-calendar .rbc-today { background-color: rgb(239 68 68 / 0.1); }
+.dark .apple-calendar .rbc-event { color: #ededf0 !important; }
+.dark .apple-calendar .rbc-event.rbc-selected { background-color: #26262b !important; }
+.dark .apple-calendar .rbc-label { color: #80808a; }
+.dark .apple-calendar .rbc-day-slot .rbc-event { background-color: rgb(99 102 241 / 0.2) !important; color: #c7d2fe !important; }

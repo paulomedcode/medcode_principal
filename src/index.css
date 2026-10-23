@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300..800&display=swap');
 @import "tailwindcss";
+/* Cores do modo escuro: a paleta inteira é trocada lá (leia antes de usar "dark:"). */
+@import "./styles/tema-escuro.css";
 
 /* Tema escuro por CLASSE (.dark no <html>), não por preferência do sistema.
    Quem liga/desliga é o hook useTema. */
@@ -103,17 +105,6 @@ html {
     .hidden.group-hover\:flex:not(.pointer-events-none) { display: flex !important; }
     .hidden.group-hover\:inline:not(.pointer-events-none) { display: inline !important; }
     .hidden.group-hover\:inline-flex:not(.pointer-events-none) { display: inline-flex !important; }
-}
-
-html.tema-escuro {
-    filter: invert(0.92) hue-rotate(180deg);
-    background-color: #111;
-}
-html.tema-escuro img,
-html.tema-escuro video,
-html.tema-escuro iframe,
-html.tema-escuro .preserve-color {
-    filter: invert(1) hue-rotate(180deg);
 }
 
 /* Utilitário para esconder barras de rolagem mantendo a funcionalidade de scroll */

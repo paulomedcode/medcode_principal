@@ -118,12 +118,13 @@ export const Topbar = () => {
 
     return (
         <>
-            <header className="h-[64px] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-[999] shrink-0 print:hidden transition-colors duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-black/[.06] dark:border-slate-700/60 shadow-none">
+            <header className="h-[64px] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-[999] shrink-0 print:hidden transition-colors duration-300 bg-white/80 backdrop-blur-md border-b border-black/[.06] shadow-none">
 
                 {/* LOGO */}
                 <div className="flex items-center justify-center shrink-0">
                     <Link to="/home" className="cursor-pointer transition-transform hover:scale-105 active:scale-95 flex items-center">
-                        <img src={theme.logoUrl} alt="Logo do Sistema" className="h-6 sm:h-8 max-w-[120px] sm:max-w-none w-auto object-contain drop-shadow-sm transition-all duration-300 opacity-90" />
+                        {/* No escuro, o logo padrão troca pela versão com "Med" claro (o original é preto). */}
+                        <img src={temaEscuro && theme.logoUrl === '/logo.png' ? '/logo-escuro.png' : theme.logoUrl} alt="Logo do Sistema" className={`h-6 sm:h-8 max-w-[120px] sm:max-w-none w-auto object-contain transition-all duration-300 ${temaEscuro ? '' : 'drop-shadow-sm opacity-90'}`} />
                     </Link>
                 </div>
 
@@ -324,7 +325,7 @@ export const Topbar = () => {
                 planas. No celular/tablet elas ficam no menu. App.jsx soma a altura
                 desta faixa ao respiro do <main> em /finance. */}
             {isFinance && (
-                <nav className="hidden lg:flex items-center gap-0.5 h-10 px-4 sm:px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-black/[.06] dark:border-slate-700/60 overflow-x-auto no-scrollbar print:hidden">
+                <nav className="hidden lg:flex items-center gap-0.5 h-10 px-4 sm:px-6 bg-white/80 backdrop-blur-md border-b border-black/[.06] overflow-x-auto no-scrollbar print:hidden">
                     {financeMenu.flatMap((m, gi) => {
                         const itens = m.items || [{ path: m.path, label: m.label }];
                         return [

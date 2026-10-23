@@ -124,7 +124,7 @@ function LinkedDatabaseComponent({ block, editor }) {
         contentEditable={false}
         className={`group/linked w-full relative ${daPropriaPagina
           ? 'my-2'
-          : 'my-4 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl bg-white/60 dark:bg-slate-800/40 shadow-sm'}`}
+          : 'my-4 border border-slate-200/80 rounded-2xl bg-white/60 shadow-sm'}`}
       >
         {/* Ficam FORA do canto superior esquerdo para não cobrir a barra de
             ferramentas da visão (filtros/ordenar/colunas). A tabela da própria
@@ -136,7 +136,7 @@ function LinkedDatabaseComponent({ block, editor }) {
               <button
                 onClick={reset}
                 title="Trocar banco/visão deste bloco"
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-sm text-[10px] font-bold text-slate-500 dark:text-slate-300 hover:text-slate-900 transition-colors"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-sm text-[10px] font-bold text-slate-500 hover:text-slate-900 transition-colors"
               >
                 <RefreshCw size={11} /> Trocar fonte
               </button>
@@ -145,7 +145,7 @@ function LinkedDatabaseComponent({ block, editor }) {
               <button
                 onClick={excluirBloco}
                 title="Tirar este quadro da página"
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-sm text-[10px] font-bold text-slate-500 dark:text-slate-300 hover:text-rose-600 hover:border-rose-200 transition-colors"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-sm text-[10px] font-bold text-slate-500 hover:text-rose-600 hover:border-rose-200 transition-colors"
               >
                 <Trash2 size={11} /> Excluir quadro
               </button>

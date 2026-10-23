@@ -1,0 +1,345 @@
+/* ============================================================================
+   TEMA ESCURO — camada global do app.
+
+   As telas foram escritas só com cores claras (bg-white, text-slate-900,
+   border-black/[.07]...). Em vez de pôr "dark:" em cada classe de ~60 arquivos,
+   aqui o modo escuro troca a PALETA: com .dark no <html>, as variáveis de cor do
+   Tailwind passam a valer o tom escuro equivalente. Toda tela nova já nasce
+   funcionando no escuro, desde que use essas cores.
+
+   Regras do jogo:
+   - slate/gray invertem (900 vira quase branco, 50 vira quase preto). Por isso
+     NÃO escreva "dark:" com slate em componentes: a inversão já acontece.
+   - white vira a superfície escura (cards); black vira branco (bordas/hover
+     com transparência continuam sutis). Texto branco continua branco. Faixas e
+     botões grafite (bg-slate-900/800/700) continuam escuros.
+   - Cores (indigo, rose...): tons 50/100/200 viram véus translúcidos; texto
+     600-900 clareia para ler bem no fundo escuro.
+   - Fundo de modal (bg-black/20, /25) continua preto.
+   ========================================================================== */
+
+html.dark {
+  --mc-superficie: #1a1a1d;
+  --mc-pagina: #111113;
+  --mc-superficie-2: #232327;
+  --color-white: var(--mc-superficie);
+  --color-black: #fff;
+  --color-slate-50: #202024;
+  --color-slate-100: #26262b;
+  --color-slate-200: #303036;
+  --color-slate-300: #5c5c66;
+  --color-slate-400: #80808a;
+  --color-slate-500: #9b9ba4;
+  --color-slate-600: #b4b4bc;
+  --color-slate-700: #cacad1;
+  --color-slate-800: #dddde3;
+  --color-slate-900: #ededf0;
+  --color-slate-950: #f7f7f9;
+  --color-gray-50: #202024;
+  --color-gray-100: #26262b;
+  --color-gray-200: #303036;
+  --color-gray-300: #5c5c66;
+  --color-gray-400: #80808a;
+  --color-gray-500: #9b9ba4;
+  --color-gray-600: #b4b4bc;
+  --color-gray-700: #cacad1;
+  --color-gray-800: #dddde3;
+  --color-gray-900: #ededf0;
+  --color-gray-950: #f7f7f9;
+  --color-zinc-50: #202024;
+  --color-zinc-100: #26262b;
+  --color-zinc-200: #303036;
+  --color-zinc-300: #5c5c66;
+  --color-zinc-400: #80808a;
+  --color-zinc-500: #9b9ba4;
+  --color-zinc-600: #b4b4bc;
+  --color-zinc-700: #cacad1;
+  --color-zinc-800: #dddde3;
+  --color-zinc-900: #ededf0;
+  --color-zinc-950: #f7f7f9;
+  --color-neutral-50: #202024;
+  --color-neutral-100: #26262b;
+  --color-neutral-200: #303036;
+  --color-neutral-300: #5c5c66;
+  --color-neutral-400: #80808a;
+  --color-neutral-500: #9b9ba4;
+  --color-neutral-600: #b4b4bc;
+  --color-neutral-700: #cacad1;
+  --color-neutral-800: #dddde3;
+  --color-neutral-900: #ededf0;
+  --color-neutral-950: #f7f7f9;
+  --color-stone-50: #202024;
+  --color-stone-100: #26262b;
+  --color-stone-200: #303036;
+  --color-stone-300: #5c5c66;
+  --color-stone-400: #80808a;
+  --color-stone-500: #9b9ba4;
+  --color-stone-600: #b4b4bc;
+  --color-stone-700: #cacad1;
+  --color-stone-800: #dddde3;
+  --color-stone-900: #ededf0;
+  --color-stone-950: #f7f7f9;
+  --color-red-50: color-mix(in oklab, oklch(63.7% 0.237 25.331) 13%, transparent);
+  --color-red-100: color-mix(in oklab, oklch(63.7% 0.237 25.331) 20%, transparent);
+  --color-red-200: color-mix(in oklab, oklch(63.7% 0.237 25.331) 32%, transparent);
+  --color-orange-50: color-mix(in oklab, oklch(70.5% 0.213 47.604) 13%, transparent);
+  --color-orange-100: color-mix(in oklab, oklch(70.5% 0.213 47.604) 20%, transparent);
+  --color-orange-200: color-mix(in oklab, oklch(70.5% 0.213 47.604) 32%, transparent);
+  --color-amber-50: color-mix(in oklab, oklch(76.9% 0.188 70.08) 13%, transparent);
+  --color-amber-100: color-mix(in oklab, oklch(76.9% 0.188 70.08) 20%, transparent);
+  --color-amber-200: color-mix(in oklab, oklch(76.9% 0.188 70.08) 32%, transparent);
+  --color-yellow-50: color-mix(in oklab, oklch(79.5% 0.184 86.047) 13%, transparent);
+  --color-yellow-100: color-mix(in oklab, oklch(79.5% 0.184 86.047) 20%, transparent);
+  --color-yellow-200: color-mix(in oklab, oklch(79.5% 0.184 86.047) 32%, transparent);
+  --color-lime-50: color-mix(in oklab, oklch(76.8% 0.233 130.85) 13%, transparent);
+  --color-lime-100: color-mix(in oklab, oklch(76.8% 0.233 130.85) 20%, transparent);
+  --color-lime-200: color-mix(in oklab, oklch(76.8% 0.233 130.85) 32%, transparent);
+  --color-green-50: color-mix(in oklab, oklch(72.3% 0.219 149.579) 13%, transparent);
+  --color-green-100: color-mix(in oklab, oklch(72.3% 0.219 149.579) 20%, transparent);
+  --color-green-200: color-mix(in oklab, oklch(72.3% 0.219 149.579) 32%, transparent);
+  --color-emerald-50: color-mix(in oklab, oklch(69.6% 0.17 162.48) 13%, transparent);
+  --color-emerald-100: color-mix(in oklab, oklch(69.6% 0.17 162.48) 20%, transparent);
+  --color-emerald-200: color-mix(in oklab, oklch(69.6% 0.17 162.48) 32%, transparent);
+  --color-teal-50: color-mix(in oklab, oklch(70.4% 0.14 182.503) 13%, transparent);
+  --color-teal-100: color-mix(in oklab, oklch(70.4% 0.14 182.503) 20%, transparent);
+  --color-teal-200: color-mix(in oklab, oklch(70.4% 0.14 182.503) 32%, transparent);
+  --color-cyan-50: color-mix(in oklab, oklch(71.5% 0.143 215.221) 13%, transparent);
+  --color-cyan-100: color-mix(in oklab, oklch(71.5% 0.143 215.221) 20%, transparent);
+  --color-cyan-200: color-mix(in oklab, oklch(71.5% 0.143 215.221) 32%, transparent);
+  --color-sky-50: color-mix(in oklab, oklch(68.5% 0.169 237.323) 13%, transparent);
+  --color-sky-100: color-mix(in oklab, oklch(68.5% 0.169 237.323) 20%, transparent);
+  --color-sky-200: color-mix(in oklab, oklch(68.5% 0.169 237.323) 32%, transparent);
+  --color-blue-50: color-mix(in oklab, oklch(62.3% 0.214 259.815) 13%, transparent);
+  --color-blue-100: color-mix(in oklab, oklch(62.3% 0.214 259.815) 20%, transparent);
+  --color-blue-200: color-mix(in oklab, oklch(62.3% 0.214 259.815) 32%, transparent);
+  --color-indigo-50: color-mix(in oklab, oklch(58.5% 0.233 277.117) 13%, transparent);
+  --color-indigo-100: color-mix(in oklab, oklch(58.5% 0.233 277.117) 20%, transparent);
+  --color-indigo-200: color-mix(in oklab, oklch(58.5% 0.233 277.117) 32%, transparent);
+  --color-violet-50: color-mix(in oklab, oklch(60.6% 0.25 292.717) 13%, transparent);
+  --color-violet-100: color-mix(in oklab, oklch(60.6% 0.25 292.717) 20%, transparent);
+  --color-violet-200: color-mix(in oklab, oklch(60.6% 0.25 292.717) 32%, transparent);
+  --color-purple-50: color-mix(in oklab, oklch(62.7% 0.265 303.9) 13%, transparent);
+  --color-purple-100: color-mix(in oklab, oklch(62.7% 0.265 303.9) 20%, transparent);
+  --color-purple-200: color-mix(in oklab, oklch(62.7% 0.265 303.9) 32%, transparent);
+  --color-fuchsia-50: color-mix(in oklab, oklch(66.7% 0.295 322.15) 13%, transparent);
+  --color-fuchsia-100: color-mix(in oklab, oklch(66.7% 0.295 322.15) 20%, transparent);
+  --color-fuchsia-200: color-mix(in oklab, oklch(66.7% 0.295 322.15) 32%, transparent);
+  --color-pink-50: color-mix(in oklab, oklch(65.6% 0.241 354.308) 13%, transparent);
+  --color-pink-100: color-mix(in oklab, oklch(65.6% 0.241 354.308) 20%, transparent);
+  --color-pink-200: color-mix(in oklab, oklch(65.6% 0.241 354.308) 32%, transparent);
+  --color-rose-50: color-mix(in oklab, oklch(64.5% 0.246 16.439) 13%, transparent);
+  --color-rose-100: color-mix(in oklab, oklch(64.5% 0.246 16.439) 20%, transparent);
+  --color-rose-200: color-mix(in oklab, oklch(64.5% 0.246 16.439) 32%, transparent);
+  background-color: var(--mc-pagina);
+}
+html.dark body { background-color: var(--mc-pagina); color: #ededf0; }
+
+/* Faixas e botões grafite (bg-slate-900/800/700) foram desenhados escuros,
+   com texto branco ou colorido claro dentro. Eles continuam escuros (um degrau
+   acima do fundo) em vez de inverter; o texto branco segue branco. */
+html.dark :is(.bg-slate-900, .hover\:bg-slate-900, .bg-gray-900) { --color-slate-900: #38383f; --color-gray-900: #38383f; }
+html.dark :is(.bg-slate-800, .hover\:bg-slate-800, .bg-gray-800) { --color-slate-800: #43434b; --color-gray-800: #43434b; }
+html.dark :is(.bg-slate-700, .hover\:bg-slate-700, .bg-gray-700) { --color-slate-700: #4c4c55; --color-gray-700: #4c4c55; }
+html.dark { --color-white: var(--mc-superficie); }
+html.dark :is(.text-white, [class*="text-white/"], [class*="hover:text-white"]) { --color-white: #fff; }
+/* Véu escuro (fundo de modal) continua preto. */
+html.dark :is([class*="bg-slate-900/"], [class*="bg-slate-950/"]) { --color-slate-900: #000; --color-slate-950: #000; }
+
+/* Fundo de modal continua escurecendo. */
+html.dark :is([class*="bg-black/2"], [class*="bg-black/3"], [class*="bg-black/4"], [class*="bg-black/5"], [class*="bg-black/6"]) { --color-black: #000; }
+
+/* Texto colorido: clareia os tons escuros para ler no fundo escuro. */
+html.dark .text-red-600, html.dark .hover\:text-red-600:hover, html.dark .group:hover .group-hover\:text-red-600 { color: oklch(70.4% 0.191 22.216); }
+html.dark [class*="text-red-600/"] { --color-red-600: oklch(70.4% 0.191 22.216); }
+html.dark .text-red-700, html.dark .hover\:text-red-700:hover, html.dark .group:hover .group-hover\:text-red-700 { color: oklch(80.8% 0.114 19.571); }
+html.dark [class*="text-red-700/"] { --color-red-700: oklch(80.8% 0.114 19.571); }
+html.dark .text-red-800, html.dark .hover\:text-red-800:hover, html.dark .group:hover .group-hover\:text-red-800 { color: oklch(88.5% 0.062 18.334); }
+html.dark [class*="text-red-800/"] { --color-red-800: oklch(88.5% 0.062 18.334); }
+html.dark .text-red-900, html.dark .hover\:text-red-900:hover, html.dark .group:hover .group-hover\:text-red-900 { color: oklch(88.5% 0.062 18.334); }
+html.dark [class*="text-red-900/"] { --color-red-900: oklch(88.5% 0.062 18.334); }
+html.dark .text-red-950, html.dark .hover\:text-red-950:hover, html.dark .group:hover .group-hover\:text-red-950 { color: oklch(88.5% 0.062 18.334); }
+html.dark [class*="text-red-950/"] { --color-red-950: oklch(88.5% 0.062 18.334); }
+html.dark .text-orange-600, html.dark .hover\:text-orange-600:hover, html.dark .group:hover .group-hover\:text-orange-600 { color: oklch(75% 0.183 55.934); }
+html.dark [class*="text-orange-600/"] { --color-orange-600: oklch(75% 0.183 55.934); }
+html.dark .text-orange-700, html.dark .hover\:text-orange-700:hover, html.dark .group:hover .group-hover\:text-orange-700 { color: oklch(83.7% 0.128 66.29); }
+html.dark [class*="text-orange-700/"] { --color-orange-700: oklch(83.7% 0.128 66.29); }
+html.dark .text-orange-800, html.dark .hover\:text-orange-800:hover, html.dark .group:hover .group-hover\:text-orange-800 { color: oklch(90.1% 0.076 70.697); }
+html.dark [class*="text-orange-800/"] { --color-orange-800: oklch(90.1% 0.076 70.697); }
+html.dark .text-orange-900, html.dark .hover\:text-orange-900:hover, html.dark .group:hover .group-hover\:text-orange-900 { color: oklch(90.1% 0.076 70.697); }
+html.dark [class*="text-orange-900/"] { --color-orange-900: oklch(90.1% 0.076 70.697); }
+html.dark .text-orange-950, html.dark .hover\:text-orange-950:hover, html.dark .group:hover .group-hover\:text-orange-950 { color: oklch(90.1% 0.076 70.697); }
+html.dark [class*="text-orange-950/"] { --color-orange-950: oklch(90.1% 0.076 70.697); }
+html.dark .text-amber-600, html.dark .hover\:text-amber-600:hover, html.dark .group:hover .group-hover\:text-amber-600 { color: oklch(82.8% 0.189 84.429); }
+html.dark [class*="text-amber-600/"] { --color-amber-600: oklch(82.8% 0.189 84.429); }
+html.dark .text-amber-700, html.dark .hover\:text-amber-700:hover, html.dark .group:hover .group-hover\:text-amber-700 { color: oklch(87.9% 0.169 91.605); }
+html.dark [class*="text-amber-700/"] { --color-amber-700: oklch(87.9% 0.169 91.605); }
+html.dark .text-amber-800, html.dark .hover\:text-amber-800:hover, html.dark .group:hover .group-hover\:text-amber-800 { color: oklch(92.4% 0.12 95.746); }
+html.dark [class*="text-amber-800/"] { --color-amber-800: oklch(92.4% 0.12 95.746); }
+html.dark .text-amber-900, html.dark .hover\:text-amber-900:hover, html.dark .group:hover .group-hover\:text-amber-900 { color: oklch(92.4% 0.12 95.746); }
+html.dark [class*="text-amber-900/"] { --color-amber-900: oklch(92.4% 0.12 95.746); }
+html.dark .text-amber-950, html.dark .hover\:text-amber-950:hover, html.dark .group:hover .group-hover\:text-amber-950 { color: oklch(92.4% 0.12 95.746); }
+html.dark [class*="text-amber-950/"] { --color-amber-950: oklch(92.4% 0.12 95.746); }
+html.dark .text-yellow-600, html.dark .hover\:text-yellow-600:hover, html.dark .group:hover .group-hover\:text-yellow-600 { color: oklch(85.2% 0.199 91.936); }
+html.dark [class*="text-yellow-600/"] { --color-yellow-600: oklch(85.2% 0.199 91.936); }
+html.dark .text-yellow-700, html.dark .hover\:text-yellow-700:hover, html.dark .group:hover .group-hover\:text-yellow-700 { color: oklch(90.5% 0.182 98.111); }
+html.dark [class*="text-yellow-700/"] { --color-yellow-700: oklch(90.5% 0.182 98.111); }
+html.dark .text-yellow-800, html.dark .hover\:text-yellow-800:hover, html.dark .group:hover .group-hover\:text-yellow-800 { color: oklch(94.5% 0.129 101.54); }
+html.dark [class*="text-yellow-800/"] { --color-yellow-800: oklch(94.5% 0.129 101.54); }
+html.dark .text-yellow-900, html.dark .hover\:text-yellow-900:hover, html.dark .group:hover .group-hover\:text-yellow-900 { color: oklch(94.5% 0.129 101.54); }
+html.dark [class*="text-yellow-900/"] { --color-yellow-900: oklch(94.5% 0.129 101.54); }
+html.dark .text-yellow-950, html.dark .hover\:text-yellow-950:hover, html.dark .group:hover .group-hover\:text-yellow-950 { color: oklch(94.5% 0.129 101.54); }
+html.dark [class*="text-yellow-950/"] { --color-yellow-950: oklch(94.5% 0.129 101.54); }
+html.dark .text-lime-600, html.dark .hover\:text-lime-600:hover, html.dark .group:hover .group-hover\:text-lime-600 { color: oklch(84.1% 0.238 128.85); }
+html.dark [class*="text-lime-600/"] { --color-lime-600: oklch(84.1% 0.238 128.85); }
+html.dark .text-lime-700, html.dark .hover\:text-lime-700:hover, html.dark .group:hover .group-hover\:text-lime-700 { color: oklch(89.7% 0.196 126.665); }
+html.dark [class*="text-lime-700/"] { --color-lime-700: oklch(89.7% 0.196 126.665); }
+html.dark .text-lime-800, html.dark .hover\:text-lime-800:hover, html.dark .group:hover .group-hover\:text-lime-800 { color: oklch(93.8% 0.127 124.321); }
+html.dark [class*="text-lime-800/"] { --color-lime-800: oklch(93.8% 0.127 124.321); }
+html.dark .text-lime-900, html.dark .hover\:text-lime-900:hover, html.dark .group:hover .group-hover\:text-lime-900 { color: oklch(93.8% 0.127 124.321); }
+html.dark [class*="text-lime-900/"] { --color-lime-900: oklch(93.8% 0.127 124.321); }
+html.dark .text-lime-950, html.dark .hover\:text-lime-950:hover, html.dark .group:hover .group-hover\:text-lime-950 { color: oklch(93.8% 0.127 124.321); }
+html.dark [class*="text-lime-950/"] { --color-lime-950: oklch(93.8% 0.127 124.321); }
+html.dark .text-green-600, html.dark .hover\:text-green-600:hover, html.dark .group:hover .group-hover\:text-green-600 { color: oklch(79.2% 0.209 151.711); }
+html.dark [class*="text-green-600/"] { --color-green-600: oklch(79.2% 0.209 151.711); }
+html.dark .text-green-700, html.dark .hover\:text-green-700:hover, html.dark .group:hover .group-hover\:text-green-700 { color: oklch(87.1% 0.15 154.449); }
+html.dark [class*="text-green-700/"] { --color-green-700: oklch(87.1% 0.15 154.449); }
+html.dark .text-green-800, html.dark .hover\:text-green-800:hover, html.dark .group:hover .group-hover\:text-green-800 { color: oklch(92.5% 0.084 155.995); }
+html.dark [class*="text-green-800/"] { --color-green-800: oklch(92.5% 0.084 155.995); }
+html.dark .text-green-900, html.dark .hover\:text-green-900:hover, html.dark .group:hover .group-hover\:text-green-900 { color: oklch(92.5% 0.084 155.995); }
+html.dark [class*="text-green-900/"] { --color-green-900: oklch(92.5% 0.084 155.995); }
+html.dark .text-green-950, html.dark .hover\:text-green-950:hover, html.dark .group:hover .group-hover\:text-green-950 { color: oklch(92.5% 0.084 155.995); }
+html.dark [class*="text-green-950/"] { --color-green-950: oklch(92.5% 0.084 155.995); }
+html.dark .text-emerald-600, html.dark .hover\:text-emerald-600:hover, html.dark .group:hover .group-hover\:text-emerald-600 { color: oklch(76.5% 0.177 163.223); }
+html.dark [class*="text-emerald-600/"] { --color-emerald-600: oklch(76.5% 0.177 163.223); }
+html.dark .text-emerald-700, html.dark .hover\:text-emerald-700:hover, html.dark .group:hover .group-hover\:text-emerald-700 { color: oklch(84.5% 0.143 164.978); }
+html.dark [class*="text-emerald-700/"] { --color-emerald-700: oklch(84.5% 0.143 164.978); }
+html.dark .text-emerald-800, html.dark .hover\:text-emerald-800:hover, html.dark .group:hover .group-hover\:text-emerald-800 { color: oklch(90.5% 0.093 164.15); }
+html.dark [class*="text-emerald-800/"] { --color-emerald-800: oklch(90.5% 0.093 164.15); }
+html.dark .text-emerald-900, html.dark .hover\:text-emerald-900:hover, html.dark .group:hover .group-hover\:text-emerald-900 { color: oklch(90.5% 0.093 164.15); }
+html.dark [class*="text-emerald-900/"] { --color-emerald-900: oklch(90.5% 0.093 164.15); }
+html.dark .text-emerald-950, html.dark .hover\:text-emerald-950:hover, html.dark .group:hover .group-hover\:text-emerald-950 { color: oklch(90.5% 0.093 164.15); }
+html.dark [class*="text-emerald-950/"] { --color-emerald-950: oklch(90.5% 0.093 164.15); }
+html.dark .text-teal-600, html.dark .hover\:text-teal-600:hover, html.dark .group:hover .group-hover\:text-teal-600 { color: oklch(77.7% 0.152 181.912); }
+html.dark [class*="text-teal-600/"] { --color-teal-600: oklch(77.7% 0.152 181.912); }
+html.dark .text-teal-700, html.dark .hover\:text-teal-700:hover, html.dark .group:hover .group-hover\:text-teal-700 { color: oklch(85.5% 0.138 181.071); }
+html.dark [class*="text-teal-700/"] { --color-teal-700: oklch(85.5% 0.138 181.071); }
+html.dark .text-teal-800, html.dark .hover\:text-teal-800:hover, html.dark .group:hover .group-hover\:text-teal-800 { color: oklch(91% 0.096 180.426); }
+html.dark [class*="text-teal-800/"] { --color-teal-800: oklch(91% 0.096 180.426); }
+html.dark .text-teal-900, html.dark .hover\:text-teal-900:hover, html.dark .group:hover .group-hover\:text-teal-900 { color: oklch(91% 0.096 180.426); }
+html.dark [class*="text-teal-900/"] { --color-teal-900: oklch(91% 0.096 180.426); }
+html.dark .text-teal-950, html.dark .hover\:text-teal-950:hover, html.dark .group:hover .group-hover\:text-teal-950 { color: oklch(91% 0.096 180.426); }
+html.dark [class*="text-teal-950/"] { --color-teal-950: oklch(91% 0.096 180.426); }
+html.dark .text-cyan-600, html.dark .hover\:text-cyan-600:hover, html.dark .group:hover .group-hover\:text-cyan-600 { color: oklch(78.9% 0.154 211.53); }
+html.dark [class*="text-cyan-600/"] { --color-cyan-600: oklch(78.9% 0.154 211.53); }
+html.dark .text-cyan-700, html.dark .hover\:text-cyan-700:hover, html.dark .group:hover .group-hover\:text-cyan-700 { color: oklch(86.5% 0.127 207.078); }
+html.dark [class*="text-cyan-700/"] { --color-cyan-700: oklch(86.5% 0.127 207.078); }
+html.dark .text-cyan-800, html.dark .hover\:text-cyan-800:hover, html.dark .group:hover .group-hover\:text-cyan-800 { color: oklch(91.7% 0.08 205.041); }
+html.dark [class*="text-cyan-800/"] { --color-cyan-800: oklch(91.7% 0.08 205.041); }
+html.dark .text-cyan-900, html.dark .hover\:text-cyan-900:hover, html.dark .group:hover .group-hover\:text-cyan-900 { color: oklch(91.7% 0.08 205.041); }
+html.dark [class*="text-cyan-900/"] { --color-cyan-900: oklch(91.7% 0.08 205.041); }
+html.dark .text-cyan-950, html.dark .hover\:text-cyan-950:hover, html.dark .group:hover .group-hover\:text-cyan-950 { color: oklch(91.7% 0.08 205.041); }
+html.dark [class*="text-cyan-950/"] { --color-cyan-950: oklch(91.7% 0.08 205.041); }
+html.dark .text-sky-600, html.dark .hover\:text-sky-600:hover, html.dark .group:hover .group-hover\:text-sky-600 { color: oklch(74.6% 0.16 232.661); }
+html.dark [class*="text-sky-600/"] { --color-sky-600: oklch(74.6% 0.16 232.661); }
+html.dark .text-sky-700, html.dark .hover\:text-sky-700:hover, html.dark .group:hover .group-hover\:text-sky-700 { color: oklch(82.8% 0.111 230.318); }
+html.dark [class*="text-sky-700/"] { --color-sky-700: oklch(82.8% 0.111 230.318); }
+html.dark .text-sky-800, html.dark .hover\:text-sky-800:hover, html.dark .group:hover .group-hover\:text-sky-800 { color: oklch(90.1% 0.058 230.902); }
+html.dark [class*="text-sky-800/"] { --color-sky-800: oklch(90.1% 0.058 230.902); }
+html.dark .text-sky-900, html.dark .hover\:text-sky-900:hover, html.dark .group:hover .group-hover\:text-sky-900 { color: oklch(90.1% 0.058 230.902); }
+html.dark [class*="text-sky-900/"] { --color-sky-900: oklch(90.1% 0.058 230.902); }
+html.dark .text-sky-950, html.dark .hover\:text-sky-950:hover, html.dark .group:hover .group-hover\:text-sky-950 { color: oklch(90.1% 0.058 230.902); }
+html.dark [class*="text-sky-950/"] { --color-sky-950: oklch(90.1% 0.058 230.902); }
+html.dark .text-blue-600, html.dark .hover\:text-blue-600:hover, html.dark .group:hover .group-hover\:text-blue-600 { color: oklch(70.7% 0.165 254.624); }
+html.dark [class*="text-blue-600/"] { --color-blue-600: oklch(70.7% 0.165 254.624); }
+html.dark .text-blue-700, html.dark .hover\:text-blue-700:hover, html.dark .group:hover .group-hover\:text-blue-700 { color: oklch(80.9% 0.105 251.813); }
+html.dark [class*="text-blue-700/"] { --color-blue-700: oklch(80.9% 0.105 251.813); }
+html.dark .text-blue-800, html.dark .hover\:text-blue-800:hover, html.dark .group:hover .group-hover\:text-blue-800 { color: oklch(88.2% 0.059 254.128); }
+html.dark [class*="text-blue-800/"] { --color-blue-800: oklch(88.2% 0.059 254.128); }
+html.dark .text-blue-900, html.dark .hover\:text-blue-900:hover, html.dark .group:hover .group-hover\:text-blue-900 { color: oklch(88.2% 0.059 254.128); }
+html.dark [class*="text-blue-900/"] { --color-blue-900: oklch(88.2% 0.059 254.128); }
+html.dark .text-blue-950, html.dark .hover\:text-blue-950:hover, html.dark .group:hover .group-hover\:text-blue-950 { color: oklch(88.2% 0.059 254.128); }
+html.dark [class*="text-blue-950/"] { --color-blue-950: oklch(88.2% 0.059 254.128); }
+html.dark .text-indigo-600, html.dark .hover\:text-indigo-600:hover, html.dark .group:hover .group-hover\:text-indigo-600 { color: oklch(67.3% 0.182 276.935); }
+html.dark [class*="text-indigo-600/"] { --color-indigo-600: oklch(67.3% 0.182 276.935); }
+html.dark .text-indigo-700, html.dark .hover\:text-indigo-700:hover, html.dark .group:hover .group-hover\:text-indigo-700 { color: oklch(78.5% 0.115 274.713); }
+html.dark [class*="text-indigo-700/"] { --color-indigo-700: oklch(78.5% 0.115 274.713); }
+html.dark .text-indigo-800, html.dark .hover\:text-indigo-800:hover, html.dark .group:hover .group-hover\:text-indigo-800 { color: oklch(87% 0.065 274.039); }
+html.dark [class*="text-indigo-800/"] { --color-indigo-800: oklch(87% 0.065 274.039); }
+html.dark .text-indigo-900, html.dark .hover\:text-indigo-900:hover, html.dark .group:hover .group-hover\:text-indigo-900 { color: oklch(87% 0.065 274.039); }
+html.dark [class*="text-indigo-900/"] { --color-indigo-900: oklch(87% 0.065 274.039); }
+html.dark .text-indigo-950, html.dark .hover\:text-indigo-950:hover, html.dark .group:hover .group-hover\:text-indigo-950 { color: oklch(87% 0.065 274.039); }
+html.dark [class*="text-indigo-950/"] { --color-indigo-950: oklch(87% 0.065 274.039); }
+html.dark .text-violet-600, html.dark .hover\:text-violet-600:hover, html.dark .group:hover .group-hover\:text-violet-600 { color: oklch(70.2% 0.183 293.541); }
+html.dark [class*="text-violet-600/"] { --color-violet-600: oklch(70.2% 0.183 293.541); }
+html.dark .text-violet-700, html.dark .hover\:text-violet-700:hover, html.dark .group:hover .group-hover\:text-violet-700 { color: oklch(81.1% 0.111 293.571); }
+html.dark [class*="text-violet-700/"] { --color-violet-700: oklch(81.1% 0.111 293.571); }
+html.dark .text-violet-800, html.dark .hover\:text-violet-800:hover, html.dark .group:hover .group-hover\:text-violet-800 { color: oklch(89.4% 0.057 293.283); }
+html.dark [class*="text-violet-800/"] { --color-violet-800: oklch(89.4% 0.057 293.283); }
+html.dark .text-violet-900, html.dark .hover\:text-violet-900:hover, html.dark .group:hover .group-hover\:text-violet-900 { color: oklch(89.4% 0.057 293.283); }
+html.dark [class*="text-violet-900/"] { --color-violet-900: oklch(89.4% 0.057 293.283); }
+html.dark .text-violet-950, html.dark .hover\:text-violet-950:hover, html.dark .group:hover .group-hover\:text-violet-950 { color: oklch(89.4% 0.057 293.283); }
+html.dark [class*="text-violet-950/"] { --color-violet-950: oklch(89.4% 0.057 293.283); }
+html.dark .text-purple-600, html.dark .hover\:text-purple-600:hover, html.dark .group:hover .group-hover\:text-purple-600 { color: oklch(71.4% 0.203 305.504); }
+html.dark [class*="text-purple-600/"] { --color-purple-600: oklch(71.4% 0.203 305.504); }
+html.dark .text-purple-700, html.dark .hover\:text-purple-700:hover, html.dark .group:hover .group-hover\:text-purple-700 { color: oklch(82.7% 0.119 306.383); }
+html.dark [class*="text-purple-700/"] { --color-purple-700: oklch(82.7% 0.119 306.383); }
+html.dark .text-purple-800, html.dark .hover\:text-purple-800:hover, html.dark .group:hover .group-hover\:text-purple-800 { color: oklch(90.2% 0.063 306.703); }
+html.dark [class*="text-purple-800/"] { --color-purple-800: oklch(90.2% 0.063 306.703); }
+html.dark .text-purple-900, html.dark .hover\:text-purple-900:hover, html.dark .group:hover .group-hover\:text-purple-900 { color: oklch(90.2% 0.063 306.703); }
+html.dark [class*="text-purple-900/"] { --color-purple-900: oklch(90.2% 0.063 306.703); }
+html.dark .text-purple-950, html.dark .hover\:text-purple-950:hover, html.dark .group:hover .group-hover\:text-purple-950 { color: oklch(90.2% 0.063 306.703); }
+html.dark [class*="text-purple-950/"] { --color-purple-950: oklch(90.2% 0.063 306.703); }
+html.dark .text-fuchsia-600, html.dark .hover\:text-fuchsia-600:hover, html.dark .group:hover .group-hover\:text-fuchsia-600 { color: oklch(74% 0.238 322.16); }
+html.dark [class*="text-fuchsia-600/"] { --color-fuchsia-600: oklch(74% 0.238 322.16); }
+html.dark .text-fuchsia-700, html.dark .hover\:text-fuchsia-700:hover, html.dark .group:hover .group-hover\:text-fuchsia-700 { color: oklch(83.3% 0.145 321.434); }
+html.dark [class*="text-fuchsia-700/"] { --color-fuchsia-700: oklch(83.3% 0.145 321.434); }
+html.dark .text-fuchsia-800, html.dark .hover\:text-fuchsia-800:hover, html.dark .group:hover .group-hover\:text-fuchsia-800 { color: oklch(90.3% 0.076 319.62); }
+html.dark [class*="text-fuchsia-800/"] { --color-fuchsia-800: oklch(90.3% 0.076 319.62); }
+html.dark .text-fuchsia-900, html.dark .hover\:text-fuchsia-900:hover, html.dark .group:hover .group-hover\:text-fuchsia-900 { color: oklch(90.3% 0.076 319.62); }
+html.dark [class*="text-fuchsia-900/"] { --color-fuchsia-900: oklch(90.3% 0.076 319.62); }
+html.dark .text-fuchsia-950, html.dark .hover\:text-fuchsia-950:hover, html.dark .group:hover .group-hover\:text-fuchsia-950 { color: oklch(90.3% 0.076 319.62); }
+html.dark [class*="text-fuchsia-950/"] { --color-fuchsia-950: oklch(90.3% 0.076 319.62); }
+html.dark .text-pink-600, html.dark .hover\:text-pink-600:hover, html.dark .group:hover .group-hover\:text-pink-600 { color: oklch(71.8% 0.202 349.761); }
+html.dark [class*="text-pink-600/"] { --color-pink-600: oklch(71.8% 0.202 349.761); }
+html.dark .text-pink-700, html.dark .hover\:text-pink-700:hover, html.dark .group:hover .group-hover\:text-pink-700 { color: oklch(82.3% 0.12 346.018); }
+html.dark [class*="text-pink-700/"] { --color-pink-700: oklch(82.3% 0.12 346.018); }
+html.dark .text-pink-800, html.dark .hover\:text-pink-800:hover, html.dark .group:hover .group-hover\:text-pink-800 { color: oklch(89.9% 0.061 343.231); }
+html.dark [class*="text-pink-800/"] { --color-pink-800: oklch(89.9% 0.061 343.231); }
+html.dark .text-pink-900, html.dark .hover\:text-pink-900:hover, html.dark .group:hover .group-hover\:text-pink-900 { color: oklch(89.9% 0.061 343.231); }
+html.dark [class*="text-pink-900/"] { --color-pink-900: oklch(89.9% 0.061 343.231); }
+html.dark .text-pink-950, html.dark .hover\:text-pink-950:hover, html.dark .group:hover .group-hover\:text-pink-950 { color: oklch(89.9% 0.061 343.231); }
+html.dark [class*="text-pink-950/"] { --color-pink-950: oklch(89.9% 0.061 343.231); }
+html.dark .text-rose-600, html.dark .hover\:text-rose-600:hover, html.dark .group:hover .group-hover\:text-rose-600 { color: oklch(71.2% 0.194 13.428); }
+html.dark [class*="text-rose-600/"] { --color-rose-600: oklch(71.2% 0.194 13.428); }
+html.dark .text-rose-700, html.dark .hover\:text-rose-700:hover, html.dark .group:hover .group-hover\:text-rose-700 { color: oklch(81% 0.117 11.638); }
+html.dark [class*="text-rose-700/"] { --color-rose-700: oklch(81% 0.117 11.638); }
+html.dark .text-rose-800, html.dark .hover\:text-rose-800:hover, html.dark .group:hover .group-hover\:text-rose-800 { color: oklch(89.2% 0.058 10.001); }
+html.dark [class*="text-rose-800/"] { --color-rose-800: oklch(89.2% 0.058 10.001); }
+html.dark .text-rose-900, html.dark .hover\:text-rose-900:hover, html.dark .group:hover .group-hover\:text-rose-900 { color: oklch(89.2% 0.058 10.001); }
+html.dark [class*="text-rose-900/"] { --color-rose-900: oklch(89.2% 0.058 10.001); }
+html.dark .text-rose-950, html.dark .hover\:text-rose-950:hover, html.dark .group:hover .group-hover\:text-rose-950 { color: oklch(89.2% 0.058 10.001); }
+html.dark [class*="text-rose-950/"] { --color-rose-950: oklch(89.2% 0.058 10.001); }
+
+/* Cores fixas em hex usadas em algumas telas (paleta "Apple"). */
+html.dark .text-\[\#1d1d1f\], html.dark .hover\:text-\[\#1d1d1f\]:hover { color: #f5f5f7; }
+html.dark .text-\[\#0071e3\], html.dark .hover\:text-\[\#0071e3\]:hover { color: #2997ff; }
+html.dark .text-\[\#d70015\], html.dark .hover\:text-\[\#d70015\]:hover { color: #ff6961; }
+html.dark .text-\[\#248a3d\], html.dark .hover\:text-\[\#248a3d\]:hover { color: #30d158; }
+html.dark .text-\[\#bf7a00\], html.dark .hover\:text-\[\#bf7a00\]:hover { color: #ffb340; }
+html.dark .text-\[\#7c3aed\], html.dark .hover\:text-\[\#7c3aed\]:hover { color: #b39dfa; }
+html.dark .bg-\[\#f5f5f7\], html.dark .hover\:bg-\[\#f5f5f7\]:hover { background-color: var(--mc-superficie-2); }
+html.dark .bg-\[\#f7f7f8\], html.dark .hover\:bg-\[\#f7f7f8\]:hover { background-color: var(--mc-pagina); }
+html.dark .text-\[\#0071e3\]\/90 { color: color-mix(in oklab, #2997ff 90%, transparent); }
+html.dark .placeholder\:text-\[\#86868b\]::placeholder { color: #86868b; }
+
+/* Gráficos (Recharts): as cores vêm como atributo SVG fixo no código; CSS vence
+   atributo, então dá para corrigir aqui sem mexer em cada gráfico. */
+html.dark .recharts-cartesian-grid line { stroke: rgb(255 255 255 / 0.07); }
+html.dark .recharts-reference-line line { stroke: rgb(255 255 255 / 0.2); }
+html.dark :is(.recharts-cartesian-axis-tick-value, .recharts-text) { fill: #80808a; }
+html.dark .recharts-legend-item-text { color: #b4b4bc !important; }
+html.dark [stroke="#1e293b"] { stroke: #ededf0; }
+html.dark [fill="#1e293b"] { fill: #ededf0; }
+html.dark [fill="#9f1239"] { fill: #e11d48; }
+html.dark .recharts-default-tooltip { background-color: #26262b !important; border-color: rgb(255 255 255 / 0.1) !important; color: #ededf0; }
+html.dark .recharts-tooltip-cursor { fill: rgb(255 255 255 / 0.05); }

@@ -91,7 +91,7 @@ export default function CalendarBoard({ rows, props, datePropId, onCell, onAddRo
   return (
     // Altura pela tela, não fixa: num monitor grande o mês inteiro respira e
     // cabem mais tarefas por dia; num notebook não estoura a dobra.
-    <div className="ws-calendar bg-white dark:bg-slate-900/40 border border-slate-200/90 dark:border-slate-700/70 rounded-xl p-2" style={{ height: 'clamp(520px, 82vh, 1040px)' }}>
+    <div className="ws-calendar bg-white border border-slate-200/90 rounded-xl p-2" style={{ height: 'clamp(520px, 82vh, 1040px)' }}>
       <DnDCalendar
         localizer={localizer}
         events={events}

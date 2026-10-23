@@ -161,35 +161,35 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/30 backdrop-blur-[2px] p-4" onClick={onClose}>
       <div
-        className="w-full max-w-3xl max-h-[88vh] flex flex-col bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-3xl max-h-[88vh] flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2 text-[13px] font-black text-slate-700 dark:text-slate-200">
+        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100">
+          <div className="flex items-center gap-2 text-[13px] font-black text-slate-700">
             <Printer size={15} className="text-slate-400" /> Imprimir relatório
           </div>
-          <button onClick={onClose} title="Fechar (Esc)" className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><X size={16} /></button>
+          <button onClick={onClose} title="Fechar (Esc)" className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"><X size={16} /></button>
         </div>
 
         {/* Opções */}
-        <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-3">
+        <div className="px-5 py-3 border-b border-slate-100 flex flex-col gap-3">
           <div className="flex items-end gap-3 flex-wrap">
             <label className="flex-1 min-w-[240px]">
               <span className="block text-[12px] font-semibold text-slate-400 tracking-[0.12em] mb-1">Título do relatório</span>
               <input
                 value={titulo}
                 onChange={(e) => setTituloManual(e.target.value)}
-                className="w-full h-8 px-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[12.5px] font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-blue-400"
+                className="w-full h-8 px-2.5 rounded-lg bg-white border border-slate-200 text-[12.5px] font-semibold text-slate-700 outline-none focus:border-blue-400"
               />
             </label>
             <div>
               <span className="block text-[12px] font-semibold text-slate-400 tracking-[0.12em] mb-1">Folha A4</span>
-              <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+              <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100">
                 {[['landscape', 'Paisagem'], ['portrait', 'Retrato']].map(([v, label]) => (
                   <button
                     key={v} onClick={() => setOrientacao(v)}
-                    className={`h-7 px-3 rounded-md text-[12px] font-bold transition-colors ${orientacao === v ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`h-7 px-3 rounded-md text-[12px] font-bold transition-colors ${orientacao === v ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                   >{label}</button>
                 ))}
               </div>
@@ -200,33 +200,33 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
           <div>
             <span className="block text-[12px] font-semibold text-slate-400 tracking-[0.12em] mb-1.5">Colunas</span>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="h-7 px-2.5 flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 text-[12px] font-bold text-slate-400" title="A tarefa é sempre impressa">Tarefa</span>
+              <span className="h-7 px-2.5 flex items-center rounded-lg bg-slate-100 text-[12px] font-bold text-slate-400" title="A tarefa é sempre impressa">Tarefa</span>
               {props.map((p) => (
                 <button
                   key={p.id} onClick={() => alternarColuna(p.id)}
                   className={`h-7 px-2.5 rounded-lg text-[12px] font-bold border transition-colors ${colunas.has(p.id)
-                    ? 'bg-blue-50 dark:bg-blue-500/15 border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-300'
-                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 line-through'}`}
+                    ? 'bg-blue-50 border-blue-200 text-blue-600'
+                    : 'bg-white border-slate-200 text-slate-400 line-through'}`}
                 >{p.name}</button>
               ))}
               <button
                 onClick={() => setIncluirNotas((v) => !v)}
                 title="Imprime, abaixo de cada tarefa, o texto escrito dentro dela"
                 className={`h-7 px-2.5 flex items-center gap-1.5 rounded-lg text-[12px] font-bold border transition-colors ${incluirNotas
-                  ? 'bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300'
-                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 line-through'}`}
+                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                  : 'bg-white border-slate-200 text-slate-400 line-through'}`}
               ><StickyNote size={12} /> Anotações</button>
             </div>
           </div>
         </div>
 
         {/* Seleção de tarefas */}
-        <div className="px-5 py-2.5 flex items-center gap-2 flex-wrap border-b border-slate-100 dark:border-slate-800">
-          <button onClick={alternarTodasVisiveis} className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <div className="px-5 py-2.5 flex items-center gap-2 flex-wrap border-b border-slate-100">
+          <button onClick={alternarTodasVisiveis} className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[12px] font-bold text-slate-500 hover:bg-slate-100 transition-colors">
             {todasVisiveisMarcadas ? <CheckSquare size={13} /> : <Square size={13} />}
             {todasVisiveisMarcadas ? 'Desmarcar' : 'Marcar'} {busca.trim() || ocultarConcluidas ? 'os visíveis' : 'todos'}
           </button>
-          <label className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[12px] font-bold text-slate-500 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <label className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[12px] font-bold text-slate-500 cursor-pointer hover:bg-slate-100 transition-colors">
             <input type="checkbox" checked={ocultarConcluidas} onChange={(e) => setOcultarConcluidas(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 cursor-pointer" />
             Não imprimir concluídas
           </label>
@@ -234,7 +234,7 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar tarefa ou anotação…"
-              className="w-full h-7 pl-8 pr-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-transparent text-[12px] font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-blue-400"
+              className="w-full h-7 pl-8 pr-2.5 rounded-lg bg-slate-50 border border-transparent text-[12px] font-semibold text-slate-700 outline-none focus:border-blue-400"
             />
           </div>
         </div>
@@ -249,12 +249,12 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
             return (
               <label
                 key={r.id}
-                className={`flex items-start gap-2.5 px-3 py-2 rounded-xl cursor-pointer transition-colors ${marcada ? 'bg-blue-50/60 dark:bg-blue-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'}`}
+                className={`flex items-start gap-2.5 px-3 py-2 rounded-xl cursor-pointer transition-colors ${marcada ? 'bg-blue-50/60' : 'hover:bg-slate-50'}`}
               >
                 <input type="checkbox" checked={marcada} onChange={() => alternarLinha(r.id)} className="mt-[3px] rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[12.5px] font-bold truncate ${concluida(r) ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
+                    <span className={`text-[12.5px] font-bold truncate ${concluida(r) ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
                       {r.title || '(sem nome)'}
                     </span>
                     {statusProp && (
@@ -271,13 +271,13 @@ export default function PrintDialog({ databaseId, viewName = '', rows, props, us
         </div>
 
         {/* Rodapé */}
-        <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+        <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-3">
           <span className="text-[12px] font-semibold text-slate-400">
             {selecionadas.length} de {rows.length} tarefa(s)
             {carregandoNotas && incluirNotas ? ' · carregando anotações…' : ''}
           </span>
           <div className="flex items-center gap-2">
-            <button onClick={onClose} className="h-8 px-3 rounded-lg text-[12.5px] font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
+            <button onClick={onClose} className="h-8 px-3 rounded-lg text-[12.5px] font-bold text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
             <button
               onClick={imprimir}
               disabled={selecionadas.length === 0 || (incluirNotas && carregandoNotas)}
