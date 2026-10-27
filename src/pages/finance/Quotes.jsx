@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { financeService } from '../../services/financeService';
 import { prevMonthISO } from '../../utils/date';
 import {
-  Plus, Loader2, Edit2, Trash2, CheckCircle2, XCircle, FileText, X, Save, Trash, ShoppingCart, FileDown, Eye, Sparkles
+  Plus, Loader2, Edit2, Trash2, CheckCircle2, XCircle, FileText, X, Save, Trash, ShoppingCart, FileDown, Eye, Sparkles, Paperclip
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
@@ -14,7 +14,7 @@ import PropostaEditor from '../../components/propostas/PropostaEditor';
 import { salvarOportunidade } from '../../services/crm';
 import PdfsProposta, { VisualizadorProposta } from '../../components/propostas/PdfsProposta';
 import {
-  propostaCompleta, detalhesVazios, subtotalItens, descontoDe, montarDadosProposta, htmlDaProposta, contatoPrincipal
+  propostaCompleta, detalhesVazios, subtotalItens, descontoDe, montarDadosProposta, htmlDaProposta, contatoPrincipal, anexarPdfExterno
 } from '../../services/propostas';
 
 const fmt = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
@@ -195,7 +195,7 @@ export default function Quotes() {
           onSaved={async (salvo) => {
             setModalQuote(undefined);
             await reloadQuotes();
-            if (salvo?.gerarPdf) setPdfsDe({ quote: await financeService.getQuoteDetails(salvo.id), gerar: true });
+            if (salvo?.gerarPdf || salvo?.verPdfs) setPdfsDe({ quote: await financeService.getQuoteDetails(salvo.id), gerar: !!salvo.gerarPdf });
           }} />
       )}
 
@@ -233,6 +233,8 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
   const [title, setTitle] = useState(quote?.title || oportunidade?.titulo || '');
   const [validUntil, setValidUntil] = useState(quote?.valid_until || addDays(15));
   const [notes, setNotes] = useState(quote?.notes || '');
+  const [pdfExterno, setPdfExterno] = useState(null); // proposta feita por fora (File)
+  const inputPdf = useRef(null);
   const [aba, setAba] = useState('orcamento');
   const [previa, setPrevia] = useState(null); // HTML da pré-visualização
   const [proposta, setProposta] = useState(() => propostaCompleta(quote?.proposta, { titulo: quote?.title || oportunidade?.titulo || '' }));
@@ -298,8 +300,14 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
       // valor que o funil e a aba Números somam em "Em negociação".
       const opId = oportunidade?.id || quote?.oportunidade_id;
       if (opId && total > 0) await salvarOportunidade({ id: opId, valor: total }).catch((e) => console.warn('valor da oportunidade', e));
+      // PDF feito por fora entra como nova versão no histórico de PDFs do orçamento.
+      let anexou = false;
+      if (pdfExterno && id) {
+        try { await anexarPdfExterno(id, pdfExterno); anexou = true; }
+        catch (err) { console.error(err); toast.error(`Orçamento salvo, mas o PDF não subiu: ${err.message || 'erro no envio'}`); }
+      }
       toast.success(isEdit ? 'Orçamento atualizado!' : 'Orçamento criado!');
-      onSaved({ id, gerarPdf });
+      onSaved({ id, gerarPdf: gerarPdf && !pdfExterno, verPdfs: anexou });
     } catch (err) { console.error(err); toast.error('Erro ao salvar orçamento.'); }
     finally { setSaving(false); }
   };
@@ -391,6 +399,32 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
             <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Observações</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} className={`${inputCls} h-16 resize-none py-1.5`} />
           </div>
+
+          <div>
+            <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Proposta feita por fora (opcional)</label>
+            <input ref={inputPdf} type="file" accept="application/pdf,.pdf" className="hidden"
+              onChange={e => {
+                const f = e.target.files?.[0]; e.target.value = '';
+                if (!f) return;
+                if (!(f.type === 'application/pdf' || /\.pdf$/i.test(f.name))) return toast.error('O arquivo precisa ser PDF.');
+                if (f.size > 15 * 1024 * 1024) return toast.error('O PDF passa de 15 MB.');
+                setPdfExterno(f);
+              }} />
+            {pdfExterno ? (
+              <div className="flex items-center gap-2 h-9 px-3 bg-white border border-black/[.085] rounded-lg text-xs shadow-sm">
+                <Paperclip size={13} className="text-slate-400 shrink-0" />
+                <span className="font-semibold text-slate-700 truncate flex-1">{pdfExterno.name}</span>
+                <span className="text-slate-400 shrink-0">{(pdfExterno.size / 1024 / 1024).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB</span>
+                <button type="button" onClick={() => setPdfExterno(null)} title="Tirar arquivo" className="p-1 text-slate-300 hover:text-rose-600 rounded-md"><X size={13} /></button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => inputPdf.current?.click()}
+                className="w-full h-9 px-3 border border-dashed border-black/[.15] hover:border-[#0071e3] hover:text-[#0071e3] rounded-lg text-xs font-medium text-slate-500 flex items-center justify-center gap-1.5 transition-colors">
+                <Paperclip size={13} /> Anexar PDF pronto
+              </button>
+            )}
+            <p className="text-[11px] text-slate-400 ml-1 mt-1">Fica guardado junto com as versões geradas pelo sistema. Os itens acima continuam valendo para o total.</p>
+          </div>
         </form>
 
         <div className="p-4 border-t border-black/[.06] flex items-center justify-between shrink-0 bg-white">
@@ -403,12 +437,18 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
             <button type="button" onClick={abrirPrevia} className="h-9 px-3 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg flex items-center gap-1.5">
               <Eye size={14} /> Pré-visualizar
             </button>
-            <button onClick={submit} disabled={saving} className="h-9 px-4 bg-white border border-black/[.1] hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-xs shadow-sm flex items-center gap-2">
-              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Salvar
-            </button>
-            <button onClick={(e) => submit(e, { gerarPdf: true })} disabled={saving} className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-xs shadow-sm flex items-center gap-2">
-              {saving ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Salvar e gerar PDF
-            </button>
+            {pdfExterno ? (
+              <button onClick={submit} disabled={saving} className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-xs shadow-sm flex items-center gap-2">
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Paperclip size={14} />} Salvar e anexar PDF
+              </button>
+            ) : (<>
+              <button onClick={submit} disabled={saving} className="h-9 px-4 bg-white border border-black/[.1] hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-xs shadow-sm flex items-center gap-2">
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Salvar
+              </button>
+              <button onClick={(e) => submit(e, { gerarPdf: true })} disabled={saving} className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-xs shadow-sm flex items-center gap-2">
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Salvar e gerar PDF
+              </button>
+            </>)}
           </div>
         </div>
       </div>

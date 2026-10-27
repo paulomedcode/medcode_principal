@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { X, Loader2, FileDown, Eye, Download, Trash2, Sparkles, FileText } from 'lucide-react';
+import { X, Loader2, FileDown, Eye, Download, Trash2, Sparkles, FileText, Paperclip } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import { listarPdfs, gerarPdfDoOrcamento, urlDoPdf, excluirPdf } from '../../services/propostas';
+import { listarPdfs, gerarPdfDoOrcamento, urlDoPdf, excluirPdf, anexarPdfExterno, ehAnexado } from '../../services/propostas';
 
 const fmtDataHora = (s) => new Date(s).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 const fmt = (v) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -35,6 +35,8 @@ export default function PdfsProposta({ quote, podeGerar, gerarAoAbrir = false, o
     const [excluir, setExcluir] = useState(null);
     const cliente = quote.finance_parties?.nome_fantasia || quote.finance_parties?.name || '';
     const jaGerou = useRef(false);
+    const inputPdf = useRef(null);
+    const [anexando, setAnexando] = useState(false);
 
     const carregar = useCallback(() => listarPdfs(quote.id).then(setPdfs).catch((e) => { console.error(e); setPdfs([]); }), [quote.id]);
 
@@ -58,6 +60,16 @@ export default function PdfsProposta({ quote, podeGerar, gerarAoAbrir = false, o
         } catch (e) { console.error(e); toast.error(e.message || 'Erro ao gerar o PDF.'); }
         finally { setGerando(false); }
     }, [quote.id, carregar]);
+
+    const anexar = async (arquivo) => {
+        setAnexando(true);
+        try {
+            const novo = await anexarPdfExterno(quote.id, arquivo);
+            toast.success(`PDF anexado como v${novo.versao}.`);
+            await carregar();
+        } catch (e) { console.error(e); toast.error(e.message || 'Não foi possível anexar o PDF.'); }
+        finally { setAnexando(false); }
+    };
 
     useEffect(() => {
         carregar();
@@ -86,10 +98,15 @@ export default function PdfsProposta({ quote, podeGerar, gerarAoAbrir = false, o
                 <div className="flex-1 overflow-y-auto">
                     {pdfs === null ? (
                         <div className="py-10 flex justify-center"><Loader2 size={22} className="animate-spin text-[#0071e3]" /></div>
-                    ) : pdfs.length === 0 && !gerando ? (
+                    ) : pdfs.length === 0 && !gerando && !anexando ? (
                         <p className="py-10 text-center text-[11px] font-bold text-slate-400 uppercase">Nenhum PDF gerado ainda</p>
                     ) : (
                         <ul className="divide-y divide-black/[.055]">
+                            {anexando && (
+                                <li className="px-4 py-3 flex items-center gap-3 text-xs text-slate-500 font-semibold">
+                                    <Loader2 size={15} className="animate-spin text-[#0071e3]" /> Enviando o PDF…
+                                </li>
+                            )}
                             {gerando && (
                                 <li className="px-4 py-3 flex items-center gap-3 text-xs text-slate-500 font-semibold">
                                     <Loader2 size={15} className="animate-spin text-[#0071e3]" /> Gerando o PDF…
@@ -99,7 +116,8 @@ export default function PdfsProposta({ quote, podeGerar, gerarAoAbrir = false, o
                                 <li key={pdf.id} className="px-4 py-2.5 flex items-center gap-3 text-xs group">
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${i === 0 ? 'bg-violet-50 text-violet-700 border-violet-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>v{pdf.versao}</span>
                                     <div className="flex-1 min-w-0">
-                                        <div className="font-semibold text-slate-700">{fmtDataHora(pdf.created_at)}</div>
+                                        <div className="font-semibold text-slate-700 flex items-center gap-1.5">{fmtDataHora(pdf.created_at)}
+                                            {ehAnexado(pdf) && <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-500 bg-slate-100 rounded px-1.5 py-px"><Paperclip size={10} /> anexado</span>}</div>
                                         <div className="text-[10.5px] text-slate-400 font-semibold truncate">{fmt(pdf.total)}{pdf.users?.name ? ` · ${pdf.users.name}` : ''}</div>
                                     </div>
                                     <button onClick={() => ver(pdf)} title="Visualizar" className="p-1.5 text-slate-400 hover:text-[#0071e3] hover:bg-indigo-50 rounded-lg"><Eye size={15} /></button>
@@ -113,8 +131,14 @@ export default function PdfsProposta({ quote, podeGerar, gerarAoAbrir = false, o
 
                 {podeGerar && (
                     <div className="p-4 border-t border-black/[.06] flex items-center justify-between gap-3">
-                        <p className="text-[10.5px] text-slate-400 font-semibold">Gera com o orçamento como está salvo agora. As versões anteriores ficam guardadas.</p>
-                        <button onClick={gerar} disabled={gerando}
+                        <p className="text-[10.5px] text-slate-400 font-semibold">Gera com o orçamento como está salvo agora, ou anexe um PDF feito por fora. As versões anteriores ficam guardadas.</p>
+                        <input ref={inputPdf} type="file" accept="application/pdf,.pdf" className="hidden"
+                            onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) anexar(f); }} />
+                        <button onClick={() => inputPdf.current?.click()} disabled={gerando || anexando}
+                            className="h-9 px-3 shrink-0 bg-white border border-black/[.1] hover:bg-slate-50 disabled:opacity-60 text-slate-700 rounded-lg font-semibold text-[11px] shadow-sm flex items-center gap-1.5">
+                            <Paperclip size={14} /> Anexar PDF
+                        </button>
+                        <button onClick={gerar} disabled={gerando || anexando}
                             className="h-9 px-4 shrink-0 bg-[#0071e3] hover:bg-[#0077ed] disabled:opacity-60 text-white rounded-lg font-semibold text-[11px] uppercase shadow-sm flex items-center gap-1.5">
                             {gerando ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} {pdfs?.length ? 'Gerar nova versão' : 'Gerar PDF'}
                         </button>

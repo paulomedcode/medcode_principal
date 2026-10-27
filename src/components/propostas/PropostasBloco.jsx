@@ -70,7 +70,7 @@ export default function PropostasBloco({ oportunidade = null, partyId, titulo = 
                     onSaved={async (salvo) => {
                         setNova(false);
                         carregar();
-                        if (salvo?.gerarPdf) setPdfsDe({ quote: await financeService.getQuoteDetails(salvo.id), gerar: true });
+                        if (salvo?.gerarPdf || salvo?.verPdfs) setPdfsDe({ quote: await financeService.getQuoteDetails(salvo.id), gerar: !!salvo.gerarPdf });
                     }} />
             )}
             {pdfsDe && <PdfsProposta quote={pdfsDe.quote} podeGerar={podeCriar} gerarAoAbrir={!!pdfsDe.gerar} onClose={() => setPdfsDe(null)} />}

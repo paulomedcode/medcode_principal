@@ -255,6 +255,32 @@ export async function gerarPdfDoOrcamento(quoteId) {
     return linha;
 }
 
+/** PDF feito fora do sistema: o arquivo leva o prefixo `anexo-` para a lista saber de onde veio. */
+export const ehAnexado = (pdf) => /\/anexo-[^/]*$/.test(pdf?.arquivo || '');
+
+const LIMITE_ANEXO = 15 * 1024 * 1024; // mesmo limite do bucket
+
+/**
+ * Guarda uma proposta em PDF feita por fora como nova versão do orçamento,
+ * no mesmo histórico dos PDFs gerados. Devolve a linha de finance_quote_pdfs.
+ */
+export async function anexarPdfExterno(quoteId, arquivoPdf) {
+    if (!arquivoPdf) throw new Error('Escolha um arquivo PDF.');
+    const ehPdf = arquivoPdf.type === 'application/pdf' || /\.pdf$/i.test(arquivoPdf.name || '');
+    if (!ehPdf) throw new Error('O arquivo precisa ser PDF.');
+    if (arquivoPdf.size > LIMITE_ANEXO) throw new Error('O PDF passa de 15 MB.');
+
+    const arquivo = `${quoteId}/anexo-${Date.now()}.pdf`;
+    const { error: e1 } = await supabase.storage.from(BUCKET).upload(arquivo, arquivoPdf, { contentType: 'application/pdf' });
+    if (e1) throw e1;
+    const { data: linha, error: e2 } = await supabase.rpc('registrar_pdf_proposta', { p_quote_id: quoteId, p_arquivo: arquivo });
+    if (e2) {
+        await supabase.storage.from(BUCKET).remove([arquivo]);
+        throw e2;
+    }
+    return linha;
+}
+
 const nomeArquivo = (pdf, cliente) =>
     `Proposta ${pdf.numero}${cliente ? ` - ${cliente}` : ''}${pdf.versao > 1 ? ` (v${pdf.versao})` : ''}.pdf`.replace(/[\\/:*?"<>|]/g, '');
 
