@@ -250,13 +250,15 @@ export default function HomeHub() {
             id: `g:${e.id}:${e.data}`, tipo: 'google', titulo: e.titulo, data: e.data, hora: e.hora,
             contexto: [e.hora && e.horaFim ? `até ${e.horaFim}` : null, e.local].filter(Boolean).join(' · '),
             abrir: e.link, meet: e.meet, externo: true,
+            // Evento do Google que já passou aconteceu — não é pendência.
+            semAtraso: true,
         }));
         return lista.sort((a, b) => (a.data + (a.hora || '')).localeCompare(b.data + (b.hora || '')));
     }, [d, currentUser?.id, pode.editarProspeccao, eventosG]);
 
     const grupos = useMemo(() => {
         if (!d) return { atrasado: [], hoje: [] };
-        const pendente = itens.filter((i) => !i.feito);
+        const pendente = itens.filter((i) => !i.feito && !i.semAtraso);
         return {
             atrasado: pendente.filter((i) => i.data < d.hoje),
             hoje: pendente.filter((i) => i.data === d.hoje),

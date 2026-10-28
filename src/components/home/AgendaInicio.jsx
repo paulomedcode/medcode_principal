@@ -26,7 +26,7 @@ const ordenar = (a, b) => (a.hora || '99').localeCompare(b.hora || '99') || a.ti
 
 function Item({ item, compacto = false, tipos, hoje, onAbrir, onConcluir, concluindo }) {
     const t = tipos[item.tipo];
-    const atrasado = !item.feito && item.data < hoje;
+    const atrasado = !item.feito && !item.semAtraso && item.data < hoje;
     const podeConcluir = item.concluir && !item.feito;
     return (
         <div className={`group rounded-lg border-l-[3px] ${t.borda} ${item.feito ? 'opacity-55' : ''} bg-slate-50 hover:bg-slate-100 transition-colors ${compacto ? 'px-2 py-1.5' : 'px-2.5 py-2'}`}>
@@ -173,7 +173,7 @@ export default function AgendaInicio({ itens, hoje, tipos, onAbrir, onConcluir, 
                                     </span>
                                     <span className="hidden md:flex flex-col gap-0.5 min-w-0">
                                         {lista.slice(0, 3).map((i) => (
-                                            <span key={i.id} className={`text-[11px] leading-tight line-clamp-2 break-words rounded px-1 py-0.5 border-l-2 ${tipos[i.tipo].borda} ${i.feito ? 'line-through text-slate-400' : !i.feito && i.data < hoje ? 'text-rose-600' : 'text-slate-700'} bg-slate-50`}>
+                                            <span key={i.id} className={`text-[11px] leading-tight line-clamp-2 break-words rounded px-1 py-0.5 border-l-2 ${tipos[i.tipo].borda} ${i.feito ? 'line-through text-slate-400' : !i.semAtraso && i.data < hoje ? 'text-rose-600' : 'text-slate-700'} bg-slate-50`}>
                                                 {i.hora && <span className="tabular-nums text-slate-500 mr-0.5">{i.hora}</span>}{i.titulo}
                                             </span>
                                         ))}
