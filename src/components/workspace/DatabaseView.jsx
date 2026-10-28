@@ -17,6 +17,7 @@ import {
 import '../../styles/workspace.css';
 import { supabase } from '../../services/supabase';
 import * as ws from '../../services/workspace';
+import { sincronizarGoogle } from '../../services/google';
 import { useDatabaseSync } from '../../hooks/useDatabaseSync';
 import { usePermission } from '../../contexts/PermissionContext';
 import { PropertyCell, PropertyValue } from './PropertyCell';
@@ -71,7 +72,17 @@ export default function DatabaseView({
   const [views, setViews] = useState([]);
   const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
-  const [activeViewId, setActiveViewId] = useState(null);
+  // Visão aberta por último neste database (guardada no navegador): quem deixou
+  // no Calendário volta no Calendário, em vez de cair sempre na 1ª aba.
+  const viewKey = `ws-db-view-${databaseId}`;
+  const [activeViewId, setActiveViewIdRaw] = useState(() => { try { return localStorage.getItem(viewKey); } catch { return null; } });
+  const setActiveViewId = useCallback((next) => {
+    setActiveViewIdRaw((cur) => {
+      const id = typeof next === 'function' ? next(cur) : next;
+      if (!pinnedViewId && id) { try { localStorage.setItem(viewKey, id); } catch { /* ignore */ } }
+      return id;
+    });
+  }, [viewKey, pinnedViewId]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const [peekRowId, setPeekRowId] = useState(null);
@@ -96,8 +107,21 @@ export default function DatabaseView({
       ws.listRows(databaseId),
     ]);
     setProps(p); setViews(v); setRows(r);
-    setActiveViewId((cur) => cur || (v[0]?.id ?? null));
+    // Visão lembrada que foi apagada → cai na primeira.
+    let lembrada = null;
+    try { lembrada = localStorage.getItem(`ws-db-view-${databaseId}`); } catch { /* ignore */ }
+    const existe = (id) => id && v.some((x) => x.id === id);
+    setActiveViewIdRaw((cur) => (existe(cur) ? cur : existe(lembrada) ? lembrada : (v[0]?.id ?? null)));
   }, [databaseId]);
+
+  // Compromisso com data mudou → leva para o Google Agenda (o servidor só mexe
+  // nos databases que são agenda e espera uns segundos de calmaria).
+  const primeiraCarga = useRef(true);
+  useEffect(() => {
+    if (loading) return;
+    if (primeiraCarga.current) { primeiraCarga.current = false; return; }
+    sincronizarGoogle();
+  }, [rows, loading]);
 
   useEffect(() => {
     setLoading(true);
@@ -418,7 +442,7 @@ export default function DatabaseView({
       setActiveViewId(v.id);
       viewsChanged();
     } catch (e) { console.error(e); toast.error('Erro ao criar visão.'); }
-  }, [databaseId, views.length, props, viewsChanged, podeEditarEstrutura]);
+  }, [databaseId, views.length, props, viewsChanged, podeEditarEstrutura, setActiveViewId]);
 
   const renameView = useCallback(async (id, name) => {
     if (!podeEditarEstrutura) return barrar();
@@ -432,7 +456,7 @@ export default function DatabaseView({
     setViews((vs) => vs.filter((v) => v.id !== id));
     setActiveViewId((cur) => (cur === id ? views.find((v) => v.id !== id)?.id : cur));
     try { await ws.deleteView(id); viewsChanged(); } catch (e) { console.error(e); toast.error('Erro ao excluir visão.'); load(); }
-  }, [views, load, viewsChanged, podeEditarEstrutura]);
+  }, [views, load, viewsChanged, podeEditarEstrutura, setActiveViewId]);
 
   if (loading) return <DatabaseSkeleton />;
 

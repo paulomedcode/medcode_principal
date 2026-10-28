@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
-    Search, Plus, Building2, Target, FolderKanban, ClipboardList, DollarSign, CalendarClock, Check,
-    AlertTriangle, ChevronRight, Loader2, Repeat, Sparkles, Flag, UserSearch,
+    Search, Plus, Building2, Target, ClipboardList, DollarSign, CalendarClock, Check,
+    AlertTriangle, Loader2, Flag, UserSearch, CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermission } from '../contexts/PermissionContext';
@@ -12,26 +12,28 @@ import { tarefasAtribuidas } from '../services/notificacoes';
 import { concluirLembrete } from '../services/concluirLembrete';
 import {
     proximosPassos, concluirProximoPasso, listarProjetos,
-    progressoDasEntregas, atividadesRecentes,
 } from '../services/crm';
-import { IconesServicos } from '../components/crm/ui';
-import { resumoServicos, statusProjeto, tipoAtividade, fmtBRL, fmtData } from '../config/servicos';
+import { statusProjeto, fmtBRL, fmtData } from '../config/servicos';
 import { todayISO } from '../utils/date';
 import { statusProspeccao } from '../config/prospeccao';
 import { toqueDaVez } from '../config/cadencia';
 import { ModalAcompanhamento } from '../components/prospeccao/Acompanhamento';
 import { useOpcoesNovo, abrirNovo } from '../components/novo';
 import Numeros from './Painel';
+import AgendaInicio from '../components/home/AgendaInicio';
+import { compromissosDaAgenda } from '../services/agenda';
+import { statusGoogle, conectarGoogle, desconectarGoogle, eventosGoogle, sincronizarGoogle } from '../services/google';
 
 /*
  * TELA INICIAL — "Central do dia".
  *
  * Numa agência a pessoa abre o sistema para saber o que fazer agora, não para
  * escolher um menu (a navegação entre módulos mora na barra superior). Então
- * a tela é o trabalho: o que está atrasado, o que vence hoje e na semana
- * (tarefas das entregas, retornos com clientes e com leads da prospecção,
- * recebimentos, prazos de projeto), os projetos em andamento com o progresso
- * das entregas e o que a equipe registrou por último.
+ * a tela é o trabalho: uma AGENDA (semana ou mês) com tudo que tem data — os
+ * compromissos do Planejamento Geral, tarefas das entregas, retornos com
+ * clientes e leads, fechamentos previstos, contas a receber e a pagar, prazos
+ * de projeto — e, acima dela, o que ficou atrasado de semanas anteriores.
+ * Projetos e histórico ficam nos módulos deles, não aqui.
  *
  * Os números da empresa ficam na aba "Números" (src/pages/Painel.jsx), que
  * antes era a tela Painel: assim cada número aparece num lugar só. Cada bloco
@@ -41,24 +43,25 @@ import Numeros from './Painel';
 const addDias = (iso, n) => { const [y, m, d] = iso.split('-').map(Number); const dt = new Date(y, m - 1, d + n); const p = (x) => String(x).padStart(2, '0'); return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`; };
 const saudacao = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
 const dataExtenso = () => new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-const tempoAtras = (iso) => {
-    const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-    if (min < 60) return `há ${Math.max(1, min)} min`;
-    const h = Math.round(min / 60);
-    if (h < 24) return `há ${h} h`;
-    const d = Math.round(h / 24);
-    return d === 1 ? 'ontem' : `há ${d} dias`;
-};
 
 const VIDRO = 'bg-white border border-black/[.07] shadow-[0_1px_2px_rgba(15,23,42,0.03)] rounded-2xl';
 
+// `borda`/`ponto` pintam o item na agenda; `cor` é o ícone da lista de atrasados.
 const TIPO_ITEM = {
-    tarefa: { icone: ClipboardList, cor: 'bg-fuchsia-50 text-fuchsia-600', rotulo: 'Entrega' },
-    retorno: { icone: CalendarClock, cor: 'bg-amber-50 text-amber-600', rotulo: 'Retorno' },
-    receber: { icone: DollarSign, cor: 'bg-emerald-50 text-emerald-600', rotulo: 'Receber' },
-    prazo: { icone: Flag, cor: 'bg-rose-50 text-rose-600', rotulo: 'Prazo' },
-    prospeccao: { icone: UserSearch, cor: 'bg-lime-50 text-lime-700', rotulo: 'Prospecção' },
+    compromisso: { icone: CalendarDays, cor: 'bg-sky-50 text-sky-600', borda: 'border-sky-500', ponto: 'bg-sky-500', rotulo: 'Compromisso' },
+    tarefa: { icone: ClipboardList, cor: 'bg-fuchsia-50 text-fuchsia-600', borda: 'border-fuchsia-500', ponto: 'bg-fuchsia-500', rotulo: 'Entrega' },
+    retorno: { icone: CalendarClock, cor: 'bg-amber-50 text-amber-600', borda: 'border-amber-500', ponto: 'bg-amber-500', rotulo: 'Retorno' },
+    prospeccao: { icone: UserSearch, cor: 'bg-lime-50 text-lime-700', borda: 'border-lime-500', ponto: 'bg-lime-500', rotulo: 'Prospecção' },
+    venda: { icone: Target, cor: 'bg-indigo-50 text-indigo-600', borda: 'border-indigo-500', ponto: 'bg-indigo-500', rotulo: 'Fechamento' },
+    receber: { icone: DollarSign, cor: 'bg-emerald-50 text-emerald-600', borda: 'border-emerald-500', ponto: 'bg-emerald-500', rotulo: 'Receber' },
+    pagar: { icone: DollarSign, cor: 'bg-orange-50 text-orange-600', borda: 'border-orange-500', ponto: 'bg-orange-500', rotulo: 'Pagar' },
+    prazo: { icone: Flag, cor: 'bg-rose-50 text-rose-600', borda: 'border-rose-500', ponto: 'bg-rose-500', rotulo: 'Prazo' },
+    google: { icone: CalendarDays, cor: 'bg-slate-100 text-slate-600', borda: 'border-slate-400', ponto: 'bg-slate-400', rotulo: 'Google Agenda' },
 };
+
+// Até onde a agenda busca recebimentos e retornos da prospecção (o mês dá
+// para navegar para frente; o que estiver atrasado vem sempre).
+const HORIZONTE_DIAS = 183;
 
 const Titulo = ({ icone: Icone, children, acao }) => (
     <div className="flex items-center justify-between mb-3">
@@ -91,7 +94,6 @@ export default function HomeHub() {
     const trocarVista = (v) => setSearchParams(v === 'numeros' ? { aba: 'numeros' } : {}, { replace: true });
 
     const [d, setD] = useState(null);
-    const [aba, setAba] = useState('hoje');
     const [concluindo, setConcluindo] = useState(null);
     const [toqueAberto, setToqueAberto] = useState(null);
     const [novoAberto, setNovoAberto] = useState(false);
@@ -101,29 +103,84 @@ export default function HomeHub() {
         const hoje = todayISO();
         const vazio = Promise.resolve([]);
         const seguro = (p) => p.catch((e) => { console.warn(e); return []; });
-        const [tarefas, passos, projetos, receber, feed, prosp] = await Promise.all([
+        const [tarefas, passos, projetos, receber, prosp, agenda, vendas, pagar] = await Promise.all([
             pode.compromissos && currentUser?.id ? seguro(tarefasAtribuidas(currentUser.id)) : vazio,
             veCrm && currentUser?.id ? seguro(proximosPassos({ autorId: currentUser.id })) : vazio,
             veCrm ? seguro(listarProjetos()) : vazio,
             pode.financeiro ? seguro(supabase.from('finance_transactions')
                 .select('id, description, amount, paid_amount, due_date, status, party_id, finance_parties(name)')
                 .eq('type', 'ENTRADA').is('transfer_group_id', null).neq('status', 'PAGO')
-                .lte('due_date', addDias(hoje, 7)).order('due_date').then((r) => r.data || [])) : vazio,
-            veCrm ? seguro(atividadesRecentes(8)) : vazio,
-            // Retornos combinados na Prospecção (meus ou sem dono), até a semana que vem.
+                .lte('due_date', addDias(hoje, HORIZONTE_DIAS)).order('due_date').then((r) => r.data || [])) : vazio,
+            // Retornos combinados na Prospecção (meus ou sem dono).
             pode.prospeccao && currentUser?.id ? seguro(supabase.from('prospeccao_leads')
                 .select('id, nome, categoria, cidade, telefone, status, tentativas, ultimo_contato_em, proximo_contato_em, responsavel_id, cadencia_inicio, cadencia_etapa')
-                .not('proximo_contato_em', 'is', null).lte('proximo_contato_em', addDias(hoje, 7))
+                .not('proximo_contato_em', 'is', null).lte('proximo_contato_em', addDias(hoje, HORIZONTE_DIAS))
                 .not('status', 'in', '(DESCARTADO,CONVERTIDO)')
                 .or(`responsavel_id.is.null,responsavel_id.eq.${currentUser.id}`)
                 .order('proximo_contato_em').then((r) => r.data || [])) : vazio,
+            // Compromissos do Planejamento Geral (de toda a equipe).
+            pode.compromissos ? seguro(compromissosDaAgenda(currentUser)) : vazio,
+            // Vendas em aberto com previsão de fechamento (minhas ou sem dono).
+            pode.vendas && currentUser?.id ? seguro(supabase.from('crm_oportunidades')
+                .select('id, titulo, valor, previsao_fechamento, responsavel_id, empresa:finance_parties(name), etapa:crm_etapas(nome, tipo)')
+                .not('previsao_fechamento', 'is', null).lte('previsao_fechamento', addDias(hoje, HORIZONTE_DIAS))
+                .or(`responsavel_id.is.null,responsavel_id.eq.${currentUser.id}`)
+                .then((r) => (r.data || []).filter((o) => o.etapa?.tipo === 'ABERTA'))) : vazio,
+            // Contas a pagar em aberto.
+            pode.financeiro ? seguro(supabase.from('finance_transactions')
+                .select('id, description, amount, paid_amount, due_date, status, finance_parties(name)')
+                .eq('type', 'SAIDA').is('transfer_group_id', null).neq('status', 'PAGO')
+                .lte('due_date', addDias(hoje, HORIZONTE_DIAS)).order('due_date').then((r) => r.data || [])) : vazio,
         ]);
         const ativos = projetos.filter((p) => ['PLANEJAMENTO', 'EM_ANDAMENTO', 'EM_REVISAO', 'PAUSADO'].includes(p.status));
-        const progresso = await progressoDasEntregas(ativos.map((p) => p.workspace_page_id)).catch(() => ({}));
-        setD({ hoje, tarefas, passos, projetos, ativos, receber, feed, progresso, prosp });
-    }, [currentUser?.id, veCrm, pode.compromissos, pode.financeiro, pode.prospeccao]);
+        setD({ hoje, tarefas, passos, projetos, ativos, receber, prosp, agenda, vendas, pagar });
+    }, [currentUser, veCrm, pode.compromissos, pode.financeiro, pode.prospeccao, pode.vendas]);
 
     useEffect(() => { carregar(); }, [carregar]);
+
+    // ---- Google Agenda ----
+    // { configurado, conectado, email } e os eventos (null = carregando).
+    const [google, setGoogle] = useState(null);
+    const [eventosG, setEventosG] = useState([]);
+    const carregarGoogle = useCallback(async () => {
+        try {
+            const st = await statusGoogle();
+            setGoogle(st);
+            if (!st.conectado) { setEventosG([]); return; }
+            // Primeiro leva o Planejamento Geral para lá; depois lê tudo de volta.
+            await sincronizarGoogle({ agora: true });
+            const hoje = todayISO();
+            const r = await eventosGoogle(addDias(hoje, -62), addDias(hoje, HORIZONTE_DIAS));
+            setEventosG(r.eventos || []);
+        } catch (e) {
+            console.warn('[google]', e.message);
+            if (e.status === 409) { toast.error(e.message); setGoogle((g) => ({ ...g, conectado: false })); }
+            else setGoogle((g) => g || { configurado: false, conectado: false });
+        }
+    }, []);
+    useEffect(() => { if (pode.compromissos) carregarGoogle(); }, [carregarGoogle, pode.compromissos]);
+
+    // Volta da tela de permissão do Google: /home?google=ok (ou o motivo).
+    useEffect(() => {
+        const r = searchParams.get('google');
+        if (!r) return;
+        const msg = {
+            ok: ['success', 'Google Agenda conectado.'],
+            cancelado: ['error', 'Conexão com o Google cancelada.'],
+            expirou: ['error', 'A conexão demorou demais. Tente de novo.'],
+            'sem-permissao': ['error', 'Marque a permissão de agenda na tela do Google.'],
+            erro: ['error', 'Não deu para conectar o Google. Tente de novo.'],
+        }[r];
+        if (msg) toast[msg[0]](msg[1], { id: 'google-retorno' });
+        const p = new URLSearchParams(searchParams); p.delete('google');
+        setSearchParams(p, { replace: true });
+    }, [searchParams, setSearchParams]);
+
+    const desconectar = async () => {
+        if (!window.confirm('Desconectar o Google Agenda? Os eventos que já foram para lá continuam no Google.')) return;
+        try { await desconectarGoogle(); setGoogle((g) => ({ ...g, conectado: false, email: null })); setEventosG([]); toast.success('Google desconectado.'); }
+        catch (e) { toast.error(e.message); }
+    };
 
     useEffect(() => {
         const fora = (e) => { if (novoRef.current && !novoRef.current.contains(e.target)) setNovoAberto(false); };
@@ -135,8 +192,14 @@ export default function HomeHub() {
     const itens = useMemo(() => {
         if (!d) return [];
         const projetoDoQuadro = new Map(d.projetos.filter((p) => p.workspace_page_id).map((p) => [p.workspace_page_id, p]));
+        const naAgenda = new Set(d.agenda.map((c) => c.rowId));
         const lista = [
-            ...d.tarefas.filter((t) => t.dataISO).map((t) => {
+            ...d.agenda.map((c) => ({
+                id: `ws:${c.rowId}`, tipo: 'compromisso', titulo: c.titulo, data: c.dataISO, hora: c.hora, feito: c.feito,
+                contexto: c.agenda, abrir: `/compromissos?abrir=${c.rowId}`, concluir: { tipo: 'tarefa', rowId: c.rowId },
+            })),
+            // Atribuídas a mim que já estão na agenda não se repetem.
+            ...d.tarefas.filter((t) => t.dataISO && !naAgenda.has(t.rowId)).map((t) => {
                 const proj = projetoDoQuadro.get(t.databaseId);
                 return {
                     id: t.id, tipo: 'tarefa', titulo: t.titulo, data: t.dataISO, hora: t.hora,
@@ -145,7 +208,8 @@ export default function HomeHub() {
                 };
             }),
             ...d.passos.map((a) => ({
-                id: `crm:${a.id}`, tipo: 'retorno', titulo: a.proximo_passo || a.titulo, data: a.proximo_passo_em,
+                id: `crm:${a.id}`, tipo: 'retorno', titulo: a.proximo_passo || a.titulo, data: a.proximo_passo_em, meet: a.meet_link,
+                hora: a.proximo_passo_hora ? String(a.proximo_passo_hora).slice(0, 5) : null,
                 contexto: a.empresa?.name || 'Cliente',
                 abrir: a.projeto_id ? `/projetos/${a.projeto_id}` : a.oportunidade_id ? `/vendas?abrir=${a.oportunidade_id}` : `/clientes/${a.party_id}`,
                 concluir: { tipo: 'retorno', id: a.id },
@@ -166,35 +230,42 @@ export default function HomeHub() {
                 data: t.due_date, contexto: `${t.finance_parties?.name || ''}${t.finance_parties?.name ? ' · ' : ''}${t.description}`,
                 abrir: '/finance/contas-receber',
             })),
+            ...d.vendas.map((o) => ({
+                id: `venda:${o.id}`, tipo: 'venda', titulo: `Fechar: ${o.titulo}`, data: o.previsao_fechamento,
+                contexto: [o.empresa?.name, o.etapa?.nome, Number(o.valor) > 0 ? fmtBRL(o.valor) : null].filter(Boolean).join(' · '),
+                abrir: `/vendas?abrir=${o.id}`,
+            })),
+            ...d.pagar.map((t) => ({
+                id: `pagar:${t.id}`, tipo: 'pagar', titulo: `Pagar ${fmtBRL(Number(t.amount) - Number(t.paid_amount || 0))}`,
+                data: t.due_date, contexto: `${t.finance_parties?.name || ''}${t.finance_parties?.name ? ' · ' : ''}${t.description}`,
+                abrir: '/finance/contas-pagar',
+            })),
             ...d.ativos.filter((p) => p.prazo && (!p.responsavel_id || p.responsavel_id === currentUser?.id)).map((p) => ({
                 id: `prazo:${p.id}`, tipo: 'prazo', titulo: `Entrega: ${p.nome}`, data: p.prazo,
                 contexto: `${p.empresa?.name || ''} · ${statusProjeto(p.status).label}`, abrir: `/projetos/${p.id}`,
             })),
         ];
+        // Do Google, só o que não nasceu aqui (o que nasceu já está na lista acima).
+        eventosG.filter((e) => !e.origem).forEach((e) => lista.push({
+            id: `g:${e.id}:${e.data}`, tipo: 'google', titulo: e.titulo, data: e.data, hora: e.hora,
+            contexto: [e.hora && e.horaFim ? `até ${e.horaFim}` : null, e.local].filter(Boolean).join(' · '),
+            abrir: e.link, meet: e.meet, externo: true,
+        }));
         return lista.sort((a, b) => (a.data + (a.hora || '')).localeCompare(b.data + (b.hora || '')));
-    }, [d, currentUser?.id, pode.editarProspeccao]);
+    }, [d, currentUser?.id, pode.editarProspeccao, eventosG]);
 
     const grupos = useMemo(() => {
-        if (!d) return { atrasado: [], hoje: [], semana: [] };
-        const fimSemana = addDias(d.hoje, 7);
+        if (!d) return { atrasado: [], hoje: [] };
+        const pendente = itens.filter((i) => !i.feito);
         return {
-            atrasado: itens.filter((i) => i.data < d.hoje),
-            hoje: itens.filter((i) => i.data === d.hoje),
-            semana: itens.filter((i) => i.data > d.hoje && i.data <= fimSemana),
+            atrasado: pendente.filter((i) => i.data < d.hoje),
+            hoje: pendente.filter((i) => i.data === d.hoje),
         };
     }, [itens, d]);
 
-    // Abre na aba que tem o que fazer: atrasado > hoje > semana.
-    const abaInicial = useRef(false);
-    useEffect(() => {
-        if (!d || abaInicial.current) return;
-        abaInicial.current = true;
-        setAba(grupos.atrasado.length ? 'atrasado' : grupos.hoje.length ? 'hoje' : 'semana');
-    }, [d, grupos]);
-
-    // O lead mudou no painel do toque: some da lista se o próximo retorno saiu da semana.
+    // O lead mudou no painel do toque: some da agenda se o próximo retorno saiu do horizonte.
     const leadAlterado = (row) => {
-        const fimSemana = addDias(todayISO(), 7);
+        const fimSemana = addDias(todayISO(), HORIZONTE_DIAS);
         setD((x) => ({
             ...x,
             prosp: x.prosp
@@ -225,6 +296,7 @@ export default function HomeHub() {
                 passos: x.passos.filter((a) => `crm:${a.id}` !== item.id),
                 tarefas: x.tarefas.filter((t) => t.id !== item.id),
                 prosp: x.prosp.filter((l) => `prosp:${l.id}` !== item.id),
+                agenda: x.agenda.map((c) => (`ws:${c.rowId}` === item.id ? { ...c, feito: true } : c)),
             }));
             toast.success('Feito!');
         } catch (e) {
@@ -244,8 +316,6 @@ export default function HomeHub() {
         setNovoAberto(false);
         abrirNovo(id);
     };
-
-    const lista = grupos[aba] || [];
 
     return (
         <div className="md:h-full w-full md:overflow-y-auto font-sans px-4 pb-8 pt-[80px] md:px-6 md:pt-[84px]">
@@ -307,123 +377,54 @@ export default function HomeHub() {
                     <div className="py-24 flex justify-center"><Loader2 size={28} className="animate-spin text-indigo-400" /></div>
                 ) : (<>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-                        {/* Meu dia */}
-                        <section className={`${VIDRO} p-4 xl:col-span-2 md:min-h-[280px] xl:self-start flex flex-col`}>
-                            <div className="flex flex-wrap items-center gap-2 mb-4">
-                                {[
-                                    ['atrasado', 'Atrasados', 'bg-rose-600'],
-                                    ['hoje', 'Hoje', 'bg-indigo-600'],
-                                    ['semana', 'Próximos 7 dias', 'bg-slate-700'],
-                                ].map(([id, rotulo, cor]) => (
-                                    <button key={id} onClick={() => setAba(id)}
-                                        className={`h-7 px-2.5 rounded-md text-[12px] font-medium transition-all flex items-center gap-1.5 ${aba === id ? `${cor} text-white` : 'bg-slate-100/80 text-slate-500 hover:text-slate-800'}`}>
-                                        {rotulo}
-                                        <span className={`min-w-[18px] px-1 rounded text-[11px] tabular-nums ${aba === id ? 'bg-white/20' : 'bg-white'}`}>{grupos[id].length}</span>
-                                    </button>
-                                ))}
-                            </div>
-
-                            {lista.length === 0 ? (
-                                <div className="flex-1 flex flex-col items-center justify-center text-center gap-2 py-10">
-                                    <Sparkles size={26} className="text-indigo-300" />
-                                    <p className="text-[13px] font-bold text-slate-500">
-                                        {aba === 'atrasado' ? 'Nada atrasado. 👏' : aba === 'hoje' ? 'Dia livre por aqui.' : 'Semana tranquila.'}
-                                    </p>
-                                    <p className="text-[11.5px] font-semibold text-slate-400 max-w-sm">
-                                        Aqui aparecem as tarefas das entregas atribuídas a você, os retornos combinados com clientes e leads da prospecção, os recebimentos e os prazos dos seus projetos.
-                                    </p>
-                                </div>
-                            ) : (
-                                <ul className="space-y-1.5">
-                                    {lista.map((item) => {
-                                        const t = TIPO_ITEM[item.tipo];
-                                        const atrasado = item.data < d.hoje;
-                                        return (
-                                            <li key={item.id} className="group flex items-center gap-3 p-2.5 rounded-2xl bg-white/60 hover:bg-white transition-colors">
-                                                <span className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${t.cor}`}><t.icone size={16} /></span>
-                                                <button onClick={() => navigate(item.abrir)} className="min-w-0 flex-1 text-left">
-                                                    <p className="text-[13px] font-bold text-slate-800 truncate">{item.titulo}</p>
-                                                    <p className="text-[11px] font-semibold text-slate-400 truncate">{t.rotulo} · {item.contexto}</p>
+                    {grupos.atrasado.length > 0 && (
+                        <section className={`${VIDRO} p-4`}>
+                            <Titulo icone={AlertTriangle}>
+                                <span className="text-rose-600">Atrasados</span>
+                                <span className="ml-1 min-w-[18px] px-1 rounded bg-rose-600 text-white text-[11px] tabular-nums text-center">{grupos.atrasado.length}</span>
+                            </Titulo>
+                            <ul className="grid gap-x-6 gap-y-2 md:grid-cols-2">
+                                {grupos.atrasado.map((item) => {
+                                    const t = TIPO_ITEM[item.tipo];
+                                    return (
+                                        <li key={item.id} className="flex items-center gap-2.5">
+                                            <span className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${t.cor}`}><t.icone size={15} /></span>
+                                            <button onClick={() => navigate(item.abrir)} className="min-w-0 flex-1 text-left">
+                                                <p className="text-[12.5px] font-medium text-slate-800 leading-snug break-words">{item.titulo}</p>
+                                                <p className="text-[11px] text-slate-400 truncate">{t.rotulo} · {item.contexto}</p>
+                                            </button>
+                                            <span className="text-[11px] font-semibold tabular-nums text-rose-600 whitespace-nowrap">{fmtData(item.data).slice(0, 5)}</span>
+                                            {item.concluir && (
+                                                <button onClick={() => concluir(item)} disabled={concluindo === item.id} title={item.concluir.tipo === 'toque' ? 'Abrir a mensagem pronta' : 'Marcar como feito'}
+                                                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 border border-slate-100 shrink-0">
+                                                    {concluindo === item.id ? <Loader2 size={13} className="animate-spin" /> : <Check size={14} strokeWidth={3} />}
                                                 </button>
-                                                <span className={`text-[11px] font-bold tabular-nums whitespace-nowrap ${atrasado ? 'text-rose-600' : 'text-slate-500'}`}>
-                                                    {item.data === d.hoje ? (item.hora || 'Hoje') : fmtData(item.data).slice(0, 5)}
-                                                </span>
-                                                {item.concluir ? (
-                                                    <button onClick={() => concluir(item)} disabled={concluindo === item.id} title={item.concluir.tipo === 'toque' ? 'Abrir a mensagem pronta' : 'Marcar como feito'}
-                                                        className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 border border-slate-100 shrink-0">
-                                                        {concluindo === item.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={15} strokeWidth={3} />}
-                                                    </button>
-                                                ) : (
-                                                    <ChevronRight size={16} className="text-slate-300 shrink-0 mx-2" />
-                                                )}
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            )}
+                                            )}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
                         </section>
+                    )}
 
-                        {/* Coluna direita */}
-                        <div className="space-y-5">
-                            {veCrm && (
-                                <section className={`${VIDRO} p-4`}>
-                                    <Titulo icone={FolderKanban} acao={<button onClick={() => navigate('/projetos')} className="text-[12px] font-medium text-slate-500 hover:text-slate-900">Todos</button>}>Projetos em andamento</Titulo>
-                                    {d.ativos.length === 0 ? (
-                                        <p className="text-[12px] font-semibold text-slate-400">Nenhum projeto em andamento. Eles nascem quando uma oportunidade é ganha.</p>
-                                    ) : (
-                                        <ul className="space-y-3">
-                                            {[...d.ativos].sort((a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999')).slice(0, 6).map((p) => {
-                                                const pr = d.progresso[p.workspace_page_id];
-                                                const pct = pr?.total ? Math.round((pr.feitas / pr.total) * 100) : null;
-                                                const atrasado = p.prazo && p.prazo < d.hoje;
-                                                return (
-                                                    <li key={p.id} onClick={() => navigate(`/projetos/${p.id}`)} className="cursor-pointer group">
-                                                        <div className="flex items-center gap-2">
-                                                            <IconesServicos icones={resumoServicos(p).icones} tamanho="sm" />
-                                                            <span className="text-[12.5px] font-bold text-slate-800 truncate flex-1 group-hover:text-indigo-600">{p.nome}</span>
-                                                            <span className={`text-[10.5px] font-bold whitespace-nowrap ${atrasado ? 'text-rose-600' : 'text-slate-400'}`}>
-                                                                {atrasado && <AlertTriangle size={10} className="inline mr-0.5 -mt-0.5" />}{p.prazo ? fmtData(p.prazo).slice(0, 5) : 'sem prazo'}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 mt-1.5">
-                                                            <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                                                                <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all" style={{ width: `${pct ?? 0}%` }} />
-                                                            </div>
-                                                            <span className="text-[10px] font-bold text-slate-400 tabular-nums text-right whitespace-nowrap md:whitespace-normal md:w-16">{pct == null ? statusProjeto(p.status).label : `${pr.feitas}/${pr.total}`}</span>
-                                                        </div>
-                                                        <p className="text-[10.5px] font-semibold text-slate-400 mt-0.5 truncate">{p.empresa?.name}{Number(p.valor_recorrente) > 0 && <><Repeat size={9} className="inline mx-1 -mt-0.5 text-violet-400" />{fmtBRL(p.valor_recorrente)}/mês</>}</p>
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    )}
-                                </section>
-                            )}
+                    {/* Agenda: tudo que tem data, por semana ou por mês — largura toda para dar para ler */}
+                    <section className={`${VIDRO} p-4`}>
+                        <AgendaInicio itens={itens} hoje={d.hoje} tipos={TIPO_ITEM} concluindo={concluindo}
+                            onAbrir={(item) => (item.externo ? window.open(item.abrir, '_blank', 'noopener') : navigate(item.abrir))}
+                            onConcluir={concluir}
+                            extra={google?.configurado && (google.conectado ? (
+                                <span className="flex items-center gap-1.5 text-[11.5px] text-slate-500" title={`Sincronizado com ${google.email || 'o Google'}`}>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Google Agenda
+                                    <button onClick={desconectar} className="text-slate-400 hover:text-rose-600 underline-offset-2 hover:underline">desconectar</button>
+                                </span>
+                            ) : (
+                                <button onClick={() => conectarGoogle().catch((e) => toast.error(e.message))}
+                                    className="h-7 px-2.5 rounded-md text-[12px] font-medium text-slate-700 border border-black/[.08] hover:bg-slate-50 flex items-center gap-1.5">
+                                    <CalendarDays size={13} /> Conectar Google Agenda
+                                </button>
+                            ))} />
+                    </section>
 
-                            {veCrm && (
-                                <section className={`${VIDRO} p-4`}>
-                                    <Titulo icone={Sparkles}>Atividade recente</Titulo>
-                                    {d.feed.length === 0 ? (
-                                        <p className="text-[12px] font-semibold text-slate-400">Os registros de contato com clientes aparecem aqui.</p>
-                                    ) : (
-                                        <ul className="space-y-2.5">
-                                            {d.feed.map((a) => (
-                                                <li key={a.id} onClick={() => navigate(a.projeto_id ? `/projetos/${a.projeto_id}` : a.oportunidade_id ? `/vendas?abrir=${a.oportunidade_id}` : `/clientes/${a.party_id}`)}
-                                                    className="flex items-start gap-2 cursor-pointer group">
-                                                    <span className="mt-0.5 text-slate-400">{React.createElement(tipoAtividade(a.tipo).icone, { size: 14 })}</span>
-                                                    <div className="min-w-0">
-                                                        <p className="text-[12px] font-semibold text-slate-700 leading-snug group-hover:text-indigo-600">{a.titulo}</p>
-                                                        <p className="text-[10.5px] font-semibold text-slate-400">{a.empresa?.name}{a.autor?.name ? ` · ${a.autor.name.split(' ')[0]}` : ''} · {tempoAtras(a.data)}</p>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </section>
-                            )}
-                        </div>
-                    </div>
                 </>)}
             </div>
 

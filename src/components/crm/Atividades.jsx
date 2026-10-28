@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Loader2, Send, Trash2, CalendarClock, Check } from 'lucide-react';
+import { Loader2, Send, Trash2, CalendarClock, Check, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { listarAtividades, registrarAtividade, excluirAtividade, concluirProximoPasso } from '../../services/crm';
 import { TIPOS_ATIVIDADE, tipoAtividade, fmtData } from '../../config/servicos';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermission } from '../../contexts/PermissionContext';
 import { inputCls, textareaCls, CARD } from './ui';
+import MarcarReuniao from './MarcarReuniao';
 
 const dataHora = (iso) => {
     if (!iso) return '';
@@ -26,8 +27,9 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
     const [itens, setItens] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
-    const [form, setForm] = useState({ tipo: 'NOTA', titulo: '', descricao: '', proximo_passo: '', proximo_passo_em: '' });
+    const [form, setForm] = useState({ tipo: 'NOTA', titulo: '', descricao: '', proximo_passo: '', proximo_passo_em: '', proximo_passo_hora: '' });
     const [comProximo, setComProximo] = useState(false);
+    const [reuniaoAberta, setReuniaoAberta] = useState(false);
 
     const carregar = useCallback(async () => {
         try { setItens(await listarAtividades(filtro)); }
@@ -47,8 +49,10 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                 ...vinculo, tipo: form.tipo, titulo, descricao: form.descricao.trim() || null,
                 proximo_passo: comProximo ? (form.proximo_passo.trim() || null) : null,
                 proximo_passo_em: comProximo ? (form.proximo_passo_em || null) : null,
+                proximo_passo_hora: comProximo && form.proximo_passo_em ? (form.proximo_passo_hora || null) : null,
             }, currentUser?.id);
-            setForm({ tipo: form.tipo, titulo: '', descricao: '', proximo_passo: '', proximo_passo_em: '' });
+            if (comProximo && form.proximo_passo_em) toast.success('Na sua agenda do Início.');
+            setForm({ tipo: form.tipo, titulo: '', descricao: '', proximo_passo: '', proximo_passo_em: '', proximo_passo_hora: '' });
             setComProximo(false);
             await carregar();
             onRegistrada?.();
@@ -77,7 +81,17 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
 
     return (
         <div className={`${CARD} p-4 flex flex-col gap-3`}>
-            <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight">{titulo}</h3>
+            <div className="flex items-center justify-between gap-2">
+                <h3 className="text-[13px] font-semibold text-slate-800 tracking-tight">{titulo}</h3>
+                <button type="button" onClick={() => setReuniaoAberta(true)}
+                    className="h-7 px-2.5 rounded-lg text-[12px] font-medium text-slate-700 border border-black/[.08] bg-white hover:bg-slate-50 flex items-center gap-1.5">
+                    <Video size={13} /> Marcar reunião
+                </button>
+            </div>
+            {reuniaoAberta && (
+                <MarcarReuniao vinculo={vinculo} onClose={() => setReuniaoAberta(false)}
+                    onMarcada={() => { carregar(); onRegistrada?.(); }} />
+            )}
 
             <form onSubmit={registrar} className="space-y-2 bg-slate-50/70 border border-black/[.05] rounded-xl p-3">
                 <div className="flex flex-wrap gap-1">
@@ -97,10 +111,11 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                     Combinar próximo passo
                 </label>
                 {comProximo && (
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <input value={form.proximo_passo} onChange={(e) => setForm((f) => ({ ...f, proximo_passo: e.target.value }))} className={`${inputCls} col-span-2`}
                             placeholder="Ex: Enviar proposta revisada" />
-                        <input type="date" min={hojeISO()} value={form.proximo_passo_em} onChange={(e) => setForm((f) => ({ ...f, proximo_passo_em: e.target.value }))} className={inputCls} />
+                        <input type="date" min={hojeISO()} value={form.proximo_passo_em} onChange={(e) => setForm((f) => ({ ...f, proximo_passo_em: e.target.value }))} className={inputCls} title="Dia" />
+                        <input type="time" value={form.proximo_passo_hora} onChange={(e) => setForm((f) => ({ ...f, proximo_passo_hora: e.target.value }))} className={inputCls} title="Hora (opcional)" />
                     </div>
                 )}
                 <div className="flex justify-end">
@@ -128,14 +143,19 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                                         {a.descricao && <p className="text-[11.5px] text-slate-600 whitespace-pre-wrap mt-0.5">{a.descricao}</p>}
                                         {a.proximo_passo_em && (a.proximo_passo_concluido_em ? (
                                             <p className="text-[11px] font-semibold text-emerald-700 mt-1 flex items-center gap-1 line-through decoration-emerald-400/60">
-                                                <Check size={12} /> {a.proximo_passo || 'Próximo passo'} · {fmtData(a.proximo_passo_em)}
+                                                <Check size={12} /> {a.proximo_passo || 'Próximo passo'} · {fmtData(a.proximo_passo_em)}{a.proximo_passo_hora ? ` · ${String(a.proximo_passo_hora).slice(0, 5)}` : ''}
                                             </p>
                                         ) : (
                                             <p className="text-[11px] font-semibold text-amber-700 mt-1 flex items-center gap-1.5">
-                                                <CalendarClock size={12} /> {a.proximo_passo || 'Próximo passo'} · {fmtData(a.proximo_passo_em)}
+                                                <CalendarClock size={12} /> {a.proximo_passo || 'Próximo passo'} · {fmtData(a.proximo_passo_em)}{a.proximo_passo_hora ? ` · ${String(a.proximo_passo_hora).slice(0, 5)}` : ''}
                                                 <button onClick={() => concluir(a)} className="ml-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-medium hover:bg-emerald-100">Feito</button>
                                             </p>
                                         ))}
+                                        {a.meet_link && !a.proximo_passo_concluido_em && (
+                                            <a href={a.meet_link} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-sky-600 hover:underline">
+                                                <Video size={12} /> Entrar no Meet
+                                            </a>
+                                        )}
                                         <p className="text-[10px] font-medium text-slate-400 mt-1">
                                             {t.label} · {dataHora(a.data)}{a.autor?.name ? ` · ${a.autor.name}` : ''}
                                             {!filtro?.oportunidadeId && a.oportunidade?.titulo ? ` · ${a.oportunidade.titulo}` : ''}

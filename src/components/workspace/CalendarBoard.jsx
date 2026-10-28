@@ -6,7 +6,7 @@
 // O DatabaseView importa este módulo com React.lazy, então o custo só aparece
 // para quem realmente abre a visão de calendário.
 // ============================================================================
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
@@ -54,7 +54,15 @@ const COMPONENTES = {
   agenda: { event: EventoDaFaixa },  // a agenda já tem coluna de hora
 };
 
+const VISOES = ['month', 'week', 'day', 'agenda'];
+const CHAVE_VISAO = 'ws-cal-visao';
+
 export default function CalendarBoard({ rows, props, datePropId, onCell, onAddRow, onOpenRow }) {
+  // Mês/semana/dia/agenda: fica no que a pessoa escolheu por último.
+  const [visao, setVisao] = useState(() => {
+    try { const v = localStorage.getItem(CHAVE_VISAO); return VISOES.includes(v) ? v : 'month'; } catch { return 'month'; }
+  });
+  const trocarVisao = useCallback((v) => { setVisao(v); try { localStorage.setItem(CHAVE_VISAO, v); } catch { /* ignore */ } }, []);
   const dateProp = useMemo(() => props.find((p) => p.id === datePropId) || props.find((p) => p.type === 'date'), [props, datePropId]);
   const timeProp = useMemo(
     () => props.find((p) => p.type === 'time')
@@ -98,8 +106,9 @@ export default function CalendarBoard({ rows, props, datePropId, onCell, onAddRo
         components={COMPONENTES}
         style={{ height: '100%', width: '100%' }}
         startAccessor="start" endAccessor="end"
-        views={['month', 'week', 'day', 'agenda']}
-        defaultView="month"
+        views={VISOES}
+        view={visao}
+        onView={trocarVisao}
         culture="pt-BR"
         popup
         dayLayoutAlgorithm="no-overlap"

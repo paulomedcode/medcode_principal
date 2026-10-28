@@ -98,7 +98,7 @@ export async function listarAtividades({ partyId, oportunidadeId, projetoId } = 
 
 export async function registrarAtividade(atividade, autorId) {
     const dados = soCampos(atividade, ['party_id', 'oportunidade_id', 'projeto_id', 'tipo', 'titulo', 'descricao',
-        'data', 'proximo_passo', 'proximo_passo_em']);
+        'data', 'proximo_passo', 'proximo_passo_em', 'proximo_passo_hora']);
     return ok(await supabase.from('crm_atividades').insert([{ ...dados, autor_id: autorId || null }]).select().single());
 }
 
@@ -109,7 +109,7 @@ export async function excluirAtividade(id) {
 /** Próximos passos combinados e não concluídos (os atrasados inclusive), para o painel e a home. */
 export async function proximosPassos({ ate = null, autorId = null } = {}) {
     let q = supabase.from('crm_atividades')
-        .select('id, titulo, proximo_passo, proximo_passo_em, party_id, oportunidade_id, projeto_id, autor_id, empresa:finance_parties(name)')
+        .select('id, titulo, proximo_passo, proximo_passo_em, proximo_passo_hora, meet_link, party_id, oportunidade_id, projeto_id, autor_id, empresa:finance_parties(name)')
         .not('proximo_passo_em', 'is', null)
         .is('proximo_passo_concluido_em', null)
         .order('proximo_passo_em');
