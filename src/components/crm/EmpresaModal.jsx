@@ -6,6 +6,7 @@ import { TIPOS_EMPRESA } from '../../config/servicos';
 import { maskDocumento, maskTelefone } from '../../utils/masks';
 import { Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
 import { useUsuarios, useListasGerais } from './dados';
+import JaExiste from './JaExiste';
 
 const VAZIA = {
     name: '', kind: 'LEAD', tipo_pessoa: 'PJ', nome_fantasia: '', document: '', email: '', telefone: '',
@@ -114,6 +115,9 @@ export default function EmpresaModal({ empresa, onClose, onSaved, kindInicial = 
                         <textarea value={form.notes || ''} onChange={(e) => set({ notes: e.target.value })} className={`${textareaCls} h-16`} />
                     </Campo>
                 </div>
+                {!empresa?.id && (
+                    <JaExiste nome={form.name} telefone={form.telefone} instagram={form.instagram} documento={form.document} onIr={onClose} />
+                )}
                 {(segmentos.length === 0 || origens_lead.length === 0) && (
                     <p className="text-[10px] font-semibold text-slate-400">
                         As listas de segmento e origem se cadastram em Configurações › Cadastros gerais.

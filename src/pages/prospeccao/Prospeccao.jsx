@@ -12,6 +12,7 @@ import { usePermission } from '../../contexts/PermissionContext';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import FichaLead from '../../components/prospeccao/FichaLead';
 import ImportarLeads from '../../components/prospeccao/ImportarLeads';
+import JaExiste from '../../components/crm/JaExiste';
 import Roteiros from '../../components/prospeccao/Roteiros';
 import { Estrelas, Contatos, NotaGoogle } from '../../components/prospeccao/pecas';
 import {
@@ -621,6 +622,7 @@ function NovoLead({ onClose, onSalvo }) {
                 <Campo label="Instagram"><input value={f.instagram} onChange={set('instagram')} className={inputCls} placeholder="@perfil" /></Campo>
                 <Campo label="Origem" className="col-span-2"><input value={f.origem} onChange={set('origem')} className={inputCls} placeholder="Google Maps, indicação…" /></Campo>
             </div>
+            <JaExiste nome={f.nome} telefone={f.telefone} instagram={f.instagram} onIr={onClose} />
         </Janela>
     );
 }
