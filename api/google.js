@@ -7,7 +7,7 @@
 //   GET  eventos      → eventos do Google entre ?de e ?ate (AAAA-MM-DD)
 //   POST reuniao      → cria o evento com link do Meet, convida, registra no histórico
 //   POST sincronizar  → leva os compromissos do Planejamento Geral e os próximos
-//                       passos com hora (Vendas) para o Google
+//                       passos (Vendas/Clientes/Projetos) para o Google
 // E o retorno do Google (?code&state), que grava a ligação e volta para /home.
 //
 // A chave de serviço do Supabase só existe aqui no servidor: é ela que lê o
@@ -418,18 +418,18 @@ async function compromissosQueSaoMeus(userId) {
   }).filter(Boolean);
 }
 
-// Próximos passos COM HORA (visita, reunião, ligação marcada) de quem chamou
-// também vão para o Google. Sem hora (ex.: "enviar proposta") ficam só no
-// sistema. Os de "Marcar reunião" já têm evento próprio (com Meet) e ficam de fora.
+// Próximos passos de quem chamou também vão para o Google: com hora, no
+// horário (1 h); sem hora (ex.: "enviar proposta"), como dia inteiro. Os de
+// "Marcar reunião" já têm evento próprio (com Meet) e ficam de fora.
 async function passosQueSaoMeus(userId) {
-  const linhas = await sb(`crm_atividades?autor_id=eq.${userId}&proximo_passo_em=not.is.null&proximo_passo_hora=not.is.null&google_event_id=is.null`
+  const linhas = await sb(`crm_atividades?autor_id=eq.${userId}&proximo_passo_em=not.is.null&google_event_id=is.null`
     + '&select=id,proximo_passo,titulo,proximo_passo_em,proximo_passo_hora,proximo_passo_concluido_em,empresa:finance_parties(name)');
   return linhas.map((a) => {
     const nome = a.proximo_passo || a.titulo || 'Compromisso';
     const empresa = a.empresa?.name;
     return {
       id: a.id, titulo: empresa && !nome.toLowerCase().includes(empresa.toLowerCase()) ? `${nome} · ${empresa}` : nome,
-      data: String(a.proximo_passo_em).slice(0, 10), hora: String(a.proximo_passo_hora).slice(0, 5),
+      data: String(a.proximo_passo_em).slice(0, 10), hora: a.proximo_passo_hora ? String(a.proximo_passo_hora).slice(0, 5) : null,
       feito: !!a.proximo_passo_concluido_em, agenda: 'Vendas',
     };
   });

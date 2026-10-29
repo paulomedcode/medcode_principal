@@ -101,7 +101,7 @@ export async function registrarAtividade(atividade, autorId) {
     const dados = soCampos(atividade, ['party_id', 'oportunidade_id', 'projeto_id', 'tipo', 'titulo', 'descricao',
         'data', 'proximo_passo', 'proximo_passo_em', 'proximo_passo_hora']);
     const row = ok(await supabase.from('crm_atividades').insert([{ ...dados, autor_id: autorId || null }]).select().single());
-    if (row.proximo_passo_hora) sincronizarGoogle();   // compromisso com hora vai para o Google
+    if (row.proximo_passo_em) sincronizarGoogle();   // próximo passo vai para o Google
     return row;
 }
 
