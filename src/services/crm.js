@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { logAction } from '../utils/logger';
 import * as ws from './workspace';
+import { sincronizarGoogle } from './google';
 import { servicosDe, resumoServicos } from '../config/servicos';
 
 /*
@@ -99,11 +100,14 @@ export async function listarAtividades({ partyId, oportunidadeId, projetoId } = 
 export async function registrarAtividade(atividade, autorId) {
     const dados = soCampos(atividade, ['party_id', 'oportunidade_id', 'projeto_id', 'tipo', 'titulo', 'descricao',
         'data', 'proximo_passo', 'proximo_passo_em', 'proximo_passo_hora']);
-    return ok(await supabase.from('crm_atividades').insert([{ ...dados, autor_id: autorId || null }]).select().single());
+    const row = ok(await supabase.from('crm_atividades').insert([{ ...dados, autor_id: autorId || null }]).select().single());
+    if (row.proximo_passo_hora) sincronizarGoogle();   // compromisso com hora vai para o Google
+    return row;
 }
 
 export async function excluirAtividade(id) {
     ok(await supabase.from('crm_atividades').delete().eq('id', id));
+    sincronizarGoogle();
 }
 
 /** Próximos passos combinados e não concluídos (os atrasados inclusive), para o painel e a home. */
@@ -120,6 +124,7 @@ export async function proximosPassos({ ate = null, autorId = null } = {}) {
 
 export async function concluirProximoPasso(id) {
     ok(await supabase.from('crm_atividades').update({ proximo_passo_concluido_em: new Date().toISOString() }).eq('id', id));
+    sincronizarGoogle();
 }
 
 // ---------------------------------------------------------------------------

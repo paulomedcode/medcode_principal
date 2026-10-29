@@ -6,7 +6,8 @@
 //   POST desconectar  → apaga a ligação
 //   GET  eventos      → eventos do Google entre ?de e ?ate (AAAA-MM-DD)
 //   POST reuniao      → cria o evento com link do Meet, convida, registra no histórico
-//   POST sincronizar  → leva os compromissos do Planejamento Geral para o Google
+//   POST sincronizar  → leva os compromissos do Planejamento Geral e os próximos
+//                       passos com hora (Vendas) para o Google
 // E o retorno do Google (?code&state), que grava a ligação e volta para /home.
 //
 // A chave de serviço do Supabase só existe aqui no servidor: é ela que lê o
@@ -417,51 +418,79 @@ async function compromissosQueSaoMeus(userId) {
   }).filter(Boolean);
 }
 
+// Próximos passos COM HORA (visita, reunião, ligação marcada) de quem chamou
+// também vão para o Google. Sem hora (ex.: "enviar proposta") ficam só no
+// sistema. Os de "Marcar reunião" já têm evento próprio (com Meet) e ficam de fora.
+async function passosQueSaoMeus(userId) {
+  const linhas = await sb(`crm_atividades?autor_id=eq.${userId}&proximo_passo_em=not.is.null&proximo_passo_hora=not.is.null&google_event_id=is.null`
+    + '&select=id,proximo_passo,titulo,proximo_passo_em,proximo_passo_hora,proximo_passo_concluido_em,empresa:finance_parties(name)');
+  return linhas.map((a) => {
+    const nome = a.proximo_passo || a.titulo || 'Compromisso';
+    const empresa = a.empresa?.name;
+    return {
+      id: a.id, titulo: empresa && !nome.toLowerCase().includes(empresa.toLowerCase()) ? `${nome} · ${empresa}` : nome,
+      data: String(a.proximo_passo_em).slice(0, 10), hora: String(a.proximo_passo_hora).slice(0, 5),
+      feito: !!a.proximo_passo_concluido_em, agenda: 'Vendas',
+    };
+  });
+}
+
 async function sincronizar(req, res) {
   const eu = await quemChamou(req);
   const conta = await contaDe(eu.id);
   if (!conta) return json(res, 200, { conectado: false });
 
-  const [itens, mapas] = await Promise.all([
+  const [linhas, passos, mapasLinha, mapasPasso] = await Promise.all([
     compromissosQueSaoMeus(eu.id),
+    passosQueSaoMeus(eu.id),
     sb(`google_eventos?origem=eq.linha&user_id=eq.${eu.id}&select=*`),
+    // Só os que a sincronização criou (têm assinatura); os de "Marcar reunião" não.
+    sb(`google_eventos?origem=eq.atividade&user_id=eq.${eu.id}&assinatura=not.is.null&select=*`),
   ]);
-  const porLinha = new Map(mapas.map((m) => [m.origem_id, m]));
   const acesso = await acessoDe(conta);
   const cal = `/calendars/${encodeURIComponent(conta.calendario_id)}/events`;
   const cont = { criados: 0, atualizados: 0, removidos: 0 };
+  // Não despeja o passado no Google: item que nunca foi só entra se for recente e pendente.
+  const desde = somarDias(new Date().toISOString().slice(0, 10), -7);
 
-  for (const it of itens) {
-    const corpo = {
-      summary: `${it.feito ? '✓ ' : ''}${it.titulo}`,
-      description: `Compromisso do MedCode (${it.agenda}). Para mudar, altere no sistema.`,
-      ...horario(it.data, it.hora, 60),
-      extendedProperties: { private: { medcodeOrigem: 'linha', medcodeId: it.id } },
-    };
-    const assinatura = crypto.createHash('sha1').update(JSON.stringify([corpo.summary, corpo.start, corpo.end])).digest('hex');
-    const mapa = porLinha.get(it.id);
-    porLinha.delete(it.id);
-    if (mapa && mapa.assinatura === assinatura) continue;
+  const levar = async (origem, itens, mapas) => {
+    const porId = new Map(mapas.map((m) => [m.origem_id, m]));
+    for (const it of itens) {
+      const mapa = porId.get(it.id);
+      porId.delete(it.id);
+      if (!mapa && (it.data < desde || it.feito)) continue;   // concluído que nunca foi: não cria
+      const corpo = {
+        summary: `${it.feito ? '✓ ' : ''}${it.titulo}`,
+        description: `Compromisso do MedCode (${it.agenda}). Para mudar, altere no sistema.`,
+        ...horario(it.data, it.hora, 60),
+        status: 'confirmed',   // se foi apagado no Google, volta
+        extendedProperties: { private: { medcodeOrigem: origem, medcodeId: it.id } },
+      };
+      const assinatura = crypto.createHash('sha1').update(JSON.stringify([corpo.summary, corpo.start, corpo.end])).digest('hex');
+      if (mapa && mapa.assinatura === assinatura) continue;
 
-    let ev = null;
-    if (mapa) {
-      try { ev = await google(acesso, `${cal}/${encodeURIComponent(mapa.event_id)}`, { metodo: 'PATCH', corpo }); cont.atualizados++; }
-      catch (e) { if (e.status !== 404 && e.status !== 410) throw e; }   // apagado no Google → cria de novo
+      let ev = null;
+      if (mapa) {
+        try { ev = await google(acesso, `${cal}/${encodeURIComponent(mapa.event_id)}`, { metodo: 'PATCH', corpo }); cont.atualizados++; }
+        catch (e) { if (e.status !== 404 && e.status !== 410) throw e; }   // sumiu de vez no Google → cria de novo
+      }
+      if (!ev) { ev = await google(acesso, cal, { metodo: 'POST', corpo }); cont.criados++; }
+      await sb('google_eventos?on_conflict=origem,origem_id', {
+        metodo: 'POST', prefer: 'resolution=merge-duplicates',
+        corpo: { origem, origem_id: it.id, user_id: eu.id, event_id: ev.id, assinatura, atualizado_em: new Date().toISOString() },
+      });
     }
-    if (!ev) { ev = await google(acesso, cal, { metodo: 'POST', corpo }); cont.criados++; }
-    await sb('google_eventos?on_conflict=origem,origem_id', {
-      metodo: 'POST', prefer: 'resolution=merge-duplicates',
-      corpo: { origem: 'linha', origem_id: it.id, user_id: eu.id, event_id: ev.id, assinatura, atualizado_em: new Date().toISOString() },
-    });
-  }
+    // O que sobrou no mapa saiu da agenda (apagado, sem data/hora, mudou de dono).
+    for (const mapa of porId.values()) {
+      try { await google(acesso, `${cal}/${encodeURIComponent(mapa.event_id)}`, { metodo: 'DELETE' }); }
+      catch (e) { if (e.status !== 404 && e.status !== 410) throw e; }
+      await sb(`google_eventos?origem=eq.${origem}&origem_id=eq.${mapa.origem_id}`, { metodo: 'DELETE' });
+      cont.removidos++;
+    }
+  };
 
-  // O que sobrou no mapa saiu da agenda (apagado, sem data, mudou de dono).
-  for (const mapa of porLinha.values()) {
-    try { await google(acesso, `${cal}/${encodeURIComponent(mapa.event_id)}`, { metodo: 'DELETE' }); }
-    catch (e) { if (e.status !== 404 && e.status !== 410) throw e; }
-    await sb(`google_eventos?origem=eq.linha&origem_id=eq.${mapa.origem_id}`, { metodo: 'DELETE' });
-    cont.removidos++;
-  }
+  await levar('linha', linhas, mapasLinha);
+  await levar('atividade', passos, mapasPasso);
   json(res, 200, { conectado: true, ...cont });
 }
 
