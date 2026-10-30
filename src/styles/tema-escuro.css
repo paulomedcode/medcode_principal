@@ -141,6 +141,9 @@ html.dark :is(.bg-slate-900, .hover\:bg-slate-900, .bg-gray-900) { --color-slate
 html.dark :is(.bg-slate-800, .hover\:bg-slate-800, .bg-gray-800) { --color-slate-800: #43434b; --color-gray-800: #43434b; }
 html.dark :is(.bg-slate-700, .hover\:bg-slate-700, .bg-gray-700) { --color-slate-700: #4c4c55; --color-gray-700: #4c4c55; }
 html.dark { --color-white: var(--mc-superficie); }
+
+/* Controles nativos (ícone do calendário nos campos de data, barras de rolagem) no tom escuro. */
+html.dark { color-scheme: dark; }
 html.dark :is(.text-white, [class*="text-white/"], [class*="hover:text-white"]) { --color-white: #fff; }
 /* Véu escuro (fundo de modal) continua preto. */
 html.dark :is([class*="bg-slate-900/"], [class*="bg-slate-950/"]) { --color-slate-900: #000; --color-slate-950: #000; }

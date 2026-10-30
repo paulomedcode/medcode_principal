@@ -158,6 +158,17 @@ export const STATUS_PROJETO = [
 
 export const statusProjeto = (id) => STATUS_PROJETO.find((s) => s.id === id) || STATUS_PROJETO[0];
 
+/*
+ * projetos.data_inicio: enquanto o projeto está em Planejamento é a PREVISÃO de
+ * início (é por ela que a lista ordena a fila); quando ele começa de fato, a
+ * data vira o início real.
+ */
+export const rotuloInicio = (status) => (status === 'PLANEJAMENTO' ? 'Previsão de início' : 'Início');
+
+/** Saiu do Planejamento para trabalho de verdade → o início passa a ser hoje. */
+export const inicioAoMudarStatus = (de, para, dataAtual, hojeISO) =>
+    (de === 'PLANEJAMENTO' && ['EM_ANDAMENTO', 'EM_REVISAO'].includes(para) ? hojeISO : dataAtual);
+
 export const TIPOS_EMPRESA = [
     { id: 'LEAD', label: 'Em negociação', cor: 'bg-amber-50 text-amber-700 border-amber-100' },
     { id: 'CLIENTE', label: 'Cliente', cor: 'bg-emerald-50 text-emerald-700 border-emerald-100' },

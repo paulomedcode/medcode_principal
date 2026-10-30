@@ -218,7 +218,7 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
                         {usuarios.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
                 </Campo>
-                <Campo label="Início">
+                <Campo label="Previsão de início">
                     <input type="date" value={form.data_inicio} onChange={(e) => set({ data_inicio: e.target.value })} className={inputCls} />
                 </Campo>
                 <Campo label="Prazo de entrega">

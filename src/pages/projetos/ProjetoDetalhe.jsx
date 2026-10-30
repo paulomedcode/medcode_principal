@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import {
     obterProjeto, salvarProjeto, excluirProjeto, financeiroDoProjeto, mensalidadesDoProjeto, criarPaginaDeEntregas, andamentoDasEntregas,
 } from '../../services/crm';
-import { STATUS_PROJETO, resumoServicos, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
+import { STATUS_PROJETO, resumoServicos, statusProjeto, fmtBRL, fmtData, rotuloInicio, inicioAoMudarStatus } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { todayISO } from '../../utils/date';
@@ -73,6 +73,7 @@ export default function ProjetoDetalhe() {
         try {
             const row = await salvarProjeto({
                 id: projeto.id, status,
+                data_inicio: inicioAoMudarStatus(projeto.status, status, projeto.data_inicio, todayISO()),
                 concluido_em: status === 'CONCLUIDO' ? (projeto.concluido_em || todayISO()) : null,
             });
             setProjeto(row);
@@ -131,7 +132,7 @@ export default function ProjetoDetalhe() {
                     <div className={`${CARD} p-4 grid grid-cols-2 gap-3 text-[11px]`}>
                         <div><p className="font-normal text-slate-400 text-[11px]">Serviços</p><p className="font-semibold text-slate-700">{s.label}</p></div>
                         <div><p className="font-normal text-slate-400 text-[11px]">Responsável</p><p className="font-semibold text-slate-700">{projeto.responsavel?.name || '—'}</p></div>
-                        <div><p className="font-normal text-slate-400 text-[11px]">Início</p><p className="font-semibold text-slate-700">{fmtData(projeto.data_inicio)}</p></div>
+                        <div><p className="font-normal text-slate-400 text-[11px]">{rotuloInicio(projeto.status)}</p><p className={`font-semibold ${projeto.status === 'PLANEJAMENTO' && projeto.data_inicio && projeto.data_inicio < todayISO() ? 'text-amber-600' : 'text-slate-700'}`}>{fmtData(projeto.data_inicio)}</p></div>
                         <div><p className="font-normal text-slate-400 text-[11px]">Prazo</p><p className={`font-semibold ${atrasado ? 'text-rose-600' : 'text-slate-700'}`}>{fmtData(projeto.prazo)}{atrasado ? ' · atrasado' : ''}</p></div>
                         <div><p className="font-normal text-slate-400 text-[11px]">Valor contratado</p><p className="font-bold text-slate-800 text-sm tabular-nums">{fmtBRL(projeto.valor_contratado)}</p></div>
                         <div><p className="font-normal text-slate-400 text-[11px]">Mensalidade</p><p className="font-bold text-violet-700 text-sm tabular-nums">{Number(projeto.valor_recorrente) > 0 ? fmtBRL(projeto.valor_recorrente) : '—'}</p></div>

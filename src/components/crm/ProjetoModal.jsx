@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FolderKanban, Loader2, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { salvarProjeto, listarEmpresas } from '../../services/crm';
-import { STATUS_PROJETO, idsServicos } from '../../config/servicos';
+import { STATUS_PROJETO, idsServicos, rotuloInicio, inicioAoMudarStatus } from '../../config/servicos';
 import CurrencyInput from '../finance/CurrencyInput';
 import SearchableSelect from '../finance/SearchableSelect';
 import { Janela, Campo, ServicosPicker, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
@@ -39,6 +39,7 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
             const patch = { ...form, id: projeto?.id, nome: form.nome.trim() };
             if (form.status === 'CONCLUIDO' && !form.concluido_em) patch.concluido_em = new Date().toISOString().slice(0, 10);
             if (form.status !== 'CONCLUIDO') patch.concluido_em = null;
+            if (projeto?.id) patch.data_inicio = inicioAoMudarStatus(projeto.status, form.status, form.data_inicio, new Date().toISOString().slice(0, 10));
             const row = await salvarProjeto(patch);
             toast.success(projeto?.id ? 'Projeto atualizado.' : 'Projeto criado.');
             onSaved?.(row);
@@ -81,7 +82,7 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
                         {usuarios.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
                 </Campo>
-                <Campo label="Início">
+                <Campo label={rotuloInicio(form.status)}>
                     <input type="date" value={form.data_inicio || ''} onChange={(e) => set({ data_inicio: e.target.value })} className={inputCls} />
                 </Campo>
                 <Campo label="Prazo de entrega">

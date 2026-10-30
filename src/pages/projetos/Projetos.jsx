@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FolderKanban, Plus, Search, ChevronRight, ChevronDown, AlertTriangle } from 'lucide-react';
+import { FolderKanban, Plus, Search, ChevronRight, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { listarProjetos } from '../../services/crm';
+import { listarProjetos, salvarProjeto } from '../../services/crm';
 import { SERVICOS, STATUS_PROJETO, resumoServicos, temServico, statusProjeto, fmtBRL, fmtData } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import { todayISO as hoje } from '../../utils/date';
@@ -10,6 +10,24 @@ import ProjetoModal from '../../components/crm/ProjetoModal';
 import { IconesServicos, PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario, CHIPS, FiltrosCelular } from '../../components/crm/ui';
 
 const ATIVOS = ['PLANEJAMENTO', 'EM_ANDAMENTO', 'EM_REVISAO', 'PAUSADO'];
+
+// Em Planejamento a data é a previsão de início; passou e não começou → amarelo.
+const naoComecou = (p) => p.status === 'PLANEJAMENTO' && p.data_inicio && p.data_inicio < hoje();
+
+/**
+ * Previsão de início editável na própria linha (sem abrir o projeto). Quem não
+ * pode editar só vê a data.
+ */
+function DataPrevisao({ projeto, podeEditar, onSalvar }) {
+    const atrasada = naoComecou(projeto);
+    const cor = atrasada ? 'text-amber-600' : projeto.data_inicio ? 'text-slate-600' : 'text-slate-400';
+    if (!podeEditar) return <span className={`font-semibold tabular-nums whitespace-nowrap ${cor}`}>{fmtData(projeto.data_inicio)}</span>;
+    return (
+        <input type="date" value={projeto.data_inicio || ''} title={atrasada ? 'Já devia ter começado' : 'Previsão de início'}
+            onClick={(e) => e.stopPropagation()} onChange={(e) => onSalvar(projeto, e.target.value)}
+            className={`h-7 px-1.5 -mx-1.5 bg-transparent rounded-md border border-transparent hover:border-black/[.09] focus:border-indigo-400 outline-none cursor-pointer text-xs font-semibold tabular-nums ${cor}`} />
+    );
+}
 
 export default function Projetos() {
     const navigate = useNavigate();
@@ -36,8 +54,19 @@ export default function Projetos() {
             .filter((p) => filtro === 'ATIVOS' || p.status === filtro)
             .filter((p) => !fServico || temServico(p, fServico))
             .filter((p) => !q || `${p.nome} ${p.empresa?.name || ''}`.toLowerCase().includes(q))
-            .sort((a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999'));
+            .sort((a, b) => (a.data_inicio || '9999').localeCompare(b.data_inicio || '9999') || a.nome.localeCompare(b.nome, 'pt-BR'));
     }, [projetos, filtro, fServico, busca]);
+    // Muda a previsão na hora; se o banco recusar, volta como estava.
+    const salvarPrevisao = async (p, data) => {
+        const antes = p.data_inicio;
+        setProjetos((l) => l.map((x) => (x.id === p.id ? { ...x, data_inicio: data || null } : x)));
+        try { await salvarProjeto({ id: p.id, data_inicio: data || null }); }
+        catch (e) {
+            console.error(e); toast.error('Não salvou a data.');
+            setProjetos((l) => l.map((x) => (x.id === p.id ? { ...x, data_inicio: antes } : x)));
+        }
+    };
+
     // Em "Em curso", concluídos e cancelados ficam num grupo recolhido no fim da lista.
     const agrupar = filtro === 'ATIVOS';
     const principais = agrupar ? lista.filter((p) => ATIVOS.includes(p.status)) : lista;
@@ -84,7 +113,6 @@ export default function Projetos() {
                         {[...principais, ...(verEncerrados ? encerrados : [])].map((p, i) => {
                             const s = resumoServicos(p);
                             const st = statusProjeto(p.status);
-                            const atrasado = ATIVOS.includes(p.status) && p.prazo && p.prazo < hoje();
                             return (<React.Fragment key={p.id}>
                                 {i === principais.length && <BarraEncerrados qtd={encerrados.length} aberto={verEncerrados} onClick={() => setVerEncerrados((v) => !v)} />}
                                 <button type="button" onClick={() => navigate(`/projetos/${p.id}`)} className={`w-full text-left px-4 py-3 flex items-start gap-3 active:bg-slate-50 ${ATIVOS.includes(p.status) ? '' : 'opacity-70'}`}>
@@ -94,9 +122,9 @@ export default function Projetos() {
                                         <span className="block text-[12px] font-semibold text-slate-500 truncate">{p.empresa?.name}</span>
                                         <span className="mt-1.5 flex items-center gap-2">
                                             <Etiqueta className={st.cor}>{st.label}</Etiqueta>
-                                            {p.prazo && (
-                                                <span className={`text-[11.5px] font-semibold tabular-nums whitespace-nowrap ${atrasado ? 'text-rose-600' : 'text-slate-500'}`}>
-                                                    {atrasado && <AlertTriangle size={11} className="inline mr-0.5 -mt-0.5" />}{fmtData(p.prazo)}
+                                            {p.data_inicio && (
+                                                <span className={`text-[11.5px] font-semibold tabular-nums whitespace-nowrap ${naoComecou(p) ? 'text-amber-600' : 'text-slate-500'}`}>
+                                                    {p.status === 'PLANEJAMENTO' ? 'Previsão' : 'Início'} {fmtData(p.data_inicio)}
                                                 </span>
                                             )}
                                         </span>
@@ -117,7 +145,7 @@ export default function Projetos() {
                                     <th className="py-2.5 px-4">Projeto</th>
                                     <th className="py-2.5 px-3">Cliente</th>
                                     <th className="py-2.5 px-3">Status</th>
-                                    <th className="py-2.5 px-3">Prazo</th>
+                                    <th className="py-2.5 px-3">Previsão</th>
                                     <th className="py-2.5 px-3">Responsável</th>
                                     <th className="py-2.5 px-3 text-right">Valor</th>
                                     <th className="py-2.5 px-3 text-right">Mensal</th>
@@ -128,7 +156,6 @@ export default function Projetos() {
                                 {[...principais, ...(verEncerrados ? encerrados : [])].map((p, i) => {
                                     const s = resumoServicos(p);
                                     const st = statusProjeto(p.status);
-                                    const atrasado = ATIVOS.includes(p.status) && p.prazo && p.prazo < hoje();
                                     return (<React.Fragment key={p.id}>
                                         {i === principais.length && <tr><td colSpan={8} className="p-0"><BarraEncerrados qtd={encerrados.length} aberto={verEncerrados} onClick={() => setVerEncerrados((v) => !v)} /></td></tr>}
                                         <tr onClick={() => navigate(`/projetos/${p.id}`)} className={`group hover:bg-[#f5f5f7] transition-colors text-xs cursor-pointer ${ATIVOS.includes(p.status) ? '' : 'opacity-70'}`}>
@@ -138,9 +165,7 @@ export default function Projetos() {
                                             </td>
                                             <td className="py-2.5 px-3 font-semibold text-slate-600">{p.empresa?.name}</td>
                                             <td className="py-2.5 px-3"><Etiqueta className={st.cor}>{st.label}</Etiqueta></td>
-                                            <td className={`py-2.5 px-3 font-semibold tabular-nums whitespace-nowrap ${atrasado ? 'text-rose-600' : 'text-slate-600'}`}>
-                                                {atrasado && <AlertTriangle size={11} className="inline mr-1 -mt-0.5" />}{fmtData(p.prazo)}
-                                            </td>
+                                            <td className="py-1.5 px-3"><DataPrevisao projeto={p} podeEditar={podeEditar} onSalvar={salvarPrevisao} /></td>
                                             <td className="py-2.5 px-3 font-semibold text-slate-600">{p.responsavel?.name || '—'}</td>
                                             <td className="py-2.5 px-3 text-right font-semibold text-slate-800 tabular-nums whitespace-nowrap">{fmtBRL(p.valor_contratado)}</td>
                                             <td className="py-2.5 px-3 text-right font-semibold text-violet-700 tabular-nums whitespace-nowrap">{Number(p.valor_recorrente) > 0 ? fmtBRL(p.valor_recorrente) : '—'}</td>
