@@ -6,8 +6,10 @@ import {
 import toast from 'react-hot-toast';
 import {
     listarEtapas, listarOportunidades, listarEmpresas, moverOportunidade, excluirOportunidade, reabrirOportunidade,
-    salvarEtapa, excluirEtapa, listarProjetos,
+    salvarEtapa, excluirEtapa, listarProjetos, proximosPassos, registrarAtividade,
 } from '../../services/crm';
+import { useAuth } from '../../contexts/AuthContext';
+import CampoData from '../../components/ui/CampoData';
 import { SERVICOS, resumoServicos, temServico, fmtBRL, fmtData } from '../../config/servicos';
 import { usePermission } from '../../contexts/PermissionContext';
 import { OportunidadeModal, GanharModal, PerderModal } from '../../components/crm/OportunidadeModal';
@@ -46,11 +48,16 @@ export default function Funil() {
     const [perder, setPerder] = useState(null);
     const [configurar, setConfigurar] = useState(false);
     const [excluir, setExcluir] = useState(null);
+    const [cobrar, setCobrar] = useState(null);          // foi para "Proposta enviada": quando cobrar o retorno?
+    const [passos, setPassos] = useState({});           // oportunidade_id → próximo passo pendente mais cedo
 
     const carregar = useCallback(async () => {
         try {
-            const [e, o, emp] = await Promise.all([listarEtapas(), listarOportunidades(), listarEmpresas()]);
+            const [e, o, emp, ps] = await Promise.all([listarEtapas(), listarOportunidades(), listarEmpresas(), proximosPassos().catch(() => [])]);
             setEtapas(e); setOps(o); setEmpresas(emp);
+            const m = {};
+            ps.forEach((p) => { if (p.oportunidade_id && !m[p.oportunidade_id]) m[p.oportunidade_id] = p; });
+            setPassos(m);
             return o;
         } catch (err) {
             console.error(err);
@@ -126,6 +133,8 @@ export default function Funil() {
         try {
             if (op.perdido_em) await reabrirOportunidade(op, etapa.id);
             await moverOportunidade(op.id, etapa.id, posicao);
+            // Mandou a proposta: já combina quando cobrar a resposta (vai para a agenda).
+            if (etapa.tipo === 'ABERTA' && /proposta/i.test(etapa.nome)) setCobrar(op);
         } catch (e) {
             console.error(e);
             toast.error('Não foi possível mover.');
@@ -138,6 +147,9 @@ export default function Funil() {
         const fechada = etapa.tipo !== 'ABERTA';
         const s = resumoServicos(o);
         const atrasada = !fechada && o.previsao_fechamento && o.previsao_fechamento < hoje();
+        const passo = !fechada ? passos[o.id] : null;
+        const passoAtrasado = passo && passo.proximo_passo_em < hoje();
+        const esperandoSemData = !fechada && !passo && /proposta/i.test(etapa.nome);
         return (
             <div key={o.id}
                 draggable={podeEditar}
@@ -162,6 +174,18 @@ export default function Funil() {
                         )}
                     </span>
                 </div>
+                {passo && (
+                    <p title={passo.proximo_passo} className={`mt-1.5 text-[10.5px] font-semibold truncate flex items-center gap-1 ${passoAtrasado ? 'text-rose-600' : 'text-slate-500'}`}>
+                        <CalendarClock size={11} className="shrink-0" />
+                        {fmtData(passo.proximo_passo_em).slice(0, 5)}{passo.proximo_passo_hora ? ` ${String(passo.proximo_passo_hora).slice(0, 5)}` : ''} · {passo.proximo_passo}
+                    </p>
+                )}
+                {esperandoSemData && podeEditar && (
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setCobrar(o); }}
+                        className="mt-1.5 text-[10.5px] font-semibold text-amber-700 hover:underline flex items-center gap-1">
+                        <CalendarClock size={11} /> Marcar quando cobrar o retorno
+                    </button>
+                )}
                 {etapa.tipo === 'PERDIDO' && o.motivo_perda && <p className="text-[10px] font-semibold text-rose-500 mt-1 truncate">{o.motivo_perda}</p>}
             </div>
         );
@@ -298,6 +322,7 @@ export default function Funil() {
                 <PerderModal oportunidade={perder} etapaPerdidoId={etapaPerdido.id} onClose={() => setPerder(null)}
                     onPerdida={() => { setPerder(null); aposMudar(); }} />
             )}
+            {cobrar && <CobrarRetorno op={cobrar} onClose={() => setCobrar(null)} onMarcado={() => { setCobrar(null); aposMudar(); }} />}
             {configurar && <ConfigurarEtapas etapas={etapas} ops={ops} onClose={() => setConfigurar(false)} onMudou={carregar} />}
             <ConfirmDialog open={!!excluir} title="Excluir oportunidade"
                 message={`Excluir "${excluir?.titulo}"? O histórico dela sai junto. Propostas ficam, sem o vínculo.`}
@@ -312,6 +337,51 @@ export default function Funil() {
                 <p className="text-[11px] font-semibold text-amber-600">O funil não tem etapa de GANHO — configure as etapas.</p>
             )}
         </div>
+    );
+}
+
+/**
+ * Proposta enviada → quando cobrar a resposta. Vira um próximo passo no
+ * histórico da venda, então aparece na agenda do Início e no Google.
+ */
+function CobrarRetorno({ op, onClose, onMarcado }) {
+    const { currentUser } = useAuth();
+    const mais = (n) => { const d = new Date(); d.setDate(d.getDate() + n); const p = (x) => String(x).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
+    const [data, setData] = useState(mais(3));
+    const [hora, setHora] = useState('');
+    const [salvando, setSalvando] = useState(false);
+    const marcar = async () => {
+        if (!data) return toast.error('Escolha o dia.');
+        setSalvando(true);
+        try {
+            await registrarAtividade({
+                party_id: op.party_id, oportunidade_id: op.id, tipo: 'NOTA', titulo: 'Proposta enviada',
+                proximo_passo: 'Cobrar retorno da proposta', proximo_passo_em: data, proximo_passo_hora: hora || null,
+            }, currentUser?.id);
+            toast.success('Na sua agenda (e no Google, se estiver ligado).');
+            onMarcado();
+        } catch (e) { console.error(e); toast.error('Não foi possível marcar.'); setSalvando(false); }
+    };
+    return (
+        <Janela titulo="Proposta enviada" icone={CalendarClock} onClose={onClose} largura="max-w-sm"
+            rodape={<>
+                <button onClick={onClose} className={btnSecundario}>Agora não</button>
+                <button onClick={marcar} disabled={salvando} className={btnPrimario}>Marcar na agenda</button>
+            </>}>
+            <p className="text-[12.5px] text-slate-600">
+                Quando cobrar o retorno de <b className="text-slate-800">{op.empresa?.name || op.titulo}</b>?
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+                {[[2, '2 dias'], [3, '3 dias'], [5, '5 dias'], [7, '1 semana']].map(([n, r]) => (
+                    <button key={n} type="button" onClick={() => setData(mais(n))}
+                        className={`h-7 px-2.5 rounded-full border text-[11.5px] font-medium ${data === mais(n) ? 'bg-slate-900 text-white border-slate-900' : 'border-black/[.09] text-slate-600 hover:bg-slate-100'}`}>{r}</button>
+                ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+                <CampoData value={data} min={mais(0)} onChange={(e) => setData(e.target.value)} className={inputCls} />
+                <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} className={inputCls} title="Hora (opcional)" />
+            </div>
+        </Janela>
     );
 }
 
