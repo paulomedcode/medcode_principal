@@ -10,6 +10,7 @@ import SearchableSelect from '../finance/SearchableSelect';
 import useCadastroRapido from './useCadastroRapido';
 import { Janela, Campo, ServicosPicker, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
 import { useUsuarios, useListasGerais } from './dados';
+import CampoData from '../ui/CampoData';
 
 const hojeMais = (dias = 0) => { const d = new Date(); d.setDate(d.getDate() + dias); const p = (x) => String(x).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
 
@@ -108,7 +109,7 @@ export function OportunidadeModal({ oportunidade, etapas, empresas, partyIdFixo,
                         <CurrencyInput value={form.valor_recorrente} onChange={(v) => set({ valor_recorrente: v })} className={`${inputCls} text-right`} />
                     </Campo>
                     <Campo label="Previsão de fechamento">
-                        <input type="date" value={form.previsao_fechamento || ''} onChange={(e) => set({ previsao_fechamento: e.target.value })} className={inputCls} />
+                        <CampoData value={form.previsao_fechamento || ''} onChange={(e) => set({ previsao_fechamento: e.target.value })} className={inputCls} />
                     </Campo>
                     <Campo label="Responsável">
                         <select value={form.responsavel_id || ''} onChange={(e) => set({ responsavel_id: e.target.value })} className={`${inputCls} cursor-pointer`}>
@@ -219,10 +220,10 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
                     </select>
                 </Campo>
                 <Campo label="Previsão de início">
-                    <input type="date" value={form.data_inicio} onChange={(e) => set({ data_inicio: e.target.value })} className={inputCls} />
+                    <CampoData value={form.data_inicio} onChange={(e) => set({ data_inicio: e.target.value })} className={inputCls} />
                 </Campo>
                 <Campo label="Prazo de entrega">
-                    <input type="date" value={form.prazo} onChange={(e) => set({ prazo: e.target.value })} className={inputCls} />
+                    <CampoData value={form.prazo} onChange={(e) => set({ prazo: e.target.value })} className={inputCls} />
                 </Campo>
                 <label className="col-span-2 flex items-center gap-2 text-[11px] font-semibold text-slate-600 cursor-pointer">
                     <input type="checkbox" checked={form.criarEntregas} onChange={(e) => set({ criarEntregas: e.target.checked })} className="rounded" />
@@ -241,7 +242,7 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
                     </select>
                 </Campo>
                 <Campo label="1º vencimento">
-                    <input type="date" value={form.primeiro_vencimento} onChange={(e) => set({ primeiro_vencimento: e.target.value })} className={inputCls} />
+                    <CampoData value={form.primeiro_vencimento} onChange={(e) => set({ primeiro_vencimento: e.target.value })} className={inputCls} />
                 </Campo>
                 <Campo label="Categoria">
                     <select value={form.category_id} onChange={(e) => set({ category_id: e.target.value })} className={`${inputCls} cursor-pointer`}>
@@ -253,7 +254,7 @@ export function GanharModal({ oportunidade, onClose, onGanha }) {
                     <CurrencyInput value={form.valor_recorrente} onChange={(v) => set({ valor_recorrente: v })} className={`${inputCls} text-right`} />
                 </Campo>
                 <Campo label="1ª mensalidade em">
-                    <input type="date" value={form.inicio_recorrencia} disabled={!(Number(form.valor_recorrente) > 0)}
+                    <CampoData value={form.inicio_recorrencia} disabled={!(Number(form.valor_recorrente) > 0)}
                         onChange={(e) => set({ inicio_recorrencia: e.target.value })} className={inputCls} />
                 </Campo>
                 <Campo label="Conta que recebe" className="col-span-2">

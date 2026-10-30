@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '../../services/supabase';
 import { statusGoogle, marcarReuniao } from '../../services/google';
 import { Janela, Campo, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
+import CampoData from '../ui/CampoData';
 
 /*
  * Marcar reunião com link do Meet, de dentro do histórico (venda, cliente ou
@@ -139,7 +140,7 @@ export default function MarcarReuniao({ vinculo, onClose, onMarcada }) {
                 <input value={form.titulo} onChange={(e) => set({ titulo: e.target.value })} className={inputCls} placeholder="Ex: Apresentação da proposta" autoFocus />
             </Campo>
             <div className="grid grid-cols-3 gap-2">
-                <Campo label="Dia"><input type="date" min={hojeISO()} value={form.data} onChange={(e) => set({ data: e.target.value })} className={inputCls} /></Campo>
+                <Campo label="Dia"><CampoData min={hojeISO()} value={form.data} onChange={(e) => set({ data: e.target.value })} className={inputCls} /></Campo>
                 <Campo label="Hora"><input type="time" value={form.hora} onChange={(e) => set({ hora: e.target.value })} className={inputCls} /></Campo>
                 <Campo label="Duração">
                     <select value={form.duracaoMin} onChange={(e) => set({ duracaoMin: e.target.value })} className={inputCls}>

@@ -14,6 +14,7 @@ import { Estrelas, Contatos, NotaGoogle } from './pecas';
 import VirarOportunidade from './VirarOportunidade';
 import Roteiros from './Roteiros';
 import Acompanhamento from './Acompanhamento';
+import CampoData from '../ui/CampoData';
 
 const hojeMais = (dias) => {
     const d = new Date(); d.setDate(d.getDate() + dias);
@@ -203,7 +204,7 @@ export default function FichaLead({ lead, posicao, total, onAnterior, onProximo,
                                 {atrasado && <span className="text-rose-500 normal-case">· atrasado</span>}
                             </p>
                             <div className="flex flex-wrap items-center gap-1.5">
-                                <input type="date" value={lead.proximo_contato_em || ''} disabled={!podeEditar}
+                                <CampoData value={lead.proximo_contato_em || ''} disabled={!podeEditar}
                                     onChange={(e) => salvar({ proximo_contato_em: e.target.value || null })}
                                     className={`${inputCls} !w-40 ${atrasado ? '!border-rose-300 !text-rose-600' : ''}`} />
                                 {podeEditar && [[1, 'Amanhã'], [3, '3 dias'], [7, '1 semana'], [30, '1 mês']].map(([d, r]) => (

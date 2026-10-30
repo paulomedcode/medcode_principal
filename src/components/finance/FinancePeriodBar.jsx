@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import CampoData from '../ui/CampoData';
 
 const MONTHS_ABBR = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -90,7 +91,7 @@ export default function FinancePeriodBar({ onChange, showBasis = false }) {
         <ChevronLeft size={15} />
       </button>
       {period.mode === 'day' && (
-        <input type="date" value={period.day} onChange={e => setPeriod({ ...period, day: e.target.value })}
+        <CampoData value={period.day} onChange={e => setPeriod({ ...period, day: e.target.value })}
           className="bg-transparent text-[11.5px] font-medium text-[#1d1d1f] outline-none cursor-pointer tabular-nums" />
       )}
       {period.mode === 'month' && (
@@ -104,11 +105,11 @@ export default function FinancePeriodBar({ onChange, showBasis = false }) {
       )}
       {period.mode === 'range' && (
         <div className="flex items-center gap-1">
-          <input type="date" value={period.start} onChange={e => setPeriod({ ...period, start: e.target.value })}
-            className="bg-transparent text-[10.5px] font-medium text-[#1d1d1f] outline-none w-[88px] cursor-pointer tabular-nums" />
+          <CampoData value={period.start} onChange={e => setPeriod({ ...period, start: e.target.value })}
+            className="bg-transparent text-[10.5px] font-medium text-[#1d1d1f] outline-none w-[112px] cursor-pointer tabular-nums" />
           <span className="text-[9.5px] text-[#86868b]">até</span>
-          <input type="date" value={period.end} onChange={e => setPeriod({ ...period, end: e.target.value })}
-            className="bg-transparent text-[10.5px] font-medium text-[#1d1d1f] outline-none w-[88px] cursor-pointer tabular-nums" />
+          <CampoData value={period.end} onChange={e => setPeriod({ ...period, end: e.target.value })}
+            className="bg-transparent text-[10.5px] font-medium text-[#1d1d1f] outline-none w-[112px] cursor-pointer tabular-nums" />
         </div>
       )}
       <button onClick={() => setPeriod(shiftPeriod(period, 1))} title="Próximo"

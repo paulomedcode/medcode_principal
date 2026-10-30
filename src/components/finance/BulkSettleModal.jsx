@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { todayISO } from '../../utils/date';
 import { PAYMENT_METHODS } from './paymentMethods';
 import { counterpartyName } from '../../utils/financeCounterparty';
+import CampoData from '../ui/CampoData';
 
 const fmt = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 const fmtDate = (s) => { if (!s) return '—'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y.slice(2)}`; };
@@ -92,7 +93,7 @@ export default function BulkSettleModal({ rows = [], accounts = [], onClose, onD
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[12px] font-semibold text-[#86868b] mb-1">Data</label>
-              <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className={`${field} tabular-nums`} />
+              <CampoData value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className={`${field} tabular-nums`} />
             </div>
             <div>
               <label className="block text-[12px] font-semibold text-[#86868b] mb-1">Forma</label>

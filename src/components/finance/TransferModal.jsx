@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { todayISO } from '../../utils/date';
 import CurrencyInput from './CurrencyInput';
 import useTravaRolagem from '../../hooks/useTravaRolagem';
+import CampoData from '../ui/CampoData';
 
 /**
  * Modal de transferência entre contas (ex.: pagar fatura do cartão = banco → cartão).
@@ -92,7 +93,7 @@ export default function TransferModal({ open, accounts = [], onClose, onDone }) 
             </div>
             <div>
               <label className={labelCls}>Data</label>
-              <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className={inputCls} />
+              <CampoData value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className={inputCls} />
             </div>
           </div>
 

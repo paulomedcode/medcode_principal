@@ -13,6 +13,7 @@ import PartyModal from './PartyModal';
 import { counterpartyLabel } from '../../utils/financeCounterparty';
 import { WITHHOLD_DEFAULT_PCT, WITHHOLD_AME_PCT, isAmeParty } from '../../utils/financeTaxes';
 import useTravaRolagem from '../../hooks/useTravaRolagem';
+import CampoData from '../ui/CampoData';
 
 export default function TransactionModal({ isOpen, onClose, onSave, transactionId = null, presetType = null }) {
   const [loading, setLoading] = useState(false);
@@ -783,8 +784,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             {/* Data do Lançamento */}
             <div>
               <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Data do Lançamento</label>
-              <input
-                type="date"
+              <CampoData
                 required
                 value={formData.transaction_date}
                 onChange={e => setFormData({ ...formData, transaction_date: e.target.value })}
@@ -795,8 +795,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
             {/* Vencimento (contas a pagar/receber) — obrigatório */}
             <div>
               <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Vencimento</label>
-              <input
-                type="date"
+              <CampoData
                 required
                 value={formData.due_date}
                 onChange={e => setFormData({ ...formData, due_date: e.target.value })}
@@ -1167,7 +1166,7 @@ export default function TransactionModal({ isOpen, onClose, onSave, transactionI
                       {endMode === 'date' && (
                         <div className="sm:col-span-2">
                           <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Data final da repetição</label>
-                          <input type="date" value={recEndDate} onChange={e => setRecEndDate(e.target.value)} className={baseInputStyle} />
+                          <CampoData value={recEndDate} onChange={e => setRecEndDate(e.target.value)} className={baseInputStyle} />
                         </div>
                       )}
                       {endMode === 'count' && (

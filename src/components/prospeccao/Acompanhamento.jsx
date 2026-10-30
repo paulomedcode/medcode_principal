@@ -6,6 +6,7 @@ import { linkWhats } from '../../config/prospeccao';
 import { iniciarCadencia, registrarToque, marcarRespondeu, pararCadencia } from '../../services/prospeccao';
 import { useAuth } from '../../contexts/AuthContext';
 import { textareaCls, inputCls } from '../crm/ui';
+import CampoData from '../ui/CampoData';
 
 const fmt = (iso) => (iso ? iso.split('-').reverse().slice(0, 2).join('/') : '');
 // Dia do último contato no fuso do computador (o ISO do banco vem em UTC).
@@ -58,7 +59,7 @@ export default function Acompanhamento({ lead, onAlterado, podeEditar = true }) 
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[11.5px] font-semibold text-slate-500">Abordagem enviada em</span>
-                    <input type="date" value={inicio} max={hojeISO()} onChange={(e) => setInicio(e.target.value)} className={`${inputCls} !w-40`} />
+                    <CampoData value={inicio} max={hojeISO()} onChange={(e) => setInicio(e.target.value)} className={`${inputCls} !w-40`} />
                     <button onClick={() => executar('iniciar', () => iniciarCadencia(lead, inicio || hojeISO(), currentUser?.id), 'Acompanhamento ligado.')}
                         disabled={!!ocupado}
                         className="h-9 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold flex items-center gap-1.5 disabled:opacity-50">

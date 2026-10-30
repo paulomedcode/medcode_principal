@@ -17,6 +17,7 @@ import { printReport } from '../../utils/printReport';
 import { useWhiteLabel } from '../../contexts/WhiteLabelContext';
 import { useAuth } from '../../contexts/AuthContext';
 import CurrencyInput from '../../components/finance/CurrencyInput';
+import CampoData from '../../components/ui/CampoData';
 
 const fmtBRL = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
@@ -1308,7 +1309,7 @@ export default function FinanceSettings() {
                     </div>
                     <div>
                       <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Data do Saldo</label>
-                      <input type="date" value={accForm.initial_balance_date} onChange={e => setAccForm({ ...accForm, initial_balance_date: e.target.value })} className={baseInputStyle} />
+                      <CampoData value={accForm.initial_balance_date} onChange={e => setAccForm({ ...accForm, initial_balance_date: e.target.value })} className={baseInputStyle} />
                     </div>
                   </div>
                   <div>

@@ -28,6 +28,7 @@ import { usePermission } from '../../contexts/PermissionContext';
 import { cup, Dot } from '../../components/finance/cupertino';
 import CurrencyInput from '../../components/finance/CurrencyInput';
 import { useFinanceRealtime } from '../../hooks/useFinanceRealtime';
+import CampoData from '../../components/ui/CampoData';
 
 export default function FinanceTransactions({ initialView = 'extract' }) {
   const [searchParams] = useSearchParams();
@@ -1155,8 +1156,7 @@ export default function FinanceTransactions({ initialView = 'extract' }) {
                 </div>
                 <div>
                   <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Data do Saldo Inicial</label>
-                  <input
-                    type="date"
+                  <CampoData
                     value={accountForm.initial_balance_date}
                     onChange={e => setAccountForm({ ...accountForm, initial_balance_date: e.target.value })}
                     className={baseInputStyle}

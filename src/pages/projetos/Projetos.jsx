@@ -8,6 +8,7 @@ import { usePermission } from '../../contexts/PermissionContext';
 import { todayISO as hoje } from '../../utils/date';
 import ProjetoModal from '../../components/crm/ProjetoModal';
 import { IconesServicos, PAGINA, CARD, Etiqueta, Carregando, Vazio, btnPrimario, CHIPS, FiltrosCelular } from '../../components/crm/ui';
+import CampoData from '../../components/ui/CampoData';
 
 const ATIVOS = ['PLANEJAMENTO', 'EM_ANDAMENTO', 'EM_REVISAO', 'PAUSADO'];
 
@@ -23,9 +24,9 @@ function DataPrevisao({ projeto, podeEditar, onSalvar }) {
     const cor = atrasada ? 'text-amber-600' : projeto.data_inicio ? 'text-slate-600' : 'text-slate-400';
     if (!podeEditar) return <span className={`font-semibold tabular-nums whitespace-nowrap ${cor}`}>{fmtData(projeto.data_inicio)}</span>;
     return (
-        <input type="date" value={projeto.data_inicio || ''} title={atrasada ? 'Já devia ter começado' : 'Previsão de início'}
+        <CampoData value={projeto.data_inicio || ''} title={atrasada ? 'Já devia ter começado' : 'Previsão de início'}
             onClick={(e) => e.stopPropagation()} onChange={(e) => onSalvar(projeto, e.target.value)}
-            className={`h-7 px-1.5 -mx-1.5 bg-transparent rounded-md border border-transparent hover:border-black/[.09] focus:border-indigo-400 outline-none cursor-pointer text-xs font-semibold tabular-nums ${cor}`} />
+            className={`w-[118px] h-7 px-1.5 -mx-1.5 bg-transparent rounded-md border border-transparent hover:border-black/[.09] focus:border-indigo-400 outline-none cursor-pointer text-xs font-semibold tabular-nums ${cor}`} />
     );
 }
 

@@ -26,6 +26,7 @@ import { useWhiteLabel } from '../contexts/WhiteLabelContext';
 import * as XLSX from 'xlsx';
 import { printReport } from '../utils/printReport';
 import { useAuth } from '../contexts/AuthContext';
+import CampoData from '../components/ui/CampoData';
 
 // --- IDENTIDADE VISUAL COMPONENT ---
 const IdentidadeVisualTab = ({ data, setData }) => {
@@ -956,8 +957,7 @@ const Settings = () => {
                                         </div>
                                         <div className="flex flex-col gap-1">
                                             <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">De</label>
-                                            <input
-                                                type="date"
+                                            <CampoData
                                                 value={logsFiltros.from}
                                                 onChange={(e) => setLogsFiltros({ ...logsFiltros, from: e.target.value })}
                                                 className="h-9 px-3 rounded-lg border border-white/60 bg-white/80 text-[13px] font-bold text-slate-700 outline-none focus:border-blue-500 shadow-sm"
@@ -965,8 +965,7 @@ const Settings = () => {
                                         </div>
                                         <div className="flex flex-col gap-1">
                                             <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Até</label>
-                                            <input
-                                                type="date"
+                                            <CampoData
                                                 value={logsFiltros.to}
                                                 onChange={(e) => setLogsFiltros({ ...logsFiltros, to: e.target.value })}
                                                 className="h-9 px-3 rounded-lg border border-white/60 bg-white/80 text-[13px] font-bold text-slate-700 outline-none focus:border-blue-500 shadow-sm"

@@ -16,6 +16,7 @@ import PdfsProposta, { VisualizadorProposta } from '../../components/propostas/P
 import {
   propostaCompleta, detalhesVazios, subtotalItens, descontoDe, montarDadosProposta, htmlDaProposta, contatoPrincipal, anexarPdfExterno
 } from '../../services/propostas';
+import CampoData from '../../components/ui/CampoData';
 
 const fmt = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 const fmtDate = (s) => { if (!s) return '—'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
@@ -344,7 +345,7 @@ export function QuoteModal({ quote, services, parties: partiesIniciais, onClose,
             </div>
             <div>
               <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Validade</label>
-              <input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} className={inputCls} />
+              <CampoData value={validUntil} onChange={e => setValidUntil(e.target.value)} className={inputCls} />
             </div>
             <div className="md:col-span-3">
               <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Descrição / Título</label>
@@ -491,7 +492,7 @@ function ApproveModal({ quote, accounts, categories, onClose, onApproved }) {
           <p className="text-[11px] font-semibold text-slate-500">Gera uma <b className="text-emerald-600">conta a receber</b> de <b>{fmt(quote.total_amount)}</b> para <b>{quote.finance_parties?.name || 'cliente'}</b>.</p>
           <div>
             <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Vencimento</label>
-            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className={inputCls} />
+            <CampoData value={dueDate} onChange={e => setDueDate(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className="text-[11.5px] font-medium text-slate-500 ml-1 mb-1 block">Conta de destino</label>

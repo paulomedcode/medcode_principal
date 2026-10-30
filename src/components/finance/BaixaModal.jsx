@@ -6,6 +6,7 @@ import { todayISO } from '../../utils/date';
 import { PAYMENT_METHODS } from './paymentMethods';
 import CurrencyInput from './CurrencyInput';
 import useTravaRolagem from '../../hooks/useTravaRolagem';
+import CampoData from '../ui/CampoData';
 
 const fmt = (v) => `R$ ${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 const fmtDate = (s) => { if (!s) return ''; const [y, m, d] = s.split('-'); return `${d}/${m}/${y.slice(2)}`; };
@@ -178,7 +179,7 @@ export default function BaixaModal({ row, accounts = [], onClose, onDone }) {
                 </div>
                 <div>
                   <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">{L.actor}</label>
-                  <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className={inputCls} />
+                  <CampoData value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className={inputCls} />
                 </div>
                 <div>
                   <label className="text-[12px] font-semibold text-[#86868b] ml-1 mb-1 block">Conta</label>

@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { usePermission } from '../../contexts/PermissionContext';
 import { inputCls, textareaCls, CARD } from './ui';
 import MarcarReuniao from './MarcarReuniao';
+import CampoData from '../ui/CampoData';
 
 const dataHora = (iso) => {
     if (!iso) return '';
@@ -114,7 +115,7 @@ export default function Atividades({ vinculo, filtro, titulo = 'Histórico', onR
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <input value={form.proximo_passo} onChange={(e) => setForm((f) => ({ ...f, proximo_passo: e.target.value }))} className={`${inputCls} col-span-2`}
                             placeholder="Ex: Enviar proposta revisada" />
-                        <input type="date" min={hojeISO()} value={form.proximo_passo_em} onChange={(e) => setForm((f) => ({ ...f, proximo_passo_em: e.target.value }))} className={inputCls} title="Dia" />
+                        <CampoData min={hojeISO()} value={form.proximo_passo_em} onChange={(e) => setForm((f) => ({ ...f, proximo_passo_em: e.target.value }))} className={inputCls} title="Dia" />
                         <input type="time" value={form.proximo_passo_hora} onChange={(e) => setForm((f) => ({ ...f, proximo_passo_hora: e.target.value }))} className={inputCls} title="Hora (opcional)" />
                     </div>
                 )}

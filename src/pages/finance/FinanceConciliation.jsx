@@ -18,6 +18,7 @@ import { useWhiteLabel } from '../../contexts/WhiteLabelContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermission } from '../../contexts/PermissionContext';
 import { Printer } from 'lucide-react';
+import CampoData from '../../components/ui/CampoData';
 
 const fmtMoney = (v) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 const fmtDate = (s) => { if (!s) return '—'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y.slice(2)}`; };
@@ -974,13 +975,13 @@ export default function FinanceConciliation() {
                 <div className="grid grid-cols-2 gap-1.5">
                   <label className="flex items-center gap-1 min-w-0">
                     <span className="text-[11px] font-semibold text-slate-400 shrink-0">De</span>
-                    <input type="date" title="Lançamentos a partir de" value={candFilters.from}
+                    <CampoData title="Lançamentos a partir de" value={candFilters.from}
                       onChange={e => setCandFilters(f => ({ ...f, from: e.target.value }))}
                       className="h-7 px-1.5 w-full min-w-0 bg-white border border-black/[.085] rounded-md text-[10.5px] text-slate-600 outline-none focus:border-indigo-400" />
                   </label>
                   <label className="flex items-center gap-1 min-w-0">
                     <span className="text-[11px] font-semibold text-slate-400 shrink-0">Até</span>
-                    <input type="date" title="Lançamentos até" value={candFilters.to}
+                    <CampoData title="Lançamentos até" value={candFilters.to}
                       onChange={e => setCandFilters(f => ({ ...f, to: e.target.value }))}
                       className="h-7 px-1.5 w-full min-w-0 bg-white border border-black/[.085] rounded-md text-[10.5px] text-slate-600 outline-none focus:border-indigo-400" />
                   </label>

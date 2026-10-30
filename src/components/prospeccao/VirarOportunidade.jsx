@@ -9,6 +9,7 @@ import CurrencyInput from '../finance/CurrencyInput';
 import { useUsuarios } from '../crm/dados';
 import { GanharModal } from '../crm/OportunidadeModal';
 import { Janela, Campo, ServicosPicker, inputCls, textareaCls, btnPrimario, btnSecundario } from '../crm/ui';
+import CampoData from '../ui/CampoData';
 
 /**
  * Fim da prospecção: o lead respondeu e tem interesse. Cria a empresa e a
@@ -102,7 +103,7 @@ export default function VirarOportunidade({ lead, onClose, onFeito }) {
                     <CurrencyInput value={form.valor_recorrente} onChange={(v) => set({ valor_recorrente: v })} className={`${inputCls} text-right`} />
                 </Campo>
                 <Campo label="Previsão de fechamento">
-                    <input type="date" value={form.previsao_fechamento} onChange={(e) => set({ previsao_fechamento: e.target.value })} className={inputCls} />
+                    <CampoData value={form.previsao_fechamento} onChange={(e) => set({ previsao_fechamento: e.target.value })} className={inputCls} />
                 </Campo>
                 <Campo label="Observações" className="sm:col-span-2">
                     <textarea rows={2} value={form.notas} onChange={(e) => set({ notas: e.target.value })} className={textareaCls}

@@ -8,6 +8,7 @@ import SearchableSelect from '../finance/SearchableSelect';
 import { Janela, Campo, ServicosPicker, inputCls, textareaCls, btnPrimario, btnSecundario } from './ui';
 import { useUsuarios } from './dados';
 import useCadastroRapido from './useCadastroRapido';
+import CampoData from '../ui/CampoData';
 
 /**
  * Cadastro/edição de projeto. O caminho normal é nascer de uma oportunidade
@@ -83,10 +84,10 @@ export default function ProjetoModal({ projeto, onClose, onSaved }) {
                     </select>
                 </Campo>
                 <Campo label={rotuloInicio(form.status)}>
-                    <input type="date" value={form.data_inicio || ''} onChange={(e) => set({ data_inicio: e.target.value })} className={inputCls} />
+                    <CampoData value={form.data_inicio || ''} onChange={(e) => set({ data_inicio: e.target.value })} className={inputCls} />
                 </Campo>
                 <Campo label="Prazo de entrega">
-                    <input type="date" value={form.prazo || ''} onChange={(e) => set({ prazo: e.target.value })} className={inputCls} />
+                    <CampoData value={form.prazo || ''} onChange={(e) => set({ prazo: e.target.value })} className={inputCls} />
                 </Campo>
                 <Campo label="Valor contratado">
                     <CurrencyInput value={form.valor_contratado} onChange={(v) => set({ valor_contratado: v })} className={`${inputCls} text-right`} />
